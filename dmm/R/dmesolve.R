@@ -131,7 +131,7 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),cohortform=NU
   b <- qr.coef(x.qr,am$y)
   krank <- x.qr$rank
   if(krank < am$k) {
-    stop("Rank of X .ne. k:",krank,am$k,"\n")
+    stop("Rank of X ",krank," .ne. no of fixed effects ",am$k,"\n")
   }
 # cat("OLS AOV Estimates of b:\n")
 # print(b)  # b here is k x l
