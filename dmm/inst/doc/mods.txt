@@ -22,3 +22,5 @@ dmm_1.6-3	warcolak.convert() modified to match nadiv_2.14.0
 dmm_1.6-4	siga.posdef modified to set symmetric=T on calling eigen()
 		dmsolve()  message when fixed effects not of full rank improved
 		varz() fix bug when first arg is NA
+
+dmm_1.7-1	traits pairwise (option dmmarray) and blockwise (option dmmblockarray)
