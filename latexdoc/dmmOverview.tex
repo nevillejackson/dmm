@@ -12,8 +12,8 @@
 
 \title{ An Overview of the R Package dmm}
 \author{Neville Jackson }
-\date{22 Sep 2015 \\
-      For dmm\_1.6-4}   % Deleting this command produces today's date.
+\date{16 Jan 2016 \\
+      For dmm\_1.7-1}   % Deleting this command produces today's date.
 
  
 \begin{document} 
@@ -3856,6 +3856,22 @@ If the option {\em posdef=T} is used each matrix of cross-trait (co)variances fo
 
  In a multi-trait analysis with the positive definite constraint applied, if one trait has variance component estimates which are negative before the constraint is applied, the constraint algorithm will adjust the estimates for all traits. Then if the "rogue" trait is omitted and the analysis rerun, the estimates for all remaining traits will not be adjusted, and will therefore differ from the previous analysis. We simply need to be aware that in a multivariate analysis, the presence or absence of one trait may affect the results for all other traits.
 
+\subsection{Dealing with unequal numbers of observations for various traits}
+The number of observations availabble for each pair of traits in a dataset can be obtained with the {\em make.countarray()} function. See its {\em help()} page for details.
+
+If there are missing observations for some traits in a multi-trait dataset, {\em dmm()} provides two special options which allow a comprehensive analysis of all the available data for each trait. These are specified as the arguments
+
+\begin{description}
+\item[traitspairwise=T] Forces a separate {\em dmm()} run for each pair of traits and returns an object of class {\em dmmarray}, which is an array of class {\em dmm} objects, one for each pair of traits.
+\item[traitsblockwise=T,...] Forces a separate {\em dmm()} run for each pair of blocks of traits. Blocks are specified in the ellipsis argument. Returns an object of class {\em dmmblockarray}, which is an array of class {\em dmm} objects, one for each pair of blocks of traits. Use this option if there are blocks of traits with equal replication, and other blocks with equal but different replication.
+\end{description}
+
+When using either of the above options, the fixed effect model must be appropriate for all pairs (or blocks) of traits, and the same variance components will be estimated for all pairs (blocks).  The number of levels of each fixed effect can vary between pairs (blocks) but at least one level must be present.
+
+After running {\em dmm()} with either of the above options one would typically want to construct a single genetic variance/covariance matrix for all the traits for use with the {\em gresponse()} function. This can be readily accomplished with the {\em condense.dmmarray} and {\em condense.dmmblockarray()} functions which are described in their {\em help()} pages. These functions return an object of class {\em dmm}  which  can be passed to the {\em gresponse()} function or to any of the {\em print} , {\em gprint}  or {\em plot} functions.
+
+The statistical properties and positive definite status of matrices obtained by combining trait pair (or block pair) estimates with differing replication are not known. It is simply a matter of doing the best one can with available data to estimate each element of the variance/covariance matrices, then hoping that combining all the elements does not lead to  matrices with undesirable properties.
+
 \clearpage
 \section{Computing strategy}
 The {\em dmm} package is written entirely in R. It does not directly use any of the available sparse matrix or parallel processing facilities. The R code is blatantly straightforward. All of the coding effort to date has been focused on ensuring correctness of the calculations. There may be room for some optimization later on.
@@ -3864,7 +3880,7 @@ It has been known for many years that solving the dyadic model equations leads t
 
 Most of the available variance component estimation software is compute intensive, but will run in modest amounts of memory. {\em dmm()} is different in that it is computationally quite efficient, but requires massive amounts of memory. An example will make this clear. The {\em warcolak} dataset has 5000 individuals and two traits. On my PC which has an Intel \textregistered \hspace{1pt} Core \textsuperscript{TM} i7 processor, {\em dmm()} runs on the {\em warcolak} data in about 15 mins and requires 22Gb of memory for the OLS-b step. The GLS-b step requires an additional 144 minutes and 40Gb of memory. 
 
-The efficiency of the QR algorithm is quite astounding. A dataset of 5000 individuals generates dyadic model equations consisting of 25 million simultaneous equations. QR can solve these in less than 15 minutes in a PC, without the slightest hint of loss of significant digits. There would seem to be no argument for turning the DME's into normal equations - this may reduce the number of equations, but it is usually recommended against on numerical grounds. The other DME solving options ( "robust" or "pcr") are less efficient.
+The efficiency of the QR algorithm is quite astounding. A dataset of 5000 individuals generates dyadic model equations consisting of 25 million simultaneous equations. QR can solve these in less than 5 minutes in a PC, without the slightest hint of loss of significant digits. Most of the compute time in {\em dmm()} is spent setting up the equations, not in solving them. There would seem to be no argument for turning the DME's into normal equations - this may reduce the number of equations, but it is usually recommended against on numerical grounds. The other DME solving options ( "robust" or "pcr") are less efficient.
 
 The critical memory limitation is in R, not in available physical RAM. R has an inbuilt limit of $2^{31} - 1 = 2147483648 - 1$ or approximately $2 \times 10^{9}$, for the size of any array. This limit applies even in a 64-bit installation of R. In other words 64-bit R has not yet been configured to fully exploit 64-bit addressing. I understand that this limitation is being worked on, but is unlikely to change in the near future. The only option to circumvent it is to rewrite in another language.
 
