@@ -37,6 +37,9 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),cohortform=NU
   if(is.null(mdf$rel)) {
     df <- mdf
     cat("Data file is a normal dataframe:\n")
+    if(relmat == "withdf") {
+      stop("dmm: cant have 'relmat=withdf' option for a normal dataframe\n")
+    }
   }
   else {
     df <- mdf$df

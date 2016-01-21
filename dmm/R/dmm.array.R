@@ -22,8 +22,13 @@ function(mdf,fixform,components,cohortform,posdef,gls,glsopt,dmeopt,ncomp.pcr,re
     for(j in traits) {
       ymat <- cbind(df[,i],df[,j])
       dimnames(ymat) <- list(NULL,c(i,j))
-      df$Ymat <- ymat # put local ymat into df so it passes to dmm()
-      fit[[i,j]] <- dmesolve(df,fixform,components,cohortform,posdef,gls,glsopt,dmeopt,ncomp.pcr,relmat,dmekeep,dmekeepfit)
+      if(is.null(mdf$rel)) {
+         mdf$Ymat <- ymat # put local ymat into mdf so passed to dmm()
+       }
+       else {
+         mdf$df$Ymat <- ymat # put local ymat into mdf$df so passed to dmm()
+       }
+      fit[[i,j]] <- dmesolve(mdf,fixform,components,cohortform,posdef,gls,glsopt,dmeopt,ncomp.pcr,relmat,dmekeep,dmekeepfit)
       class(fit[[i,j]]) <- "dmm"
     }
   }
