@@ -2,7 +2,7 @@ Package: dmm
 Type: Package
 Title: Dyadic Mixed Model for Pedigree Data
 Version: 1.7-1
-Date: 2015-12-30
+Date: 2016-04-12
 Author: Neville Jackson
 Maintainer: Neville Jackson <nanddjackson@bigpond.com>
 Description: Dyadic mixed model analysis with multi-trait responses and
