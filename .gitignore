@@ -1,0 +1,7 @@
+.RData
+.Rhistory
+*.aux
+*.dvi
+*.log
+*.pdf
+*.toc
