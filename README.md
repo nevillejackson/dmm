@@ -31,7 +31,7 @@ Most other packages use iterative likelihood maximization techniques for varianc
 * _dmm_ was developed for analysis of sheep breeding data. Workers from other fields would certainly be able to broaden its approach, and contributions would be welcome.
 
 ## Acknowledgement ##
-The _dmm_ package relies on the _nadiv_ package for generating relationship matrices. The author of _nadiv_  has assisted with its use from _dmm_ particularly in relation to sexlinked inheritance and sex-specific genetic parameters.
+The _dmm_ package relies on the _nadiv_ package for generating relationship matrices. The author of _nadiv_  (Matthew Wolak) has assisted with its use from _dmm_ particularly in relation to sexlinked inheritance and sex-specific genetic parameters.
 
 ## Development plans ##
 
