@@ -1,5 +1,5 @@
 # dmm #
-R package that does variance component estimation and genetic parameters for  linear mixed effect models ( ie animal modles). Variance components can be for individual and/or maternal genetic variation, and can be for additive, dominance, epistatic or sexlinked inheritance.
+R package that does variance component estimation and genetic parameters for  linear mixed effect models ( ie animal models). Variance components can be for individual and/or maternal genetic variation, and can be for additive, dominance, epistatic or sexlinked inheritance.
 
 ## how does _dmm_ differ from other pedigree analysis packages? ##
 Most other packages use iterative likelihood maximization techniques for variance component estimation. _dmm_ uses a dyadic model which in effect reduces variance component estimation to a regression problem. This has the advantages of being non-iterative and of allowing any of the standard regression techniques to be used. The package currently offers least squares, partial least squares and robust regression. The results obtained with _dmm_ are equivalent to MINQUE and bias-corrected-ML estimates, if least squares regression is used.
