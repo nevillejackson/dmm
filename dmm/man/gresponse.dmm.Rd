@@ -5,7 +5,7 @@
 Compute response to selection, given phenotypic selection differentials.
 }
 \description{
-Computes genetic selection differentials, given phenotypic selection differentials and a set of genetic parameters.  Effects contributing to response can be any combination of individual additive genetic, individual additive sexlinked genetic, maternal additive genetic, and maternal additive sexlinked genetic.
+Computes genetic selection differentials, given phenotypic selection differentials and a set of genetic parameters.  Effects contributing to response can be any combination of individual additive genetic, individual additive sexlinked genetic, maternal additive genetic, and maternal additive sexlinked genetic. Warning; this function does not currently handle class specific genetic parameters.
 }
 \usage{
 \S3method{gresponse}{dmm}(dmmobj, traitset = "all", gls = F,

@@ -1,4 +1,4 @@
-	%
+%
 % Draft  document dmmOverview.tex
 % dmm user's guide with examples, computational strategy and statistical theory
 % supplements help files
@@ -12,8 +12,8 @@
 
 \title{ An Overview of the R Package dmm}
 \author{Neville Jackson }
-\date{12 Apr 2016 \\
-      For dmm\_1.7-1}   % Deleting this command produces today's date.
+\date{4 Mar 2017 \\
+      For dmm\_2.1-1}   % Deleting this command produces today's date.
 
  
 \begin{document} 
@@ -2585,6 +2585,8 @@ and it can be shown that the quadratic form $\mbox{\boldmath $y^{\prime}My$}$ ex
 In more complex cases the $\mbox{\boldmath $M$}$ matrix simply adjusts the degrees of freedom appropriately, given the replication for all fixed effects embodied in the $\mbox{\boldmath $X$}$ matrix. This adjustment is not the same as the adjustment made by REML. The bias-corrected ML estimates obtained from {\em dmm()} will agree with REML estimates in some cases, but not always. This is because REML accounts for the covariances of dyadic residuals ($\mbox{\boldmath $\Delta$}$ in equation~\ref{eq.eighth}), while {\em dmm()} assumes these residuals are uncorrelated (ie it uses OLS on equation~\ref{eq.eighth}).
 
  The approach taken by {\em dmm()} also has similarities with the 'symmetric sums method' of Koch(1967)~\cite{koch:67}. Koch was probably the first worker to equate dyadic covariances to their expectations, as in equation~\ref{eq.fourth}. The difference is that Koch summed his expectations (he could hardly have done anything else, given computing facilities at the time), while {\em dmm()} writes all expectations as a set of equations~\ref{eq.seventh} to be solved directly.
+ 
+ There is some more detail of the setting up and solving of dyadic model equations in the document {\em solvedme.pdf}~\cite{jack:15}
 
 \subsubsection{Standard errors of variance component estimates}
 Using a dyadic model reduces variance component estimation to a multiple linear regression problem, the components being estimated as regression coefficients. Therefore standard errors for variance component estimates can be computed using expressions for the standard error of a regresssion coefficient. In terms of model~\ref{eq.eighth} the unknowns $\mbox{\boldmath $\Gamma$}$ are defined (if estimated by OLS) as
@@ -3317,7 +3319,7 @@ These can be separated only if dams have multiple litters and multiple offspring
 \item [VarE(M\&!C)] variance of individuals with the same dam and not the same cohort - ie maternal half sibs across cohorts
 \end{description}
 
-With this partitioning we can clearly obtain $\sigma^{2}_{E_{M}}$ annd $\sigma^{2}_{E_{C}}$ if desired, by simle subtraction
+With this partitioning we can clearly obtain $\sigma^{2}_{E_{M}}$ annd $\sigma^{2}_{E_{C}}$ if desired, by simple subtraction
 
 \begin{eqnarray*}
 \sigma^{2}_{E_{C}} & = & VarE(M\&C) - VarE(M\&!C) \\
@@ -3332,7 +3334,7 @@ We do not of course fit VarE(M) at the same time as its two components VarE(M\&C
 VarE(M) = \frac{n_{1} VarE(M\&C) + n_{2} VarE(M\&!C)}{n_{1} + n_{2}}
 \end{displaymath}
 
-where $n_{1}$ and $n_{2}$ are sms of the relavant columns of the $\bm{W}$ matrix.
+where $n_{1}$ and $n_{2}$ are sums of the relavant columns of the $\bm{W}$ matrix.
 
 
 We continue the example of the cohort section, fitting maternal environmental variance and then splitting it  as follows
@@ -5514,7 +5516,7 @@ Further development of {\em dmm()} and associated functions is likely. Some area
 \item Using an error term other than 'Residual' from the monadic model to form the dyadic model equations and consequent variance component estimates. This would allow repeated measures models
 \item Extending the {\em gresponse()} function to deal with individual sexlinked and maternal sexlinked genetic variation. An initial (somewhat experimental) attempt at this has been made in release (dmm\_1.6-2)
 \item Exploration of other regression techniques for solving the dyadic model equations. On my list are bootstrap methods and total least squares. The latter would allow for errors in the pedigree information as well as in the traits observed
-\item Allowing variance components to be split among levels of a fixed effect. For example with Sex as a fixed effect it is possible to form male-male, female-female, female-male, and male-female dyads and do their dyadic model equations separately thus leading to sex-specific variance components and genetic parameters.
+\item Allowing variance components to be split among levels of a fixed effect. For example with Sex as a fixed effect it is possible to form male-male, female-female, female-male, and male-female dyads and do their dyadic model equations separately thus leading to sex-specific variance components and genetic parameters. An initial attampt at this has been made in release (dmm\_2.1-1).
 \item Do something about the very restrictive array size requirements with options {\em gls=T} and {\em dmeopt="pcr"}
 \item There has been no reference to the excellent R package {\em pedigreemm} which implements an entirely different approach to analysis of mixed model pedigree data. Some comparison of methods and results would be desirable.
 \item Look at sparse matrix techniques, possibly with the {\em Matrix} package
@@ -5574,6 +5576,9 @@ Griffing, B. (1966) Influence of Sex on Selection.
 \bibitem{harv:60}
 Harvey, W.R. (1960) Least Squares Analysid of Data with Unequal Subclass
     Numbers. ARS-20-8 July 1960. Agricultural Research Service, USDA.
+
+\bibitem{jack:15}
+Jackson, N. (2015) Solving the Dyadic Model Equations. From http://cran.r-project.org/package=dmm  Or https://github.com/cran/dmm
 
 \bibitem{joui:11}
 Jouini, W. Le Guennec , D. and Moy, C  (2011) Log-Normal approximation of
