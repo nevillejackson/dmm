@@ -48,38 +48,20 @@ function(v, l, thisvc,vara, vthisvc, sethisvc, ctable,ic,phencovclass,longrownam
      if(!is.cecov(rownames(thisvc)[i],ctable$allcov)) {  # not a crosseffect cov
       # noncecov component - use covtopar() if w/n class specific
       #                    - use crossclasscovtopar() if cross class specific
-#cat("longrownames:\n")
-#print(longrownames[i])
       if(!is.specific(longrownames[i]) | is.withinclass(longrownames[i])) {  # within class or nonspecific
-#cat("covi:\n")
-# print(covi)
-# print(sigt)
         pari <- covtopar(covi, sigt)
-#cat("ic=",ic," i=",i,"\n")
-#cat("pari:\n")
-#print(pari)
 
       }  # end w/n class var
 
 # case 2
       else {  # cross class covariance
         # need to find corresponding variances
-#cat("cross-class-cov:\n")
-#print(longrownames[i])
         varlist <- match.vars(longrownames[i])
         var1 <- siga[varlist$var1name,]
         var2 <- siga[varlist$var2name,]
 #       var1 <- vc[[varlist$var1class]][varlist$genericname,]
 #       var2 <- vc[[varlist$var2class]][varlist$genericname,]
-#cat("var1:\n")
-#print(var1)
-#cat("var2:\n")
-#print(var2)
-#cat("ic=",ic," i=",i,"\n")
-#print(varlist)
         pari <- crossclasscovtopar(covi,sigt,var1,var2)
-#cat("pari:\n")
-#print(pari)  
 
       }  # end cross class var
     } # end var component
@@ -94,11 +76,7 @@ function(v, l, thisvc,vara, vthisvc, sethisvc, ctable,ic,phencovclass,longrownam
         var2 <- siga[varlist$var2name, ]
 #       var1 <- vc[[varlist$var1class]][varlist$genericname1, ]
 #       var2 <- vc[[varlist$var2class]][varlist$genericname2, ]
-#cat("ic=",ic," i=",i,"\n")
-#print(varlist)
         pari <- crossclasscovtopar(covi,sigt,var1,var2)
-#cat("pari:\n")
-#print(pari)  
 
       } # end within class 
 
@@ -110,11 +88,7 @@ function(v, l, thisvc,vara, vthisvc, sethisvc, ctable,ic,phencovclass,longrownam
         var2 <- siga[varlist$var2name, ]
 #       var1 <- vc[[varlist$var1class]][varlist$genericname1, ]
 #       var2 <- vc[[varlist$var2class]][varlist$genericname2, ]
-#cat("ic=",ic," i=",i,"\n")
-#print(varlist)
         pari <- crossclasscovtopar(covi,sigt,var1,var2)
-#cat("pari:\n")
-#print(pari)  
       }  # end cross class cross effect cov
 
     }  # end else cov component
@@ -135,7 +109,6 @@ function(v, l, thisvc,vara, vthisvc, sethisvc, ctable,ic,phencovclass,longrownam
 
 # SE's
   sep.list <- separ(varcomp, vthisvc, v,l, fracta, correa)
-# print(sep.list)
 
   outlist <- list(component=labelc,
           phencovclass=phencovclass, component.longnames=longrownames,

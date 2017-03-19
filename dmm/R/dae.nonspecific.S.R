@@ -1,5 +1,5 @@
 dae.nonspecific.S <-
-function(zpre1,zpost1,zpre2,zpost2,zop,mmat,componentname,cnames,emat,vmat,icol,gls)
+function(zpre1,zpost1,zpre2,zpost2,zop,mmat,componentname,cnames,cnamesie,emat,vmat,icol,iecol,gls)
 # dae.nonspecific.S() - expectations for a nonspecific component
 #             zpre,zposr are zi or zm or zc
 #             special case with two expectations anded together
@@ -19,6 +19,6 @@ function(zpre1,zpost1,zpre2,zpost2,zop,mmat,componentname,cnames,emat,vmat,icol,
     cnames[icol] <- componentname # name for this col
     icol <- icol + 1
 
-   daelist <- list(cnames=cnames,emat=emat,vmat=vmat,icol=icol)
+   daelist <- list(cnames=cnames,cnamesie=cnamesie,emat=emat,vmat=vmat,icol=icol,iecol=iecol)
    return(daelist)
 }

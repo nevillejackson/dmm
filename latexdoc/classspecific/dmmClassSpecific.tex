@@ -1,6 +1,6 @@
 %
-% Draft  document dmmCalssSpecific.tex
-% Notes on solving the dyadic model equations
+% Draft  document dmmClassSpecific.tex
+% Notes on Estimating class-specific genetic parameters
 %
  
 \documentclass[titlepage]{article}  % Latex2e
@@ -49,8 +49,7 @@ This document deals with how to use {\em dmm()} to obtain class specific compone
 The same is not possible for the individual environmental variance component "VarE(I)". It can only be estimated ignoring Sex. So we leave "VarE(I)" as a "components" argument and put "VarG(Ia)" as a "specific.components" argument in the call to {\em dmm()}, as follows
 
 \begin{verbatim}
-> sheep.fitss <- dmm(sheep.mdf, Ymat ~ 1 + Year + Sex,components=c("VarE(I)"),
-    specific.components=list(Sex=c("VarG(Ia)")))
+> sheep.fitss <- dmm(sheep.mdf, Ymat ~ 1 + Year + Sex,components=c("VarE(I)"),specific.components=list(Sex=c("VarG(Ia)")))
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a normal dataframe:
 Random effect partitioned into components: Residual:
@@ -59,38 +58,19 @@ no of fixed effect df (k) =  9
 no of traits (l) =  3 
 Setup antemodel matrices:
 No of factors with specific components: 1 
-effcodes:
-$Sex
-[1] "F" "M"
-
-comcodes:
-$Sex
-[1] "Sex:F:F" "Sex:F:M" "Sex:M:F" "Sex:M:M"
-
-effnandc:
-$Sex
-[1] "Sex:F" "Sex:M"
-
 No of non-specific components partitioned: 1 
 No of factors with specific components: 1 
 No of specific variance components partitioned (per component): 2 
 No of specific variance and covariance components partitioned (per component): 4 
-Class names:
-           Sex1    Sex2 
-   "NS" "Sex:F" "Sex:M" 
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  37 
 Rank of X: 9   No of Fixed Effects: 9 
 DME substep:
-[1] "Sex:F:F:VarG(Ia)"
-[1] "Sex:F:M:VarG(Ia)"
-[1] "Sex:M:F:VarG(Ia)"
-[1] "Sex:M:M:VarG(Ia)"
+No of components defined =  5 
+No of components estimable =  5 
 Checking dyadic model equations:
 QR option on dyadic model equations:
 DME substep completed:
-[1] "Sex:F:M:VarG(Ia)"
-[1] "Sex:M:F:VarG(Ia)"
 OLS-b step completed:
 > 
 \end{verbatim}
@@ -98,9 +78,10 @@ So we see a bit more output tabbing than with a normal (non-specific) dmm run. I
 
 If that seems complex, it will become clear as we view the results. We first look at the component estimates exactly as fitted, using the {\em summary()} function.
 \begin{verbatim}
-> summary(sheep.fitss)
+> summary(sheep.fitss,traitset=c("Cww","Diam")
++ )
 Call:
-summary.dmm(object = sheep.fitss)
+summary.dmm(object = sheep.fitss, traitset = c("Cww", "Diam"))
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -117,7 +98,15 @@ SexM          Cww   0.2237  0.178 -0.12614  0.574
 
             Trait Estimate StdErr CI95lo CI95hi
 (Intercept)  Diam  20.5667  0.565 19.459 21.674
-.............
+Year1982     Diam   0.7333  0.799 -0.833  2.299
+Year1983     Diam  -0.3978  0.753 -1.874  1.079
+Year1984     Diam  -0.4623  0.717 -1.868  0.943
+Year1985     Diam  -0.0308  0.684 -1.371  1.309
+Year1986     Diam   0.9085  0.694 -0.452  2.269
+Year1987     Diam   0.2085  0.703 -1.170  1.587
+Year1988     Diam  -1.6913  1.191 -4.026  0.644
+SexM         Diam   0.2246  0.377 -0.515  0.964
+
 
 Components partitioned by DME from residual var/covariance after OLS-b fit:
 
@@ -135,13 +124,6 @@ Sex:F:M:VarG(Ia)  Cww:Diam   0.4124  0.176  0.0668  0.758
 Sex:M:F:VarG(Ia)  Cww:Diam   0.3711  0.176  0.0254  0.717
 Sex:M:M:VarG(Ia)  Cww:Diam   0.5040  0.167  0.1765  0.832
 
-                 Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)            Cww:Bwt    0.331  0.654 -0.952  1.614
-Sex:F:F:VarG(Ia)   Cww:Bwt    0.758  0.619 -0.455  1.970
-Sex:F:M:VarG(Ia)   Cww:Bwt   -0.803  0.902 -2.570  0.964
-Sex:M:F:VarG(Ia)   Cww:Bwt    2.404  0.902  0.637  4.171
-Sex:M:M:VarG(Ia)   Cww:Bwt    3.335  0.854  1.660  5.010
-
                  Traitpair Estimate StdErr  CI95lo CI95hi
 VarE(I)           Diam:Cww   0.0276  0.128 -0.2233  0.279
 Sex:F:F:VarG(Ia)  Diam:Cww   0.2244  0.121 -0.0127  0.462
@@ -156,39 +138,11 @@ Sex:F:M:VarG(Ia) Diam:Diam   0.5472  0.370 -0.177  1.271
 Sex:M:F:VarG(Ia) Diam:Diam   0.5472  0.370 -0.177  1.271
 Sex:M:M:VarG(Ia) Diam:Diam   1.4274  0.350  0.741  2.114
 
-                 Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)           Diam:Bwt   -0.124   1.39 -2.848   2.60
-Sex:F:F:VarG(Ia)  Diam:Bwt    1.986   1.31 -0.589   4.56
-Sex:F:M:VarG(Ia)  Diam:Bwt   -2.027   1.91 -5.780   1.73
-Sex:M:F:VarG(Ia)  Diam:Bwt    4.982   1.91  1.229   8.74
-Sex:M:M:VarG(Ia)  Diam:Bwt    7.461   1.81  3.904  11.02
-
-                 Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)            Bwt:Cww    0.331  0.654 -0.952  1.614
-Sex:F:F:VarG(Ia)   Bwt:Cww    0.758  0.619 -0.455  1.970
-Sex:F:M:VarG(Ia)   Bwt:Cww    2.404  0.902  0.637  4.171
-Sex:M:F:VarG(Ia)   Bwt:Cww   -0.803  0.902 -2.570  0.964
-Sex:M:M:VarG(Ia)   Bwt:Cww    3.335  0.854  1.660  5.010
-
-                 Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)           Bwt:Diam   -0.124   1.39 -2.848   2.60
-Sex:F:F:VarG(Ia)  Bwt:Diam    1.986   1.31 -0.589   4.56
-Sex:F:M:VarG(Ia)  Bwt:Diam    4.982   1.91  1.229   8.74
-Sex:M:F:VarG(Ia)  Bwt:Diam   -2.027   1.91 -5.780   1.73
-Sex:M:M:VarG(Ia)  Bwt:Diam    7.461   1.81  3.904  11.02
-
-                 Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)            Bwt:Bwt     1.88   7.08 -11.99   15.8
-Sex:F:F:VarG(Ia)   Bwt:Bwt    17.39   6.69   4.28   30.5
-Sex:F:M:VarG(Ia)   Bwt:Bwt    -5.37   9.75 -24.49   13.7
-Sex:M:F:VarG(Ia)   Bwt:Bwt    -5.37   9.75 -24.49   13.7
-Sex:M:M:VarG(Ia)   Bwt:Bwt    42.17   9.24  24.06   60.3
-
 > 
 \end{verbatim}
  We see that component "VarG(Ia)" is estimated for all 4 classes simultneously, and there is just one overall estimate for "VarE(I)". The columns of these tables do not sum to phenotypic variance "VarP(I)", as they would for a nonspecific case. To get the components summing properly to "VarP(I)" we need to reorganize the summary listing into classes. This is done with the new function {\em csummary()} as follows
 \begin{verbatim}
-> csummary(sheep.fitss)
+> csummary(sheep.fitss,traitset=c("Cww","Diam"))
 Call:
 csummary.specific(object = object, traitset = traitset, componentset = componentset, 
     bytrait = bytrait, gls = gls, digits = digits)
@@ -207,11 +161,6 @@ VarE(I)   Cww:Diam   0.0276 0.1280 -0.2233  0.279
 VarG(Ia)  Cww:Diam   0.2244 0.1210 -0.0127  0.462
 VarP(I)   Cww:Diam   0.2521 0.0771  0.1009  0.403
 
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Cww:Bwt    0.331  0.654 -0.952   1.61
-VarG(Ia)   Cww:Bwt    0.758  0.619 -0.455   1.97
-VarP(I)    Cww:Bwt    1.089  0.394  0.316   1.86
-
          Traitpair Estimate StdErr  CI95lo CI95hi
 VarE(I)   Diam:Cww   0.0276 0.1280 -0.2233  0.279
 VarG(Ia)  Diam:Cww   0.2244 0.1210 -0.0127  0.462
@@ -221,26 +170,6 @@ VarP(I)   Diam:Cww   0.2521 0.0771  0.1009  0.403
 VarE(I)  Diam:Diam   0.0585  0.268 -0.467  0.584
 VarG(Ia) Diam:Diam   0.8586  0.254  0.362  1.356
 VarP(I)  Diam:Diam   0.9171  0.162  0.600  1.234
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Diam:Bwt   -0.124  1.390 -2.848   2.60
-VarG(Ia)  Diam:Bwt    1.986  1.314 -0.589   4.56
-VarP(I)   Diam:Bwt    1.862  0.838  0.221   3.50
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt:Cww    0.331  0.654 -0.952   1.61
-VarG(Ia)   Bwt:Cww    0.758  0.619 -0.455   1.97
-VarP(I)    Bwt:Cww    1.089  0.394  0.316   1.86
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Bwt:Diam   -0.124  1.390 -2.848   2.60
-VarG(Ia)  Bwt:Diam    1.986  1.314 -0.589   4.56
-VarP(I)   Bwt:Diam    1.862  0.838  0.221   3.50
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt:Bwt     1.88   7.08 -11.99   15.8
-VarG(Ia)   Bwt:Bwt    17.39   6.69   4.28   30.5
-VarP(I)    Bwt:Bwt    19.27   4.26  10.91   27.6
 
 
 
@@ -256,11 +185,6 @@ VarG(Ia)  Cww:Diam    0.412  0.176 0.0668  0.758
 VarP(I)   Cww:Diam       NA     NA     NA     NA
 
          Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Cww:Bwt       NA     NA     NA     NA
-VarG(Ia)   Cww:Bwt   -0.803  0.902  -2.57  0.964
-VarP(I)    Cww:Bwt       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Diam:Cww       NA     NA     NA     NA
 VarG(Ia)  Diam:Cww    0.371  0.176 0.0254  0.717
 VarP(I)   Diam:Cww       NA     NA     NA     NA
@@ -269,26 +193,6 @@ VarP(I)   Diam:Cww       NA     NA     NA     NA
 VarE(I)  Diam:Diam       NA     NA     NA     NA
 VarG(Ia) Diam:Diam    0.547   0.37 -0.177   1.27
 VarP(I)  Diam:Diam       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Diam:Bwt       NA     NA     NA     NA
-VarG(Ia)  Diam:Bwt    -2.03   1.91  -5.78   1.73
-VarP(I)   Diam:Bwt       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt:Cww       NA     NA     NA     NA
-VarG(Ia)   Bwt:Cww      2.4  0.902  0.637   4.17
-VarP(I)    Bwt:Cww       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Bwt:Diam       NA     NA     NA     NA
-VarG(Ia)  Bwt:Diam     4.98   1.91   1.23   8.74
-VarP(I)   Bwt:Diam       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt:Bwt       NA     NA     NA     NA
-VarG(Ia)   Bwt:Bwt    -5.37   9.75  -24.5   13.7
-VarP(I)    Bwt:Bwt       NA     NA     NA     NA
 
 
 
@@ -304,11 +208,6 @@ VarG(Ia)  Cww:Diam    0.371  0.176 0.0254  0.717
 VarP(I)   Cww:Diam       NA     NA     NA     NA
 
          Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Cww:Bwt       NA     NA     NA     NA
-VarG(Ia)   Cww:Bwt      2.4  0.902  0.637   4.17
-VarP(I)    Cww:Bwt       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Diam:Cww       NA     NA     NA     NA
 VarG(Ia)  Diam:Cww    0.412  0.176 0.0668  0.758
 VarP(I)   Diam:Cww       NA     NA     NA     NA
@@ -317,26 +216,6 @@ VarP(I)   Diam:Cww       NA     NA     NA     NA
 VarE(I)  Diam:Diam       NA     NA     NA     NA
 VarG(Ia) Diam:Diam    0.547   0.37 -0.177   1.27
 VarP(I)  Diam:Diam       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Diam:Bwt       NA     NA     NA     NA
-VarG(Ia)  Diam:Bwt     4.98   1.91   1.23   8.74
-VarP(I)   Diam:Bwt       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt:Cww       NA     NA     NA     NA
-VarG(Ia)   Bwt:Cww   -0.803  0.902  -2.57  0.964
-VarP(I)    Bwt:Cww       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Bwt:Diam       NA     NA     NA     NA
-VarG(Ia)  Bwt:Diam    -2.03   1.91  -5.78   1.73
-VarP(I)   Bwt:Diam       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt:Bwt       NA     NA     NA     NA
-VarG(Ia)   Bwt:Bwt    -5.37   9.75  -24.5   13.7
-VarP(I)    Bwt:Bwt       NA     NA     NA     NA
 
 
 
@@ -352,11 +231,6 @@ VarG(Ia)  Cww:Diam   0.5040  0.167  0.177  0.832
 VarP(I)   Cww:Diam   0.5317  0.120  0.296  0.767
 
          Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Cww:Bwt    0.331  0.654 -0.952   1.61
-VarG(Ia)   Cww:Bwt    3.335  0.854  1.660   5.01
-VarP(I)    Cww:Bwt    3.666  0.615  2.461   4.87
-
-         Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Diam:Cww   0.0276  0.128 -0.223  0.279
 VarG(Ia)  Diam:Cww   0.5040  0.167  0.177  0.832
 VarP(I)   Diam:Cww   0.5317  0.120  0.296  0.767
@@ -366,37 +240,17 @@ VarE(I)  Diam:Diam   0.0585  0.268 -0.467  0.584
 VarG(Ia) Diam:Diam   1.4274  0.350  0.741  2.114
 VarP(I)  Diam:Diam   1.4859  0.252  0.992  1.980
 
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Diam:Bwt   -0.124   1.39  -2.85    2.6
-VarG(Ia)  Diam:Bwt    7.461   1.81   3.90   11.0
-VarP(I)   Diam:Bwt    7.337   1.31   4.78    9.9
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt:Cww    0.331  0.654 -0.952   1.61
-VarG(Ia)   Bwt:Cww    3.335  0.854  1.660   5.01
-VarP(I)    Bwt:Cww    3.666  0.615  2.461   4.87
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Bwt:Diam   -0.124   1.39  -2.85    2.6
-VarG(Ia)  Bwt:Diam    7.461   1.81   3.90   11.0
-VarP(I)   Bwt:Diam    7.337   1.31   4.78    9.9
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt:Bwt     1.88   7.08  -12.0   15.8
-VarG(Ia)   Bwt:Bwt    42.17   9.24   24.1   60.3
-VarP(I)    Bwt:Bwt    44.05   6.65   31.0   57.1
-
 
 > 
 \end{verbatim} 
- So now we have 4 separate variance component summary tables. The first and last ( called Sex:F:F and Sex:M:M) are the variance components for each Sex level, and "VarE(I)" is listed there because it is assumed that the overal estimate of "VarE(I)" applies to each Sex level. Because "VarE(I)" is estimable, we are able to calculate "VarP(I)" for these two Sex levels. 
+ So now we have 4 separate variance component summary tables. The first and last ( called Sex:F:F and Sex:M:M) are the variance components for each Sex level, and "VarE(I)" is listed there because it is assumed that the overall estimate of "VarE(I)" applies to each Sex level. Because "VarE(I)" is estimable, we are able to calculate "VarP(I)" for these two Sex levels. 
 
 The second and third tables ( called Sex:F:M and Sex:M:F) are the cross-sex component estimates. It can be seen that only "VarG(Ia)" is estimable as a cross-sex parameter. "VarE(I)" and "VarP(I)" are marked 'NA' to make clear that they are not estimable for the cross-sex cases. Note that we retain the two symmetric cross-sex cases (F:M and M:F) because for the cross-sex-cross-trait cases they are not the same.
 
 The variance components are now grouped in a way suitable for estimation of genetic parameters, so if we use the {\em gsummary()} function we get the same 4 groupings, but converted to heritabilities and genetic correlations, as follows:
 
 \begin{verbatim}
-> gsummary(sheep.fitss)
+> gsummary(sheep.fitss,traitset=c("Cww","Diam"))
 Call:
 gsummary.specific(dmmobj = dmmobj, traitset = traitset, componentset = componentset, 
     bytrait = bytrait, gls = gls, digits = digits)
@@ -416,11 +270,6 @@ VarE(I)   Diam   0.0638  0.222 -0.372  0.499
 VarG(Ia)  Diam   0.9362  0.289  0.370  1.502
 VarP(I)   Diam   1.0000  0.000  1.000  1.000
 
-         Trait Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt   0.0976  0.277 -0.446  0.641
-VarG(Ia)   Bwt   0.9024  0.360  0.196  1.608
-VarP(I)    Bwt   1.0000  0.000  1.000  1.000
-
 Correlation corresponding to each var/covariance component:
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)    Cww:Cww        1      0      1      1
@@ -432,11 +281,6 @@ VarE(I)   Cww:Diam    0.350  0.288 -0.214  0.913
 VarG(Ia)  Cww:Diam    0.702  0.205  0.300  1.103
 VarP(I)   Cww:Diam    0.554  0.108  0.342  0.765
 
-         Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)    Cww:Bwt    0.739  0.387 -0.0193  1.496
-VarG(Ia)   Cww:Bwt    0.526  0.234  0.0682  0.984
-VarP(I)    Cww:Bwt    0.522  0.119  0.2880  0.755
-
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Diam:Cww    0.350  0.288 -0.214  0.913
 VarG(Ia)  Diam:Cww    0.702  0.205  0.300  1.103
@@ -447,37 +291,12 @@ VarE(I)  Diam:Diam        1      1  -0.96   2.96
 VarG(Ia) Diam:Diam        1      0   1.00   1.00
 VarP(I)  Diam:Diam        1      0   1.00   1.00
 
-         Traitpair Estimate   StdErr    CI95lo   CI95hi
-VarE(I)   Diam:Bwt   -0.373 2.24e+14 -4.40e+14 4.40e+14
-VarG(Ia)  Diam:Bwt    0.514 2.20e-01  8.19e-02 9.46e-01
-VarP(I)   Diam:Bwt    0.443 1.43e-01  1.63e-01 7.23e-01
-
-         Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)    Bwt:Cww    0.739  0.387 -0.0193  1.496
-VarG(Ia)   Bwt:Cww    0.526  0.234  0.0682  0.984
-VarP(I)    Bwt:Cww    0.522  0.119  0.2880  0.755
-
-         Traitpair Estimate   StdErr    CI95lo   CI95hi
-VarE(I)   Bwt:Diam   -0.373 2.24e+14 -4.40e+14 4.40e+14
-VarG(Ia)  Bwt:Diam    0.514 2.20e-01  8.19e-02 9.46e-01
-VarP(I)   Bwt:Diam    0.443 1.43e-01  1.63e-01 7.23e-01
-
-         Traitpair Estimate   StdErr CI95lo CI95hi
-VarE(I)    Bwt:Bwt        1 1.49e-08      1      1
-VarG(Ia)   Bwt:Bwt        1 0.00e+00      1      1
-VarP(I)    Bwt:Bwt        1 0.00e+00      1      1
-
 Phenotypic var/covariance from summing components:
   Traitpair Estimate StdErr CI95lo CI95hi
 1   Cww:Cww    0.226 0.0359  0.156  0.296
 2  Cww:Diam    0.252 0.0771  0.101  0.403
-3   Cww:Bwt    1.089 0.3943  0.316  1.862
-4  Diam:Cww    0.252 0.0771  0.101  0.403
-5 Diam:Diam    0.917 0.1616  0.600  1.234
-6  Diam:Bwt    1.862 0.8375  0.221  3.504
-7   Bwt:Cww    1.089 0.3943  0.316  1.862
-8  Bwt:Diam    1.862 0.8375  0.221  3.504
-9   Bwt:Bwt   19.271 4.2648 10.911 27.630
+3  Diam:Cww    0.252 0.0771  0.101  0.403
+4 Diam:Diam    0.917 0.1616  0.600  1.234
 
 
 
@@ -493,11 +312,6 @@ VarE(I)   Diam       NA     NA     NA     NA
 VarG(Ia)  Diam       NA     NA     NA     NA
 VarP(I)   Diam       NA      0     NA     NA
 
-         Trait Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt       NA     NA     NA     NA
-VarG(Ia)   Bwt       NA     NA     NA     NA
-VarP(I)    Bwt       NA      0     NA     NA
-
 Correlation corresponding to each var/covariance component:
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)    Cww:Cww        1     NA     NA     NA
@@ -510,11 +324,6 @@ VarG(Ia)  Cww:Diam        1  0.243  0.524   1.48
 VarP(I)   Cww:Diam       NA     NA     NA     NA
 
          Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Cww:Bwt       NA     NA     NA     NA
-VarG(Ia)   Cww:Bwt   -0.358  0.271 -0.889  0.172
-VarP(I)    Cww:Bwt       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Diam:Cww       NA     NA     NA     NA
 VarG(Ia)  Diam:Cww    0.695  0.175  0.352   1.04
 VarP(I)   Diam:Cww       NA     NA     NA     NA
@@ -524,37 +333,12 @@ VarE(I)  Diam:Diam    1.000     NA     NA     NA
 VarG(Ia) Diam:Diam    0.494      0  0.494  0.494
 VarP(I)  Diam:Diam    1.000     NA     NA     NA
 
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Diam:Bwt       NA     NA     NA     NA
-VarG(Ia)  Diam:Bwt   -0.337  0.286 -0.897  0.223
-VarP(I)   Diam:Bwt       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt:Cww       NA     NA     NA     NA
-VarG(Ia)   Bwt:Cww        1   1.18  -1.31   3.31
-VarP(I)    Bwt:Cww       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Bwt:Diam       NA     NA     NA     NA
-VarG(Ia)  Bwt:Diam        1   1.01 -0.975   2.98
-VarP(I)   Bwt:Diam       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt:Bwt    1.000     NA     NA     NA
-VarG(Ia)   Bwt:Bwt   -0.198      0 -0.198 -0.198
-VarP(I)    Bwt:Bwt    1.000     NA     NA     NA
-
 Phenotypic var/covariance from summing components:
   Traitpair Estimate StdErr CI95lo CI95hi
 1   Cww:Cww       NA     NA     NA     NA
 2  Cww:Diam       NA     NA     NA     NA
-3   Cww:Bwt       NA     NA     NA     NA
-4  Diam:Cww       NA     NA     NA     NA
-5 Diam:Diam       NA     NA     NA     NA
-6  Diam:Bwt       NA     NA     NA     NA
-7   Bwt:Cww       NA     NA     NA     NA
-8  Bwt:Diam       NA     NA     NA     NA
-9   Bwt:Bwt       NA     NA     NA     NA
+3  Diam:Cww       NA     NA     NA     NA
+4 Diam:Diam       NA     NA     NA     NA
 
 
 
@@ -570,11 +354,6 @@ VarE(I)   Diam       NA     NA     NA     NA
 VarG(Ia)  Diam       NA     NA     NA     NA
 VarP(I)   Diam       NA      0     NA     NA
 
-         Trait Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt       NA     NA     NA     NA
-VarG(Ia)   Bwt       NA     NA     NA     NA
-VarP(I)    Bwt       NA      0     NA     NA
-
 Correlation corresponding to each var/covariance component:
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)    Cww:Cww        1     NA     NA     NA
@@ -587,11 +366,6 @@ VarG(Ia)  Cww:Diam    0.695  0.175  0.352   1.04
 VarP(I)   Cww:Diam       NA     NA     NA     NA
 
          Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Cww:Bwt       NA     NA     NA     NA
-VarG(Ia)   Cww:Bwt        1   1.18  -1.31   3.31
-VarP(I)    Cww:Bwt       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Diam:Cww       NA     NA     NA     NA
 VarG(Ia)  Diam:Cww        1  0.243  0.524   1.48
 VarP(I)   Diam:Cww       NA     NA     NA     NA
@@ -601,37 +375,12 @@ VarE(I)  Diam:Diam    1.000     NA     NA     NA
 VarG(Ia) Diam:Diam    0.494      0  0.494  0.494
 VarP(I)  Diam:Diam    1.000     NA     NA     NA
 
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Diam:Bwt       NA     NA     NA     NA
-VarG(Ia)  Diam:Bwt        1   1.01 -0.975   2.98
-VarP(I)   Diam:Bwt       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt:Cww       NA     NA     NA     NA
-VarG(Ia)   Bwt:Cww   -0.358  0.271 -0.889  0.172
-VarP(I)    Bwt:Cww       NA     NA     NA     NA
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Bwt:Diam       NA     NA     NA     NA
-VarG(Ia)  Bwt:Diam   -0.337  0.286 -0.897  0.223
-VarP(I)   Bwt:Diam       NA     NA     NA     NA
-
-         Traitpair Estimate   StdErr CI95lo CI95hi
-VarE(I)    Bwt:Bwt    1.000       NA     NA     NA
-VarG(Ia)   Bwt:Bwt   -0.198 2.96e-09 -0.198 -0.198
-VarP(I)    Bwt:Bwt    1.000       NA     NA     NA
-
 Phenotypic var/covariance from summing components:
   Traitpair Estimate StdErr CI95lo CI95hi
 1   Cww:Cww       NA     NA     NA     NA
 2  Cww:Diam       NA     NA     NA     NA
-3   Cww:Bwt       NA     NA     NA     NA
-4  Diam:Cww       NA     NA     NA     NA
-5 Diam:Diam       NA     NA     NA     NA
-6  Diam:Bwt       NA     NA     NA     NA
-7   Bwt:Cww       NA     NA     NA     NA
-8  Bwt:Diam       NA     NA     NA     NA
-9   Bwt:Bwt       NA     NA     NA     NA
+3  Diam:Cww       NA     NA     NA     NA
+4 Diam:Diam       NA     NA     NA     NA
 
 
 
@@ -647,11 +396,6 @@ VarE(I)   Diam   0.0394  0.170 -0.294  0.373
 VarG(Ia)  Diam   0.9606  0.178  0.612  1.309
 VarP(I)   Diam   1.0000  0.000  1.000  1.000
 
-         Trait Estimate StdErr CI95lo CI95hi
-VarE(I)    Bwt   0.0427  0.154 -0.259  0.344
-VarG(Ia)   Bwt   0.9573  0.159  0.646  1.268
-VarP(I)    Bwt   1.0000  0.000  1.000  1.000
-
 Correlation corresponding to each var/covariance component:
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)    Cww:Cww        1      0      1      1
@@ -663,11 +407,6 @@ VarE(I)   Cww:Diam    0.350 0.2876 -0.214  0.913
 VarG(Ia)  Cww:Diam    0.732 0.1372  0.463  1.001
 VarP(I)   Cww:Diam    0.658 0.0894  0.483  0.833
 
-         Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)    Cww:Bwt    0.739 0.3867 -0.0193  1.496
-VarG(Ia)   Cww:Bwt    0.891 0.1193  0.6569  1.125
-VarP(I)    Cww:Bwt    0.833 0.0753  0.6858  0.981
-
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Diam:Cww    0.350 0.2876 -0.214  0.913
 VarG(Ia)  Diam:Cww    0.732 0.1372  0.463  1.001
@@ -678,37 +417,12 @@ VarE(I)  Diam:Diam        1      1  -0.96   2.96
 VarG(Ia) Diam:Diam        1      0   1.00   1.00
 VarP(I)  Diam:Diam        1      0   1.00   1.00
 
-         Traitpair Estimate   StdErr    CI95lo   CI95hi
-VarE(I)   Diam:Bwt   -0.373 2.24e+14 -4.40e+14 4.40e+14
-VarG(Ia)  Diam:Bwt    0.962 1.46e-01  6.76e-01 1.25e+00
-VarP(I)   Diam:Bwt    0.907 1.01e-01  7.08e-01 1.11e+00
-
-         Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)    Bwt:Cww    0.739 0.3867 -0.0193  1.496
-VarG(Ia)   Bwt:Cww    0.891 0.1193  0.6569  1.125
-VarP(I)    Bwt:Cww    0.833 0.0753  0.6858  0.981
-
-         Traitpair Estimate   StdErr    CI95lo   CI95hi
-VarE(I)   Bwt:Diam   -0.373 2.24e+14 -4.40e+14 4.40e+14
-VarG(Ia)  Bwt:Diam    0.962 1.46e-01  6.76e-01 1.25e+00
-VarP(I)   Bwt:Diam    0.907 1.01e-01  7.08e-01 1.11e+00
-
-         Traitpair Estimate   StdErr CI95lo CI95hi
-VarE(I)    Bwt:Bwt        1 1.49e-08      1      1
-VarG(Ia)   Bwt:Bwt        1 0.00e+00      1      1
-VarP(I)    Bwt:Bwt        1 0.00e+00      1      1
-
 Phenotypic var/covariance from summing components:
   Traitpair Estimate StdErr CI95lo CI95hi
 1   Cww:Cww    0.439  0.056  0.329  0.549
 2  Cww:Diam    0.532  0.120  0.296  0.767
-3   Cww:Bwt    3.666  0.615  2.461  4.871
-4  Diam:Cww    0.532  0.120  0.296  0.767
-5 Diam:Diam    1.486  0.252  0.992  1.980
-6  Diam:Bwt    7.337  1.306  4.778  9.896
-7   Bwt:Cww    3.666  0.615  2.461  4.871
-8  Bwt:Diam    7.337  1.306  4.778  9.896
-9   Bwt:Bwt   44.053  6.649 31.021 57.085
+3  Diam:Cww    0.532  0.120  0.296  0.767
+4 Diam:Diam    1.486  0.252  0.992  1.980
 
 
 > 
@@ -718,15 +432,14 @@ The first and last ( called Sex:F:F and Sex:M:M) provide the sex-specific herita
 
 The second and third tables (called Sex:F:M and Sex:M:F) provide estimates of the cross-sex genetic correlations and everything else is 'NA'. Note that there are cross-sex-within-trait genetic correlations and cross-sex-cross-trait genetic correlations.
 
-That is as far as we can go. We cannot use these sex-specific parameters to do predictions of genetic change under selection, at the moment, because in {\em dmm} version 2.1-1 the {\em gresponse} function cannot handle class-specific parameters. This will be available in future releases.
+That is as far as we can go. We cannot use these sex-specific parameters to do predictions of genetic change under selection, at the moment, because in {\em dmm} version 2.1-2 the {\em gresponse} function cannot handle class-specific parameters. This will be available in future releases.
 
 \subsection{Parameters specific to more than one factor}
 
 Assume that we now wish to extend the analysis of the sheep.df data , fitting 3 variance components "VarE(I)", "VarG(Ia)", and "VarG(Ma)". We will make "VarG(Ia)" sex-specific, as above, and we will make "VarG(Ma)" tb-specific. "Tb" stands for 'type of birth' and is a factor with 2 levels, "S" for single born lambs, and "T" for twin born lambs. The call to {\em dmm()} is as follows
 
 \begin{verbatim}
-sheep.fitssts <- dmm(sheep.mdf,Ymat ~ 1 + Tb,components="VarE(I)",
-    specific.components=list(Sex=c("VarG(Ia)"),Tb=c("VarG(Ma)")))
+> sheep.fitssts <- dmm(sheep.mdf,Ymat ~ 1 + Tb,components="VarE(I)",specific.components=list(Sex=c("VarG(Ia)"),Tb=c("VarG(Ma)")))
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a normal dataframe:
 Random effect partitioned into components: Residual:
@@ -735,65 +448,19 @@ no of fixed effect df (k) =  2
 no of traits (l) =  3 
 Setup antemodel matrices:
 No of factors with specific components: 2 
-effcodes:
-$Sex
-[1] "F" "M"
-
-$Tb
-[1] "S" "T"
-
-comcodes:
-$Sex
-[1] "Sex:F:F" "Sex:F:M" "Sex:M:F" "Sex:M:M"
-
-$Tb
-[1] "Tb:S:S" "Tb:S:T" "Tb:T:S" "Tb:T:T"
-
-effnandc:
-$Sex
-[1] "Sex:F" "Sex:M"
-
-$Tb
-[1] "Tb:S" "Tb:T"
-
 No of non-specific components partitioned: 1 
 No of factors with specific components: 2 
 No of specific variance components partitioned (per component): 4 
 No of specific variance and covariance components partitioned (per component): 8 
-Class names:
-           Sex1    Sex2     Tb1     Tb2 
-   "NS" "Sex:F" "Sex:M"  "Tb:S"  "Tb:T" 
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  36 
 Rank of X: 2   No of Fixed Effects: 2 
 DME substep:
-[1] "Sex:F:F:VarG(Ia)"
-[1] "Sex:F:M:VarG(Ia)"
-[1] "Sex:M:F:VarG(Ia)"
-[1] "Sex:M:M:VarG(Ia)"
-[1] "Tb:S:S:VarG(Ma)"
-[1] "Tb:S:T:VarG(Ma)"
-[1] "Tb:T:S:VarG(Ma)"
-[1] "Tb:T:T:VarG(Ma)"
+No of components defined =  9 
+No of components estimable =  9 
 Checking dyadic model equations:
 QR option on dyadic model equations:
 DME substep completed:
-[1] "Tb:S:T:VarG(Ma)"
-[1] "Tb:T:S:VarG(Ma)"
-[1] "Sex:F:M:VarG(Ia)"
-[1] "Sex:F:M:VarG(Ia)"
-[1] "Tb:S:T:VarG(Ma)"
-[1] "Sex:F:M:VarG(Ia)"
-[1] "Tb:T:S:VarG(Ma)"
-[1] "Sex:F:M:VarG(Ia)"
-[1] "Sex:M:F:VarG(Ia)"
-[1] "Sex:M:F:VarG(Ia)"
-[1] "Tb:S:T:VarG(Ma)"
-[1] "Sex:M:F:VarG(Ia)"
-[1] "Tb:T:S:VarG(Ma)"
-[1] "Sex:M:F:VarG(Ia)"
-[1] "Tb:S:T:VarG(Ma)"
-[1] "Tb:T:S:VarG(Ma)"
 OLS-b step completed:
 > 
 \end{verbatim}
@@ -911,9 +578,7 @@ The component or parameter labelled "VarP(I)" will always be specific to  all fa
 \subsection{More than one parameter specific to a factor}
 Assume that we now wish to change the analysis of the sheep.df data, so that components "VarG(Ia)" and "VarG(Ma)" are both Sex-specific.  The call to {\em dmm()} for this case is as folllows
 \begin{verbatim}
-sheep.fitss2<- dmm(sheep.mdf, Ymat ~ 1 + Year + Sex,
-    components=c("VarE(I)"),
-    specific.components=list(Sex=c("VarG(Ia)","VarG(Ma)")))
+> sheep.fitss2<- dmm(sheep.mdf, Ymat ~ 1 + Year + Sex,components=c("VarE(I)"),specific.components=list(Sex=c("VarG(Ia)","VarG(Ma)")))
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a normal dataframe:
 Random effect partitioned into components: Residual:
@@ -922,48 +587,23 @@ no of fixed effect df (k) =  9
 no of traits (l) =  3 
 Setup antemodel matrices:
 No of factors with specific components: 1 
-effcodes:
-$Sex
-[1] "F" "M"
-
-comcodes:
-$Sex
-[1] "Sex:F:F" "Sex:F:M" "Sex:M:F" "Sex:M:M"
-
-effnandc:
-$Sex
-[1] "Sex:F" "Sex:M"
-
 No of non-specific components partitioned: 1 
 No of factors with specific components: 1 
 No of specific variance components partitioned (per component): 2 
 No of specific variance and covariance components partitioned (per component): 8 
-Class names:
-           Sex1    Sex2 
-   "NS" "Sex:F" "Sex:M" 
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  37 
 Rank of X: 9   No of Fixed Effects: 9 
 DME substep:
-[1] "Sex:F:F:VarG(Ia)"
-[1] "Sex:F:M:VarG(Ia)"
-[1] "Sex:M:F:VarG(Ia)"
-[1] "Sex:M:M:VarG(Ia)"
-[1] "Sex:F:F:VarG(Ma)"
-[1] "Sex:F:M:VarG(Ma)"
-[1] "Sex:M:F:VarG(Ma)"
-[1] "Sex:M:M:VarG(Ma)"
+No of components defined =  9 
+No of components estimable =  9 
 Checking dyadic model equations:
 QR option on dyadic model equations:
 DME substep completed:
-[1] "Sex:F:M:VarG(Ia)"
-[1] "Sex:F:M:VarG(Ma)"
-[1] "Sex:M:F:VarG(Ia)"
-[1] "Sex:M:F:VarG(Ma)"
 OLS-b step completed:
 > 
 \end{verbatim}
-So we see that the {\em specific.components} argument  is now a list containing a single vector element called Sex, and this vector is of length two. So it makes two components Sex-specific. We shall not list the output from the various summary functions. It should be obvious to the user how to do that.
+So we see that the {\em specific.components} argument  is now a list containing a single vector element called Sex, and this vector is of length two. So it makes two components Sex-specific. We shall not list the output from the various summary functions. It should by now be obvious to the user how to do that.
 
 \section{Limitations and features}
 The way that  {\em dmm()} is set up to estimate class specific components opens the door to some new features ( compared to the usual method of defining separate classes as separate traits), but also imposes some restrictions.
@@ -974,7 +614,10 @@ The limitations first
 This will be addressed in a future release of {\em dmm()}.
 \item a component can not be made specific to more than one factor simultaneously. If you really want, for example, "VarG(Ia)" to be both Sex-specific and Tb-specific, you should define a new factor combining Sex and Tb in the data frame, and use that factor. This restriction occurs because the way {\em dmm()} sets up estimation equations for a class specific component amounts to a 'cell means' model. It fits the component to each class of a factor. It can not, for example, separate a component into two main effects and an interaction. It is felt that this corresponds to what a user wants from class-specific component estimation - one component estimate for each class of the population, not a study of fixed factor effects on components.
 \item Missing values ('NA') for a factor used to make class-specific components can be a problem, if the factor is not fitted as a fixed effect. This occurs because {\em dmm()} deals with 'NA's at the fixed model fitting stage. The way around the problem is to fit the factor as a fixed effect, even if you think its fixed effect negligable.
-\item In {\em dmm\_2.1-1} release, some components should never be made class-specific. These are "VarE(I)",  "CovE(I,M)", "CovE(M,I)","CovE(I,M\&!C)", "CovE(M\&!C,I)". The reason is that the cross-class covariances cannot be estimated for these components, but if they are listed in the {\em specific.components} argument, {\em dmm()} sets up equations to do all the within-class and cross-class covariances, and then fails because the equations are not of full rank. What should happen is that {\em dmm()} should set up just the within-class equations, for these components. The class specific within-class variances should be estimable, for these environmental components.   The reason that the cross-class components are not estimable for these individual environmental components, is that the class levels are mutually exclusive, so there is no cross-class replication. When it comes to class-specific factors such as Age, where the class levels may not be mutually exclusive, then the cross-class covariances should be estimable. So this problem has to be solved in conjuction with the first item above. What {\em dmm()} does at the moment is correct for the non-mutually-exclusive factors that it cannot handle, and wrong for the mutually exclusive factors that it can handle. This is really an embarassing oversight. It will be fixed in the next release.
+\item In {\em dmm\_2.1-2} release, any component can be made class-specific, as long as the specific factor has mutually exclusive classes. The components "VarE(I)",  "CovE(I,M)", "CovE(M,I)","CovE(I,M\&!C)", "CovE(M\&!C,I)" do not have estimable cross-class covariances, so these are excluded from the estimation process, and marked as NA.  {\em dmm()} only sets up  the within-class equations, for these components. The class specific within-class variances should be estimable, for these environmental components.
+
+   The reason that the cross-class components are not estimable for these individual environmental components, is that the class levels are mutually exclusive, so there is no cross-class replication. When it comes to class-specific factors such as Age, where the class levels may not be mutually exclusive, then the cross-class covariances should be estimable. 
+\item the function {\em gresponse()} can not at the moment handle class-specific genetic parameters. This will be addressed in a future release.
 \end{itemize}
  
 Now the features
@@ -983,7 +626,9 @@ Now the features
 \item  it is possible to make some components specific to one factor, and other components specific to another factor, and others nonspecific, all in the one model fit. See the second example in Section~\ref{sec:getstart}.
 \item it is possible to make more than one component specific to a single factor. See the third example in Section~\ref{sec:getstart}.
 \item  the factor(s) to which some components are class-specific can also be fitted as fixed effect(s) if one wishes, but they do not have to be. However see note above concerning 'NA's.
-\item the regrouping of variance components into specific classes, which occurrs after estimation and before their use in calculating genetic parameters, will occur whenever at least one component is class-specific. It is done to ensure components within each class sum to an appropriate phenotypic variance.
+\item the regrouping of variance components into specific classes, which occurrs after estimation and before their use in calculating genetic parameters, will occur whenever at least one component is class-specific. It is done to ensure components within each class sum to an appropriate phenotypic variance. 
+\item when one or more components are not class specific, the global estimate(s) is(are) used within each class, and the cross-class covariances for nonspecific component(s) are set to NA. This is what one is asserting in not making a component class specific - that it is the same for all classes. The cross-class covariances for non-specific component(s) should probably be set equal to the global variance estimate, so that the cross-class correlation becomes unity.
+\item when all components are not class specific, variance components are not regrouped into classes, and the output is the same as {\em dmm\_1.7-1}.
 \end{itemize}
 
 \section{Labelling of variance components}
@@ -999,6 +644,9 @@ The only ones of the above which are variances are single-trait, single-effect, 
 For genetic parameters {\em dmm()} uses the same labels as the corresponding variance or covariance component. 
 
 It is hoped that this approach does not lead to confusion. The labels are derived from the component names used in the {\em components=} and {\em specific.components=} arguments of the call to {\em dmm()}. The component names used in these arguments must chosen from the list of standard component names defined by the {\em make.ctable()} function. The labels are used to control program flow, as well as to label output so their form has to be strictly controlled.
+
+For each component, {\em dmm()} keeps both a short-component-name and a long-component-name.
+The short-component-name is the generic name as defined in {\em make.ctable()}. The long-component-name has the class information prepended, if the component is class-specific. In functions {\em csummary()} and {\em gsummary()} only the short-component-names are used as line labels, and the class information appears at the head of each table. The user should know, in this context, which componentsa are class specific. In the output of the {\em print()} and {\em summary()} functions the long-component-names are used as line-labels.
 
 
 \section{A dataset with 'known' results}
@@ -1022,40 +670,14 @@ OLS-b step:
 no of fixed effect df (k) =  2 
 no of traits (l) =  2 
 Setup antemodel matrices:
-[1] 1
-effcodes:
-$Sex
-[1] "F" "M"
-
-comcodes:
-$Sex
-[1] "Sex:F:F" "Sex:F:M" "Sex:M:F" "Sex:M:M"
-
-effnandc:
-$Sex
-[1] "Sex:F" "Sex:M"
-
 No of non-specific components partitioned: 1 
 No of factors with specific components: 1 
 No of specific variance components partitioned: 2 
 No of specific variance and covariance components partitioned: 12 
-           Sex1    Sex2 
-   "NS" "Sex:F" "Sex:M" 
 no of individuals in pedigree (m) =  5400 
 no of individuals with data and X codes (n) =  5400 
 Rank of X: 2   No of Fixed Effects: 2 
 DME substep:
-[1] "Sex:F:F:VarG(Ia)"
-[1] "Sex:F:M:VarG(Ia)"
-[1] "Sex:M:F:VarG(Ia)"
-[1] "Sex:M:M:VarG(Ia)"
-[1] "Sex:F:F:VarG(Id)"
-[1] "Sex:F:M:VarG(Id)"
-[1] "Sex:M:F:VarG(Id)"
-[1] "Sex:M:M:VarG(Id)"
-[1] "Sex:F:F:VarGs(Ia)"
-[1] "Sex:F:M:VarGs(Ia)"
-[1] "Sex:M:F:VarGs(Ia)"
 >
 > warcolak.fitsp
 Call:

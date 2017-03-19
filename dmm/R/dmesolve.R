@@ -191,6 +191,9 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
 
   ols.fixed.list <- list(b=b,seb=seb,vara=vara,totn=am$n,degf=degf)
 
+  if (am$v == 0) {
+    stop("No components defined:\n")
+  }
 #
 #
 # DME step:
@@ -207,6 +210,7 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
 
 # setup emat ( W matrix)- expectation matrix (also emat.qr and zaz = vmat)
     dyad.explist <- dyad.am.expect(am,gls,dmeopt) 
+    am$v <- dyad.explist$newv  # reduce v to no of estimable components
 
 #
 # calc siga from evec and emat
@@ -431,8 +435,15 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
 # make random.list
   ols.random.list <- list(siga=siga,sesiga=sesiga,vard=vard,degfd=degfd)
 
+# augment siga with inestmable components set to NA
+  ielist <- sigatoie(dyad.explist$cnames,dyad.explist$cnamesie,siga,vsiga,sesiga,am,nsf)
+# am$v <- ielist$vie  #  increment v to all components(est and inest)
+# siga <- ielist$sigaie
+# sesiga <- ielist$sesigaie
+# vsiga <- ielist$vsigaie
+
 # map siga int vc list of phencovclasses
-  vclist <- sigatovc(siga,vsiga,sesiga,am,nsf)
+  vclist <- sigatovc(ielist$siga,ielist$vsiga,ielist$sesiga,am,nsf)
 
 
     # genetic parameters
@@ -465,6 +476,8 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
    }
 
 #  GLS iteration of b's
+cat("v = ",am$v,"\n")
+cat("l = ",am$l,"\n")
    gls.list <- gls.iter.b(am, b, siga, dyad.explist, glsopt, dmeopt, ctable, ncomp.pcr, dmekeepfit)
 
      if(gls.list$ok) {
@@ -488,10 +501,18 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
       else {  # some specific factors
 
         cat("GLS genetic parameters with specific components:\n")
-# map siga int vc list of phencovclasses
-        vclist <- sigatovc(siga,vsiga,sesiga,am,nsf)
 
-#     genetic parameters for each phencovclass
+#  augment siga with inestimable components
+        ielist <- sigatoie(dyad.explist$cnames,dyad.explist$cnamesie,gls.list$siga,gls.list$vsiga,gls.list$sesiga,am,nsf)
+#       am$v <- ielist$vie  #  increment v to all components(est and inest)
+#       siga <- ielist$sigaie
+#       sesiga <- ielist$sesigaie
+#       vsiga <- ielist$vsigaie
+        
+#  map siga int vc list of phencovclasses
+        vclist <- sigatovc(ielist$siga,ielist$vsiga,ielist$sesiga,am,nsf)
+
+#  genetic parameters for each phencovclass
         gls.specific.genpar.list <- vector("list",length=length(vclist$phencovclasses))
          for ( ic in 1:length(vclist$phencovclasses)) {
            gls.specific.genpar.list[[ic]] <- comtopar.specific(nrow(vclist$vc[[ic]]), am$l, vclist$vc[[ic]], vara, vclist$var.vc[[ic]], vclist$se.vc[[ic]], ctable,ic,vclist$phencovclasses[ic],vclist$rownames.vc.long[[ic]],siga)

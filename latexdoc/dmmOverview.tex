@@ -12,8 +12,8 @@
 
 \title{ An Overview of the R Package dmm}
 \author{Neville Jackson }
-\date{4 Mar 2017 \\
-      For dmm\_2.1-1}   % Deleting this command produces today's date.
+\date{20 Mar 2017 \\
+      For dmm\_2.1-2}   % Deleting this command produces today's date.
 
  
 \begin{document} 
@@ -3874,6 +3874,9 @@ After running {\em dmm()} with either of the above options one would typically w
 
 The statistical properties and positive definite status of matrices obtained by combining trait pair (or block pair) estimates with differing replication are not known. It is simply a matter of doing the best one can with available data to estimate each element of the variance/covariance matrices, then hoping that combining all the elements does not lead to  matrices with undesirable properties.
 
+\subsection{Class-specific component estimates and genetic parameters}
+ From version 2.1-1 of {\em dmm()} or later component estimates  can be made specific to the classes of one or more specific factors. This feature is documented separately in dmmClassSpecific.pdf~\cite{jack:17}
+
 \clearpage
 \section{Computing strategy}
 The {\em dmm} package is written entirely in R. It does not directly use any of the available sparse matrix or parallel processing facilities. The R code is blatantly straightforward. All of the coding effort to date has been focused on ensuring correctness of the calculations. There may be room for some optimization later on.
@@ -5578,7 +5581,11 @@ Harvey, W.R. (1960) Least Squares Analysid of Data with Unequal Subclass
     Numbers. ARS-20-8 July 1960. Agricultural Research Service, USDA.
 
 \bibitem{jack:15}
-Jackson, N. (2015) Solving the Dyadic Model Equations. From http://cran.r-project.org/package=dmm  Or https://github.com/cran/dmm
+Jackson, N. (2015) Solving the Dyadic Model Equations. 
+    From https://github.com/nevillejackson/dmm
+
+\bibitem{jack:17}
+Jackson, N. (2017) Estimating class-specific genetic parameters with {\em dmm()}    From https://github.com/nevillejackson/dmm
 
 \bibitem{joui:11}
 Jouini, W. Le Guennec , D. and Moy, C  (2011) Log-Normal approximation of

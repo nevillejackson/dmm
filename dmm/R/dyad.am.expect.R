@@ -14,7 +14,7 @@ function(am, gls,dmeopt){
 # cat("mmat:\n")
 # print(mmat)
 #
-  dae <- list(cnames="VarE(I)",emat=matrix(0,am$n * am$n, am$v),vmat=matrix(0,am$n * am$n, am$v),icol=1)
+  dae <- list(cnames="VarE(I)",cnamesie=vector(mode="character",length=0),emat=matrix(0,am$n * am$n, am$v),vmat=matrix(0,am$n * am$n, am$v),icol=1,iecol=1)
 # initial values
 # cnames <- "VarE(I)"  # character vector
 # emat <- matrix(0,am$n * am$n, am$v)
@@ -35,12 +35,12 @@ function(am, gls,dmeopt){
         zpre <- eval(parse(text=paste("am$",pre,sep="")))
         zpost <- eval(parse(text=paste("am$",post,sep="")))
         rel <- eval(parse(text=paste("am$rel$",prel,sep="")))
-        dae <- dae.nonspecific(zpre,rel,zpost,mmat,am$components[kc],dae$cnames,dae$emat,dae$vmat,dae$icol,gls)
+        dae <- dae.nonspecific(zpre,rel,zpost,mmat,am$components[kc],dae$cnames,dae$cnamesie,dae$emat,dae$vmat,dae$icol,dae$iecol,gls)
       }
       else if((pre != "S") & (post != "S") & (prel == "I") ){ # cases with no rel matrix
         zpre <- eval(parse(text=paste("am$",pre,sep="")))
         zpost <- eval(parse(text=paste("am$",post,sep="")))
-        dae <- dae.nonspecific.I(zpre,zpost,mmat,am$components[kc],dae$cnames,dae$emat,dae$vmat,dae$icol,gls)
+        dae <- dae.nonspecific.I(zpre,zpost,mmat,am$components[kc],dae$cnames,dae$cnamesie,dae$emat,dae$vmat,dae$icol,dae$iecol,gls)
       }
       else if((pre == "S") & (post == "S") & (prel == "S") ) { # cases with 2 parts AND'ed
         indexs <- match(am$components[kc],ctable$cohort)
@@ -54,7 +54,7 @@ function(am, gls,dmeopt){
         zpre2 <- eval(parse(text=paste("am$",pre2,sep="")))
         zpost2 <- eval(parse(text=paste("am$",post2,sep="")))
         zop <- paste(" ",op," ",sep="")
-        dae <- dae.nonspecific.S(zpre1,zpost1,zpre2,zpost2,zop,mmat,am$components[kc],dae$cnames,dae$emat,dae$vmat,dae$icol,gls)
+        dae <- dae.nonspecific.S(zpre1,zpost1,zpre2,zpost2,zop,mmat,am$components[kc],dae$cnames,dae$cnamesie,dae$emat,dae$vmat,dae$icol,dae$iecol,gls)
       }
       else {   
         stop("Expectation for component not recognised:\n")
@@ -79,16 +79,15 @@ function(am, gls,dmeopt){
           zpre <- eval(parse(text=paste("am$",pre,sep="")))
           zpost <- eval(parse(text=paste("am$",post,sep="")))
           rel <- eval(parse(text=paste("am$rel$",prel,sep="")))
-          dae <- dae.specific(zpre, rel, zpost, mmat, kf ,am$specific.components[[kf]][lc], am$effnames,am$effcodes,am$effnandc,am$comcodes,dae$cnames,dae$emat,dae$vmat,dae$icol,gls)
+          dae <- dae.specific(zpre, rel, zpost, mmat, kf ,am$specific.components[[kf]][lc], am$effnames,am$effcodes,am$effnandc,am$comcodes,am$varcodes,dae$cnames,dae$cnamesie,dae$emat,dae$vmat,dae$icol,dae$iecol,gls,ctable)
         }
         else if((pre != "S") & (post != "S") & (prel == "I") ) {  # cases with no rel matrix
           zpre <- eval(parse(text=paste("am$",pre,sep="")))
           zpost <- eval(parse(text=paste("am$",post,sep="")))
-          dae <- dae.specific.I(zpre, zpost, mmat, kf ,am$specific.components[[kf]][lc], am$effnames,am$effcodes,am$effnandc,am$comcodes,dae$cnames,dae$emat,dae$vmat,dae$icol,gls)
+          dae <- dae.specific.I(zpre, zpost, mmat, kf ,am$specific.components[[kf]][lc], am$effnames,am$effcodes,am$effnandc,am$comcodes,am$varcodes,dae$cnames,dae$cnamesie,dae$emat,dae$vmat,dae$icol,dae$iecol,gls,ctable)
         }
         else if((pre == "S") & (post == "S") & (prel == "S") ) {  # cases with 2 parts ANDed
       indexs <- match(am$specific.components[[kf]][lc],ctable$cohort)
-cat("indexs:\n")
       pre1 <- ctable$cohortzpre1[indexs]
       pre2 <- ctable$cohortzpre2[indexs]
       post1 <- ctable$cohortzpost1[indexs]
@@ -99,7 +98,7 @@ cat("indexs:\n")
       zpre2 <- eval(parse(text=paste("am$",pre2,sep="")))
       zpost2 <- eval(parse(text=paste("am$",post2,sep="")))
       zop <- paste(" ",op," ",sep="")
-      dae <- dae.specific.S(zpre1,zpost1,zpre2,zpost2,zop,mmat,kf,am$specific.components[[kf]][lc],am$effnames,am$effcodes,am$effnandc,am$comcodes,dae$cnames,dae$emat,dae$vmat,dae$icol,gls)
+      dae <- dae.specific.S(zpre1,zpost1,zpre2,zpost2,zop,mmat,kf,am$specific.components[[kf]][lc],am$effnames,am$effcodes,am$effnandc,am$comcodes,am$varcodes,dae$cnames,dae$cnamesie,dae$emat,dae$vmat,dae$icol,dae$iecol,gls,ctable)
         }
         else {
           stop("Expectation for component not recognised:\n")
@@ -107,29 +106,40 @@ cat("indexs:\n")
       }
     }
   }
+#
+# resize emat cols <- dae$icol which is less than am$v if VarE(I) specific
+# reset am$v
+  cat("No of components defined = ",am$v,"\n")
+  am$v <- dae$icol - 1
+  cat("No of components estimable = ",am$v,"\n")
+  emat <- matrix(dae$emat[,1:am$v],am$n * am$n, am$v)
+  dimnames(emat) <- list(NULL,dae$cnames)
 
+  vmat <- NULL
+  if(gls) {
+    vmat <- matrix(dae$vmat[,1:am$v],am$n * am$n, am$v)
+    dimnames(vmat) <- list(NULL,dae$cnames)
+  }
 
 # summarize emat
-  dimnames(dae$emat) <- list(NULL,dae$cnames)
-  dimnames(dae$vmat) <- list(NULL,dae$cnames)
     cat("Checking dyadic model equations:\n")
 #   cat("emat:\n")
 #   print(dae$emat)
-#   emat.sum <- apply(dae$emat,2,sum)
+#   emat.sum <- apply(emat,2,sum)
 #   cat("column.sums:\n")
 #   print(emat.sum)
-    emat.mean <- apply(dae$emat,2,mean)
+    emat.mean <- apply(emat,2,mean)
 #   cat("column.means:\n")
 #   print(emat.mean)
-    emat.var <- apply(dae$emat,2,var)
+    emat.var <- apply(emat,2,var)
 #   cat("column.variances:\n")
 #   print(emat.var)
-    emat.cor <- cor(dae$emat,dae$emat)
+    emat.cor <- cor(emat,dae$emat)
 #   cat("column.correlations:\n")
 #   print(emat.cor)
 
 #  do QR transform on emat
-  emat.qr <- qr(dae$emat)
+  emat.qr <- qr(emat)
 
 # check emat for E'E positive definite - ie emat.qr$rank should be am$v
   if(emat.qr$rank != am$v) {
@@ -145,7 +155,9 @@ cat("indexs:\n")
     vmat.qr <- NULL
   }
 
-  explist <- list(emat=dae$emat, emat.qr=emat.qr, cnames=dae$cnames, vmat=dae$vmat, vmat.qr=vmat.qr,
-                  emat.mean=emat.mean,emat.var=emat.var,emat.cor=emat.cor) 
+  explist <- list(emat=emat, emat.qr=emat.qr,
+       vmat=vmat, vmat.qr=vmat.qr,emat.mean=emat.mean,
+       emat.var=emat.var,emat.cor=emat.cor, newv=am$v,
+       cnames=dae$cnames,cnamesie=dae$cnamesie) 
   return(explist)
 }

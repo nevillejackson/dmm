@@ -52,12 +52,14 @@ function (mdf,df, k, l, x, y, cohortparts, components,specific.components,
   effnames <- names(specific.components) # ie "Sex", "Age", ..
   effcodes <- vector("list",length=nsf)  # effect codes
   comcodes <- vector("list",length=nsf)  # var/cov component codes
+  varcodes <- vector("list",length=nsf)  # car component codes
   nsc <- 0   # no of specific components across all factors
   nsvc <- 0  # no of specific var/cov components across all factors
   if(nsf > 0) {
     for (i in 1:nsf) {
       effcodes[[i]] <- levels(df[,effnames[i]])
       comcodes[[i]] <- combpaste(effnames[i],permpaste(effcodes[[i]]))
+      varcodes[[i]] <- combpaste(effnames[i],selfpaste(effcodes[[i]]))
       effnandc[[i]] <- combpaste(effnames[i],effcodes[[i]])
       nsc <- nsc + length(effcodes[[i]])
       nsvc <- nsvc + length(comcodes[[i]]) * length(specific.components[[i]])  # includes cross-factor covs
@@ -65,12 +67,12 @@ function (mdf,df, k, l, x, y, cohortparts, components,specific.components,
   names(effcodes) <- effnames
   names(comcodes) <- effnames
   names(effnandc) <- effnames
-  cat("effcodes:\n")
-  print(effcodes)
-  cat("comcodes:\n")
-  print(comcodes)
-  cat("effnandc:\n")
-  print(effnandc)
+# cat("effcodes:\n")
+# print(effcodes)
+# cat("comcodes:\n")
+# print(comcodes)
+# cat("effnandc:\n")
+# print(effnandc)
   }
   nc <- nnsc + nsc  # total no of components fitted
   cat("No of non-specific components partitioned:",nnsc,"\n")
@@ -84,8 +86,6 @@ function (mdf,df, k, l, x, y, cohortparts, components,specific.components,
   nzi <- 1 + nsc
   zi <- vector("list",length = nzi)
   zinames <- c("NS",unlist(effnandc))
-  cat("Class names:\n")
-  print(zinames) # unlist() names the elements Sex1, Sex2, Tb1, Tb2
   names(zi) <- zinames # name of "NS" is blank
 
 # construct each element ( matrix) of zi and add it to list zi
@@ -193,6 +193,8 @@ function (mdf,df, k, l, x, y, cohortparts, components,specific.components,
   }
 
 
+
+
 # Common cohort env effect ( same cohort)
 # All cohort factors must be in df and in cohort formula
 # zc - incidence of measured individuals in cohorts (n x ncohorts)
@@ -224,8 +226,6 @@ function (mdf,df, k, l, x, y, cohortparts, components,specific.components,
     }
 
     if(nrow(zi$NS) != nrow(zc$NS)) {
-      cat("nrows in zi$NS = ",nrow(zi$NS),"\n")
-      cat("nrows in zc$NS = ",nrow(zc$NS),"\n")
       stop("these must be equal:\n")
     }
   }
@@ -261,6 +261,8 @@ function (mdf,df, k, l, x, y, cohortparts, components,specific.components,
       }
     }
   }
+
+
 
 #
 # Setup relationship matrices
@@ -348,7 +350,7 @@ function (mdf,df, k, l, x, y, cohortparts, components,specific.components,
 
 
 # construct the am list object
-  am <- list(m=m,n=n,k=k,l=l,v=nnsc + nsvc,x=x,y=y,zi=zi,zm=zm,zc=zc,rel=rel,components=components,specific.components=specific.components,zinames=zinames,effnames=effnames,effcodes=effcodes,effnandc=effnandc,comcodes=comcodes,nnsc=nnsc,nsc=nsc,nc=nc,nsvc=nsvc)
+  am <- list(m=m,n=n,k=k,l=l,v=nnsc + nsvc,x=x,y=y,zi=zi,zm=zm,zc=zc,rel=rel,components=components,specific.components=specific.components,zinames=zinames,effnames=effnames,effcodes=effcodes,effnandc=effnandc,comcodes=comcodes,varcodes=varcodes,nnsc=nnsc,nsc=nsc,nc=nc,nsvc=nsvc)
  
   return(am)
 }

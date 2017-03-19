@@ -48,9 +48,11 @@
 \alias{print.csumspecific.dmm}
 \alias{print.gsummarytables.dmm}
 \alias{print.gsumspecific.dmm}
+\alias{selfpaste}
 \alias{separ}
 \alias{siga.posdef}
 \alias{siga.posdef.specific}
+\alias{sigatoie}
 \alias{sigatovc}
 \alias{traitpairstotraits}
 \alias{varlz}
@@ -79,19 +81,21 @@ covt(v, l, vsiga, il, jl, kl)
 crossclasscovtopar(covx, covt, var1, var2)
 crosseffectcovtopar(covx, covt, varcomp, var1, var2)
 csummary.specific(object, traitset, componentset, bytrait, gls, digits, ...)
-dae.nonspecific.I(zpre, zpost, mmat, componentname, cnames,
-     emat, vmat, icol, gls)
-dae.nonspecific(zpre, rel, zpost, mmat, componentname, cnames,
-     emat, vmat, icol, gls)
+dae.nonspecific.I(zpre, zpost, mmat, componentname, cnames, cnamesie,
+     emat, vmat, icol, iecol, gls)
+dae.nonspecific(zpre, rel, zpost, mmat, componentname, cnames, cnamesie,
+     emat, vmat, icol, iecol, gls)
 dae.nonspecific.S(zpre1, zpost1, zpre2, zpost2, zop, mmat,
-     componentname, cnames, emat, vmat, icol, gls)
+     componentname, cnames, cnamesie, emat, vmat, icol, iecol, gls)
 dae.specific.I(zpre, zpost, mmat, factorno, componentname,
-     effnames, effcodes, effnandc, comcodes, cnames, emat, vmat, icol, gls)
+     effnames, effcodes, effnandc, comcodes, varcodes, cnames, cnamesie,
+     emat, vmat, icol, iecol, gls, ctable)
 dae.specific(zpre, rel, zpost, mmat, factorno, componentname,
-     effnames, effcodes, effnandc, comcodes, cnames, emat, vmat, icol, gls)
+     effnames, effcodes, effnandc, comcodes, varcodes, cnames, cnamesie,
+     emat, vmat, icol, iecol, gls, ctable)
 dae.specific.S(zpre1, zpost1, zpre2, zpost2, zop, mmat, factorno,
-     componentname, effnames, effcodes, effnandc, comcodes, cnames,
-     emat, vmat, icol, gls)
+     componentname, effnames, effcodes, effnandc, comcodes, varcodes,
+     cnames, cnamesie, emat, vmat, icol, iecol, gls, ctable)
 dmesolve(mdf, fixform = Ymat ~ 1, components = c("VarE(I)", "VarG(Ia)"),
      specific.components = NULL, cohortform = NULL, posdef = T, gls = F,
      glsopt = list(maxiter = 200, bdamp = 0.8, stoptol = 0.01),
@@ -131,9 +135,11 @@ print.csummarytables.dmm(x, ...)
 print.gsumspecific.dmm(x, ...)
 print.gsummarytables.dmm(x, ...)
 print.gsumspecific.dmm(x, ...)
+selfpaste(x)
 separ(siga, vsiga, v, l, fracta, correa)
 siga.posdef(siga, am, ctable, varopt = "both", covopt = "bound")
 siga.posdef.specific(siga, am, ctable, varopt = "both", covopt = "bound")
+sigatoie(cnames,cnamesie,siga,vsiga,sesiga,am,nsf)
 sigatovc(siga, vsiga, sesiga, am, nsf)
 traitpairstotraits(tp)
 varlz(vz, z)

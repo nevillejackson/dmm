@@ -52,17 +52,11 @@ function(vc, ic, rownames.vc.long, siga, am, ctable,varopt="both",covopt="bound"
         if(!is.var(rownames.vc.long[[ic]][i]) ) {  #  cross-class variance
 
           # need to find corresponding variances
- cat("cross-class-cov:\n")
- print(rownames.vc.long[[ic]][i])
           varlist <- match.vars(rownames.vc.long[[ic]][i])
-print(varlist)
-print(vc[[varlist$var1class]])
 #         var1 <- siga[varlist$var1name,]
 #         var2 <- siga[varlist$var2name,]
           var1 <- vc[[varlist$var1class]][varlist$genericname,]
           var2 <- vc[[varlist$var2class]][varlist$genericname,]
-#cat("var1 ",var1,"\n")
-#cat("var2 ",var2,"\n")
 
          for( j in 1 : am$l) {
            jj <- (j-1)*am$l + j
@@ -87,8 +81,6 @@ print(vc[[varlist$var1class]])
            }
          }
         }  # end if cross-class-cov
-#cat("thisvc:\n")
-#print(thisvc[i,])
       }  # end if is a var
     }  # end for
     vc[[ic]] <- thisvc
@@ -171,7 +163,6 @@ print(vc[[varlist$var1class]])
             c1 <- match("VarE(M&C)", rownames(thisvc))
             c2 <- match("VarE(I)", rownames(thisvc))
           } 
-#  cat("i = ",i," c1 = ",c1," c2 = ",c2,"\n")
          for( j in 1 : am$l) {
            jj <- (j-1)*am$l + j
            for(k in 1 : am$l) {
@@ -206,15 +197,11 @@ print(vc[[varlist$var1class]])
       if(!any(!is.na(match(rownames(thisvc)[i],ctable$allvar)))){ # is it a cov?
         if(!is.var(rownames.vc.long[[ic]][i]) ) {  #  cross-class cov 
 
- cat("cross-class-cov:\n")
-#print(rownames.vc.long[[ic]][i])
           varlist <- match.crosseffect.vars(rownames.vc.long[[ic]][i])
 #         var1 <- siga[varlist$var1name,]
 #         var2 <- siga[varlist$var2name,]
           var1 <- vc[[varlist$var1class]][varlist$genericname1,]
           var2 <- vc[[varlist$var2class]][varlist$genericname2,]
-#cat("var1 ",var1,"\n")
-#cat("var2 ",var2,"\n")
 
          for( j in 1 : am$l) {
            jj <- (j-1)*am$l + j

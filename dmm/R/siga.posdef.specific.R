@@ -51,16 +51,11 @@ function(siga, am, ctable,varopt="both",covopt="bound"){
         if(is.crossclass(rownames(siga)[i])) { # cross class variance
 
           # need to find corresponding variances
-#cat("cross-class-cov:\n")
-#print(rownames(siga)[i])
           varlist <- match.vars(rownames(siga)[i])
-#print(varlist)
           var1 <- siga[varlist$var1name,]
           var2 <- siga[varlist$var2name,]
 #         var1 <- vc[[varlist$var1class]][varlist$genericname,]
 #         var2 <- vc[[varlist$var2class]][varlist$genericname,]
-#cat("var1 ",var1,"\n")
-#cat("var2 ",var2,"\n")
 
          for( j in 1 : am$l) {
            jj <- (j-1)*am$l + j
@@ -85,8 +80,6 @@ function(siga, am, ctable,varopt="both",covopt="bound"){
            }
          }
         }  # end if cross-class-cov
-#cat("siga:\n")
-#print(siga[i,])
       }  # end if is a var
     }  # end for
 
@@ -96,15 +89,11 @@ function(siga, am, ctable,varopt="both",covopt="bound"){
         # cross-effect covariance - keep correlation in bounds
         if(!is.specific(rownames(siga)[i]) | is.withinclass(rownames(siga)[i])){  # nonspecific or within  class
 
-#cat("cross-class-cov:\n")
-#print(rownames(siga)[i])
           varlist <- match.crosseffect.vars(rownames(siga)[i])
           var1 <- siga[varlist$var1name,]
           var2 <- siga[varlist$var2name,]
 #         var1 <- vc[[varlist$var1class]][varlist$genericname1,]
 #         var2 <- vc[[varlist$var2class]][varlist$genericname2,]
-#cat("var1 ",var1,"\n")
-#cat("var2 ",var2,"\n")
           c1 <- varlist$var1name
           c2 <- varlist$var2name
 
@@ -141,15 +130,11 @@ function(siga, am, ctable,varopt="both",covopt="bound"){
       if(is.cecov(rownames(siga)[i],ctable$allcov)) {  # is a crosseffect cov
         if(is.crossclass(rownames(siga)[i])) {  # is cross-class and a cov
 
-#cat("cross-class-cov:\n")
-#print(rownames(siga)[i])
           varlist <- match.crosseffect.vars(rownames(siga)[i])
           var1 <- siga[varlist$var1name,]
           var2 <- siga[varlist$var2name,]
 #         var1 <- vc[[varlist$var1class]][varlist$genericname1,]
 #         var2 <- vc[[varlist$var2class]][varlist$genericname2,]
-#cat("var1 ",var1,"\n")
-#cat("var2 ",var2,"\n")
 
          for( j in 1 : am$l) {
            jj <- (j-1)*am$l + j

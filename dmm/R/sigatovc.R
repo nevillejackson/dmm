@@ -101,9 +101,6 @@ function(siga,vsiga,sesiga,am,nsf)
     names(vc) <- phencovclasses
     names(se.vc) <- names(vc)
     names(var.vc) <- names(vc)
-#print(vc)
-#print(se.vc)
-#print(var.vc)
 
 #   save long and short rownames
     rownames.vc.long <- vector("list",length=length(phencovclasses))
@@ -135,21 +132,6 @@ function(siga,vsiga,sesiga,am,nsf)
       colnames(var.vc[[ic]]) <- rownames.var.vc.short[[ic]]
     }
 # 
-#   vc's to genetic parameters for each phencovclass
-#cat("phencovclasses:\n")
-#print(phencovclasses)
-#cat("Variance components before posdef:\n")
-#print(vc)
-
-#   for ( ic in 1:length(phencovclasses)) {
-#     # check for posdef
-#     if(posdef) {
-#       vc <- vc.posdef(vc,ic,rownames.vc.long,siga,am,ctable)
-#     }
-#   }
-#     # save the fitted vc's after posdef  how? not in siga?
-#cat("Variance components after posdef:\n")
-#print(vc)
 
   outlist <- list(vc=vc,se.vc=se.vc,var.vc=var.vc,phencovclasses=phencovclasses,rownames.vc.short=rownames.vc.short,rownames.vc.long=rownames.vc.long,rownames.se.vc.short=rownames.se.vc.short,rownames.se.vc.long=rownames.se.vc.long,rownames.var.vc.short=rownames.var.vc.short,rownams.var.vc.long=rownames.var.vc.long)
   return(outlist)
