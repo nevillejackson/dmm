@@ -1,3 +1,5 @@
+dmm_2.1-2       VarE(I) and friends can be class specific
+
 dmm_2.1-1	Variance components and genetic parameters specific to 
                 fixed factor classes
 
