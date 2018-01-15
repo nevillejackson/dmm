@@ -12,8 +12,8 @@
 
 \title{ An Overview of the R Package dmm}
 \author{Neville Jackson }
-\date{20 Mar 2017 \\
-      For dmm\_2.1-2}   % Deleting this command produces today's date.
+\date{15 Jan 2018 \\
+      For dmm\_2.1-3}   % Deleting this command produces today's date.
 
  
 \begin{document} 
@@ -2605,6 +2605,30 @@ and their standard errors are obtained  from
 where $\mbox{\boldmath $\Sigma = \Delta \Delta^{\prime}/(n^{2}-v)$}$ is the $(l \times l)$ covariance matrix of residuals from model~\ref{eq.eighth}. Again $\mbox{\boldmath $(W^{\prime}W)^{-1}$}$ is not computed that way, but is obtained from the QR decomposition of $\mbox{\boldmath $W$}$. 
 
 Because these expressions are exact, given the usual assumptions in regression models, the standard errors of component estimates from {\em dmm()} are likely to be smaller than those obtained other procedures which employ numerical approximations. This is born out in the examples.
+
+\subsubsection{Problems with variance component estimation}
+A common problem in partitioning residual variance after fixed effects are fitted into a number of variance components is to encounter the following message from {\em dmm()}.
+\begin{verbatim}
+Error in dyad.am.expect(am, gls, dmeopt) : 
+  Dyadic model equations not of full rank:
+   either omit some components or try dmeopt='pcr' 
+\end{verbatim}
+This means that the set of components fitted is more than can be estimated from the data. There are a  number of ways of dealing with this situation
+\begin{itemize}
+\item omit some of the components, rerun dmm() and see if the problem disappears
+\item start with a  minimal set of components (eg components=c("VarE(I)","VarG(Ia)")), and sequentially add components until the problem occurs
+\item use dmeopt="pcr" to force dmm() to produce an output object, then look at the correlations among the columns of the dyadic model equations matrix (W matrix) using {\em print(dmmobject\$dme.correl)} 
+\item as from dmm\_2.1-3 a dmm output object will be returned when the 'not of full rank' message occurs, so there is no need to use dmeopt="pcr", you can inspect the correlations of the columns of the W matrix directly with {\em print(dmmobject\$dme.correl)}
+\end{itemize}
+
+Deciding which components can be estimated from a particular pedigree is not always easy. There are some general rules
+\begin{itemize}
+\item to partition individual variation into VarE(I) and VarG(Ia) there must be some individuals in the pedigree which are related ( ie have a relationship coefficient other than zero). If the relationship matrix is an identity ( all individuals unrelated) the above partitioning is impossible. In general this means that at least a 2 generation pedigree is required to partition individual effects.
+\item to partition maternallvariation into VarE(M) and VarG(Ma) there must be some dams in the pedigree which are related. In general this means that at least a 3 generation pedigree is required to partition maternal effects.
+\item to partition sexlinked genetic variation the must be individuals of both sexex present in the pediggree and having observations.
+\end{itemize}
+
+The easiest way to see if a particular pedigree design will estimate the components one desires is to construct an artificial dataset with that pedigree and attempt to analyse it.
 
 \clearpage
 \subsection{Genetic parameters and their standard errors}

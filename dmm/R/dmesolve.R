@@ -1,5 +1,5 @@
 dmesolve <-
-function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.components=NULL,cohortform=NULL,posdef=T,gls=F,glsopt=list(maxiter=200,bdamp=0.8,stoptol=0.01), dmeopt="qr",ncomp.pcr="rank",relmat="inline",dmekeep=F,dmekeepfit=F) {
+function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.components=NULL,repeat.components=NULL,cohortform=NULL,posdef=T,gls=F,glsopt=list(maxiter=200,bdamp=0.8,stoptol=0.01), dmeopt="qr",ncomp.pcr="rank",relmat="inline",dmekeep=F,dmekeepfit=F) {
 # dmesolve() - dyadic model equations solved by ols and (optionally) gls
   #
   # fixform is the model formula for fixed effects
@@ -38,6 +38,15 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
     for(i in 1:length(specific.components)) {
       if(any(is.na(match(specific.components[[i]],ctable$all)))){ 
         print(specific.components[i])
+        stop("Component(s) not recognized:\n")
+      }
+    }
+  }
+# check repeat components in ctable()
+  if(!is.null(repeat.components)){
+    for(i in 1:length(repeat.components)) {
+      if(any(is.na(match(repeat.components[[i]],ctable$all)))){
+        print(repeat.components[i])
         stop("Component(s) not recognized:\n")
       }
     }
@@ -131,7 +140,8 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
 # am is an antemodel object containing k,l,m,n,r,v,Z1,..Zr,Rel,..Rel,X,Y,...
   cat("Setup antemodel matrices:\n")
   am <- am.zandrel(mdf,df,k,l,as.matrix(fixed.aov$x),as.matrix(fixed.aov$y),
-                   cohortparts,components,specific.components,relmat,ctable)
+             cohortparts,components,specific.components,
+             repeat.components,relmat,ctable)
   if( l == 1) {
 #   dimnames(am$y) <- list(NULL,"Ymat")   #list(NULL,dimnames(df[[2]])[dimnames(df)[[2]] == "Ymat"]])
     dimnames(am$y) <- list(NULL,as.character(terms(fixform)[[2]]))
@@ -222,7 +232,12 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
     else{
       dme.exp.list <- list(dme.mean=dyad.explist$emat.mean,dme.var=dyad.explist$emat.var,dme.correl=dyad.explist$emat.cor)
     }
-
+#  exit with saved output if not full rank
+    if(!dyad.explist$fullrank) {
+      ols.list <- c(aov.list,ols.fixed.list,dme.exp.list)
+      return(ols.list)
+    }
+#
 # fit options for DME's
   if(dmeopt == "qr") {
     cat("QR option on dyadic model equations:\n")
@@ -233,8 +248,8 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
 #   print(vard)
     vsiga <- kronecker(vard, solve(crossprod(qr.R(dyad.explist$emat.qr))), make.dimnames=T)
     sesiga <- matrix(sqrt(diag(vsiga)), am$v, am$l * am$l, dimnames=dimnames(siga))
-#   cat("vsiga:\n")
-#   print(vsiga)
+#  cat("vsiga:\n")
+#  print(vsiga)
 #   cat("sesiga:\n")
 #   print(sesiga)
     if(dmekeepfit) {
