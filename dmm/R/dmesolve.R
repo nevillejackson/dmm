@@ -1,5 +1,5 @@
 dmesolve <-
-function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.components=NULL,repeat.components=NULL,cohortform=NULL,posdef=T,gls=F,glsopt=list(maxiter=200,bdamp=0.8,stoptol=0.01), dmeopt="qr",ncomp.pcr="rank",relmat="inline",dmekeep=F,dmekeepfit=F) {
+function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.components=NULL,cohortform=NULL,posdef=T,gls=F,glsopt=list(maxiter=200,bdamp=0.8,stoptol=0.01), dmeopt="qr",ncomp.pcr="rank",relmat="inline",dmekeep=F,dmekeepfit=F) {
 # dmesolve() - dyadic model equations solved by ols and (optionally) gls
   #
   # fixform is the model formula for fixed effects
@@ -38,15 +38,6 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
     for(i in 1:length(specific.components)) {
       if(any(is.na(match(specific.components[[i]],ctable$all)))){ 
         print(specific.components[i])
-        stop("Component(s) not recognized:\n")
-      }
-    }
-  }
-# check repeat components in ctable()
-  if(!is.null(repeat.components)){
-    for(i in 1:length(repeat.components)) {
-      if(any(is.na(match(repeat.components[[i]],ctable$all)))){
-        print(repeat.components[i])
         stop("Component(s) not recognized:\n")
       }
     }
@@ -141,7 +132,7 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
   cat("Setup antemodel matrices:\n")
   am <- am.zandrel(mdf,df,k,l,as.matrix(fixed.aov$x),as.matrix(fixed.aov$y),
              cohortparts,components,specific.components,
-             repeat.components,relmat,ctable)
+             relmat,ctable)
   if( l == 1) {
 #   dimnames(am$y) <- list(NULL,"Ymat")   #list(NULL,dimnames(df[[2]])[dimnames(df)[[2]] == "Ymat"]])
     dimnames(am$y) <- list(NULL,as.character(terms(fixform)[[2]]))
