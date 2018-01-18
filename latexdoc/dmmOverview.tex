@@ -1440,7 +1440,7 @@ VarP(I)   t2_s:t2_s 9.62e-02 0.001025  0.09418 0.09820
 \end{verbatim}
 What we expect to get here is near-zero for all of the components except VarGs(Ia), which should be close to its sample value. We find that the estimate of VarGs(Ia) is indeed very close to its sample value for females of 0.0935. Much closer than the estimate of VarGs(Ia) of 0.0776 obtained above from analysis of the phenotypic values for Trait 2. We conclude that there is some evidence that the collinearities among columns of the $W$ matrix for components has affected estimation of components.  Some consideration could be given to using principal component regression in this case. We will not do that here, there is a section~\ref{pcreg} demonstrating principal component regression.
 
-As far as {\em dmm()} is concerned all of the analyses of the {\em warcolak} dataset indicate that it is performing correctly. We conclude with a word of caution. The above analyses ignore the possibility that genetic parameters are sex-specific. While this is OK for {\em warcolak} because we know from the simulation that genetic effects do not differ between the sexes, it should not be assumed in general. There is work ongoing to make {\em dmm} do sex-specific analyses. 
+As far as {\em dmm()} is concerned all of the analyses of the {\em warcolak} dataset indicate that it is performing correctly. We conclude with a word of caution. The above analyses ignore the possibility that genetic parameters are sex-specific. While this is OK for {\em warcolak} because we know from the simulation that genetic effects do not differ between the sexes, it should not be assumed in general. It is possible to use {\em dmm} to perform sex-specific analyses. See the separate document {\em dmmClassSpecific.pdf}. 
 
 \clearpage
 \subsection{The Harvey dataset}
@@ -2629,6 +2629,8 @@ Deciding which components can be estimated from a particular pedigree is not alw
 \end{itemize}
 
 The easiest way to see if a particular pedigree design will estimate the components one desires is to construct an artificial dataset with that pedigree and attempt to analyse it.
+
+I would like to thank Paloma Moran Martinez for bringing these issues to my attention.
 
 \clearpage
 \subsection{Genetic parameters and their standard errors}
