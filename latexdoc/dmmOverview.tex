@@ -12,8 +12,8 @@
 
 \title{ An Overview of the R Package dmm}
 \author{Neville Jackson }
-\date{15 Jan 2018 \\
-      For dmm\_2.1-3}   % Deleting this command produces today's date.
+\date{17 May 2018 \\
+      For dmm\_2.1-4}   % Deleting this command produces today's date.
 
  
 \begin{document} 
@@ -2241,7 +2241,7 @@ VarP(I)     Ymat:Ymat  8.72e+01   7.63  72.28 102.20
  
 The population values for these data are VarE(I) = 35, VarG(Ia) = 40, VarE(M) = 15, VarG(Ma) = 20, and CovG(Ia,Ma) = -5. I am assuming that what Karin Meyer calls a 'c-squared' effect' is actually VarE(M).  Only for two components do the confidence limits include the population value. It is a small sample and there are problems with the model noted above. 
 
-What we can conclude from this somewhat unsatisfactory exposition, is that {\em dmm()} will not always agree with REML, and that we should avoid trying to use a pathological dataset to compare results from different programs.  A larger sample would be desirable for simulated data.
+What we can conclude from this somewhat unsatisfactory exposition, is that {\em dmm()} will not always agree with REML, and that we should avoid trying to use a pathological dataset to compare results from different programs.  The example is pathological because the given result for DFREML is with a model that omits important significant variance components. The 'omitted variable' effect is operating here - we do not know how the omitted maternal additive genetic variance will be redistributed among the other variances when it is omitted. A larger sample would also be desirable for simulated data.
 
 
 \clearpage
