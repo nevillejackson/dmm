@@ -12,7 +12,7 @@
 
 \title{ An Overview of the R Package dmm}
 \author{Neville Jackson }
-\date{17 May 2018 \\
+\date{14 Jun 2018 \\
       For dmm\_2.1-4}   % Deleting this command produces today's date.
 
  
@@ -2317,12 +2317,22 @@ if we postulate only additive genetic maternal effects that are both sex-linked 
 
 for only individual additive genetic effects.
 
+\subsubsection{Effects due to maternal founder line and paternal founder line}
+All of the effects defined in Table~\ref{tab.indiv} and Table~\ref{tab.mat} are from genes at autosomal loci. The effects defined in Table~\ref{tab.imsex} are from genes on the sex chromosome ( X chromosome in mammals). There are other possible genetic effects. Other possibilities are cytoplasmic inheritance ( via mitochondrial DNA in mammmals or plasmid DNA in plants), and Y chromosome genes ( carried by males in mammals).
+
+The way that these effects are analysed is to divide the pedigree into maternal ( or paternal) founder lines; that is groups of individuals which trace back to one base generation female ( or male). 
+Table~\ref{tab.line} defines maternal founder line and paternal founder line effects used in versions of {\em dmm()} from dmm\_2.1-4 onward. 
+
+\input{tabline.tex}
+
+The components defined in Table~\ref{tab.line} are additive  in their contribution to individual phenotype and are independent of all other effects. 
+
 \subsubsection{Estimation of effects}
 	There are techniques (commonly known as BLUP) for estimating any of the above genetic effects for each individual in a population, given adequate data, pedigree information, and estimates of genetic parameters. These techniques are not the province of {\em dmm()}. {\em dmm()} is a procedure for estimation of genetic parameters. Genetic parameters depend on the variances (and sometimes covariances) of effects. So we proceed to these.
 
 
 \subsubsection{Variances of effects}
- For each of the effects defined in Tables~\ref{tab.indiv},~\ref{tab.mat} and ~\ref{tab.imsex}, there is a sample variance, and a population variance about which we might wish to make inferences. The statistical methods used by {\em dmm()} to estimate population variance components are covered in section~\ref{stat}. Here we will just focus on the genetic aspects.
+ For each of the effects defined in Tables~\ref{tab.indiv},~\ref{tab.mat} , ~\ref{tab.imsex} and ~\ref{tab.line}, there is a sample variance, and a population variance about which we might wish to make inferences. The statistical methods used by {\em dmm()} to estimate population variance components are covered in section~\ref{stat}. Here we will just focus on the genetic aspects.
 
  The dyadic model (equation~\ref{eq.eighth}) is a linear model with the variance components ${\bm \Gamma}$ as unknowns and the model matrix ${\bm W}$ defining the relationship of the dyadic observations ${\bm \Psi}$ to the unknown variance components. Each variance component corresponds to a column of model coefficients in ${\bm W}$. It is the setting up of the column of coefficients for each variance component that requires a knowledge of genetics.
 
@@ -2340,7 +2350,7 @@ For the original definition of relationship coefficients see Wright(1922)~\cite{
 
 Given the required relationship matrices, it is a simple matter to setup the ${\bm W}$ matrix for the dyadic model equations~\ref{eq.eighth}. The calculation of the column elements of ${\bm W}$ for each type of variance component is documented in Table~\ref{tab.wcol}.
 
-\input{table4.tex}
+\input{tabwcol.tex}
 
 The component names in column 1 of Table~\ref{tab.wcol} are in the form used by {\em dmm()} to label output; their equivalent in the more familiar subscripted notation (eg $\sigma^{2}_{a_{I}}$ for the first item) should be obvious.
 The formulae in column 2 of Table~\ref{tab.wcol} produce matrices each of which must be vectorized into a column of ${\bm W}$.
@@ -2350,6 +2360,8 @@ The symbols in column 2 of Table~\ref{tab.wcol} are defined as follows
 \item [${\bm Z_{I}}$] Matrix mapping individuals with observations to individuals in the pedigree
 \item [${\bm Z_{M}}$] Matrix mapping individuals with observations to their dams in  the pedigree
 \item [${\bm Z_{C}}$] Matrix mapping individuals with observations to cohorts
+\item [${\bm Z_{Lm}}$] Matrix mapping individuals with observations to maternal founder line groups
+\item [${\bm Z_{Lp}}$] Matrix mapping individuals with observations to paternal founder line groups
 \item[${\bm R_{A}}$] Matrix of additive relationship coefficients
 \item[${\bm R_{D}}$] Matrix of dominance relationship coefficients
 \item[${\bm R_{AA}}$] Matrix of additive x additive epistatic relationship coefficients
@@ -3902,6 +3914,99 @@ The statistical properties and positive definite status of matrices obtained by 
 
 \subsection{Class-specific component estimates and genetic parameters}
  From version 2.1-1 of {\em dmm()} or later component estimates  can be made specific to the classes of one or more specific factors. This feature is documented separately in dmmClassSpecific.pdf~\cite{jack:17}
+
+\subsection{Maternal and paternal founderline groups}
+A founderline  is a set of individuals all descended from one individual in the base generation. A maternal founderline is a set of individuals  all descended from one female in the base generation. A paternal founderline is a set of individuals  all descended from one male in the base generation.
+
+We are interested in maternal founderline effects because their variation reflects variations which are inherited only from the female parent. This includes various forms of cytoplasmic inheritance, including mitochondrial DNA in animals, and plasmid DNA in plants. The contribution of these effects to phenotypic variance can be analysed by fitting a variance component for variance between maternal founder lines. We call this component VarGlm(I).
+
+We are interested in paternal founderline effects because their variation reflects variations which are inherited only from the male parent. This includes Y-chromosome inheritance in mammals. The contribution of this effect to phenotypic variance can be analysed by fitting a variance component for variance between paternal founder lines. We call this component VarGlp(I).
+
+The function {\em founderLine()} which is part of the {\em nadiv} package will compute a vector of maternal or paternal founderline codes. To use these founderLine codes with {\em dmm()} they need to be appended to the dataframe as columns called "MLine" or "PLine". 
+
+Alternatively there is internal code in {\em dmm()} which will set up the required founderline codes, as it executes. If the supplied dataframe does not contain the columns "MLine" or "PLine" {\em dmm()} will use its own internal code. 
+
+There is a slight difference in the above two approaches.  The {\em nadiv} routine {\em founderLine()} gives an 'NA' code to base individuals of sex opposite to that of the founderline - for example for a maternal founderline male base individuals are coded 'NA'. The internal code in{\em dmm()} gives a numeric code to all individuals.  This only makes a difference to the analysis if there are base individuals with data. 
+
+Apart from this, all that is needed to setup a founderline component in {\em dmm()} is to include either "VarGlm(I)" or "VarGlp(I)" in the {\em component} argument. 
+
+An example will make this clear
+\begin{verbatim}
+> library(dmm)
+> data(sheep.df)
+> sheep.mdf <- mdf(sheep.df,pedcols=c(1:3),factorcols=c(4:6),ycols=c(7:9),
+     sexcode=c("M","F"),relmat=c("E","A"),keep=T)
+> sheep.linefit <-  dmm(sheep.mdf,Cww ~ 1 + Sex + Year, components=c("VarE(I)","VarG(Ia)","VarGlm(I)")
+Dyadic mixed model fit for datafile: sheep.mdf  
+Data file is a list containing a dataframe and a list of relationship matrices:
+Random effect partitioned into components: Residual:
+OLS-b step:
+no of fixed effect df (k) =  9 
+no of traits (l) =  1 
+Setup antemodel matrices:
+No of factors with specific components: 0 
+No of non-specific components partitioned: 3 
+No of factors with specific components: 0 
+No of specific variance components partitioned (per component): 0 
+No of specific variance and covariance components partitioned (per component): 0 
+no of maternal line codes =  16 
+no of individuals in pedigree (m) =  44 
+no of individuals with data and X codes (n) =  37 
+Rank of X: 9   No of Fixed Effects: 9 
+DME substep:
+No of components defined =  3 
+No of components estimable =  3 
+Checking dyadic model equations:
+QR option on dyadic model equations:
+DME substep completed:
+OLS-b step completed:
+> 
+> summary(sheep.linefit)
+Call:
+summary.dmm(object = sheep.linefit)
+
+Coefficients fitted by OLS for fixed effects:
+
+            Trait Estimate StdErr   CI95lo CI95hi
+(Intercept)   Cww   4.1000  0.267  3.57615  4.624
+SexM          Cww   0.2237  0.178 -0.12614  0.574
+Year1982      Cww   0.7667  0.378  0.02583  1.508
+Year1983      Cww   0.0441  0.356 -0.65442  0.743
+Year1984      Cww   0.3881  0.339 -0.27687  1.053
+Year1985      Cww   0.6361  0.323  0.00203  1.270
+Year1986      Cww   0.9470  0.328  0.30315  1.591
+Year1987      Cww   0.4588  0.333 -0.19334  1.111
+Year1988      Cww  -0.2237  0.564 -1.32829  0.881
+
+
+Components partitioned by DME from residual var/covariance after OLS-b fit:
+
+          Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)     Cww:Cww   0.0237 0.0558 -0.0857 0.1331
+VarG(Ia)    Cww:Cww   0.1910 0.0785  0.0372 0.3449
+VarGlm(I)   Cww:Cww   0.0185 0.0346 -0.0494 0.0863
+
+> gsummary(sheep.linefit)
+Call:
+gsummary.dmm(dmmobj = sheep.linefit)
+
+Proportion of phenotypic var/covariance partitioned by DME:
+ to each component (OLS-b):
+
+          Trait Estimate StdErr CI95lo CI95hi
+VarE(I)     Cww   0.1016  0.213 -0.316  0.520
+VarG(Ia)    Cww   0.8191  0.331  0.170  1.468
+VarGlm(I)   Cww   0.0792  0.157 -0.229  0.388
+VarP(I)     Cww   1.0000  0.000  1.000  1.000
+
+.......
+
+> 
+\end{verbatim}
+
+So the analysis found 16 founderlines in this small test dataset, and fitted three random effect variance components, the last of which is "VarGlm(I)".  This component will convert to a proportion of phenotypic variance with {\em gsummary()}  the same as all other components. 
+
+The founderline components "VarGlm(I)" and "VarGlp(I)" can be made class specific, in the same way as all other components. However we do not define any covariances between these founderline components and any other components. They are assumed to be independent of all other effects.
 
 \clearpage
 \section{Computing strategy}
