@@ -29,6 +29,7 @@ Most other packages use iterative likelihood maximization techniques for varianc
 * component estimates equivalent to MINQUE (after fixed effects by OLS) and bias-corrected-ML (after fixed effects by GLS)
 * multi-trait or traitspairwise or traitsblockwise analyses to deal with unequal replication across traits
 * class-specific component and parameter estimates
+* variance components between maternal or paternal founderlines
 * _dmm_ was developed for analysis of sheep breeding data. Workers from other fields would certainly be able to broaden its approach, and contributions would be welcome.
 
 ## Acknowledgement ##
