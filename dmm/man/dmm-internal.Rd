@@ -48,10 +48,6 @@
 \alias{partocov}
 \alias{permpaste}
 \alias{phenclasses}
-\alias{print.csummarytables.dmm}
-\alias{print.csumspecific.dmm}
-\alias{print.gsummarytables.dmm}
-\alias{print.gsumspecific.dmm}
 \alias{selfpaste}
 \alias{separ}
 \alias{siga.posdef}
@@ -139,10 +135,6 @@ part.add(x, p, prow, pcol)
 partocov(par, covt)
 permpaste(x)
 phenclasses(comcodes)
-print.csummarytables.dmm(x, ...)
-print.gsumspecific.dmm(x, ...)
-print.gsummarytables.dmm(x, ...)
-print.gsumspecific.dmm(x, ...)
 selfpaste(x)
 separ(siga, vsiga, v, l, fracta, correa)
 siga.posdef(siga, am, ctable, varopt = "both", covopt = "bound")
