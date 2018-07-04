@@ -448,7 +448,7 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
 # sesiga <- ielist$sesigaie
 # vsiga <- ielist$vsigaie
 
-# map siga int vc list of phencovclasses
+# map siga into vc list of phencovclasses
   vclist <- sigatovc(ielist$siga,ielist$vsiga,ielist$sesiga,am,nsf)
 
 
@@ -482,8 +482,8 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
    }
 
 #  GLS iteration of b's
-cat("v = ",am$v,"\n")
-cat("l = ",am$l,"\n")
+# cat("v = ",am$v,"\n")
+# cat("l = ",am$l,"\n")
    gls.list <- gls.iter.b(am, b, siga, dyad.explist, glsopt, dmeopt, ctable, ncomp.pcr, dmekeepfit)
 
      if(gls.list$ok) {
@@ -515,7 +515,7 @@ cat("l = ",am$l,"\n")
 #       sesiga <- ielist$sesigaie
 #       vsiga <- ielist$vsigaie
         
-#  map siga int vc list of phencovclasses
+#  map siga into vc list of phencovclasses
         vclist <- sigatovc(ielist$siga,ielist$vsiga,ielist$sesiga,am,nsf)
 
 #  genetic parameters for each phencovclass

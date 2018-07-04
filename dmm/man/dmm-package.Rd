@@ -11,8 +11,8 @@ Dyadic mixed model analysis with multi-trait responses and pedigree-based partit
 \tabular{ll}{
 Package: \tab dmm\cr
 Type: \tab Package\cr
-Version: \tab 2.1-4\cr
-Date: \tab 2018-06-16\cr
+Version: \tab 2.1-5\cr
+Date: \tab 2018-06-28\cr
 License: \tab GPL-2 \cr
 }
 This package provides tools for setting up and solving dyadic model equations 

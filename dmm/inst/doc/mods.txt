@@ -1,3 +1,8 @@
+dmm_2.1-5       dealt with bug with message
+                Error in if (class1 == class2) { : missing value where 
+                TRUE/FALSE needed
+                concerns class specific analyses only
+
 dmm_2.1-4	added ability to estimate maternal founder  line and
                 paternal founder  line components (VarGml(I) and VarGpl(I))
                 fixed bug in gsummary() introduced in dmm_2.1-3
