@@ -4,7 +4,7 @@ function(longrowname)
 {
   colons <- which(strsplit(longrowname,"")[[1]] == ":")
   if(length(colons) == 0) {  # nonspecific case never a cross-class cov
-    stop("match.vars() - should never get here:\n")
+    stop("match.crosseffect.vars() - should never get here:\n")
   }
   else { # specific case
     class1 <- substr(longrowname,colons[1]+1,colons[2]-1)

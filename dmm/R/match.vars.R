@@ -3,7 +3,7 @@ function(longrowname)
 # match.vars()    - find 2 longnames for vars matching longrowname)
 {
   colons <- which(strsplit(longrowname,"")[[1]] == ":")
-  if(length(colons) == 0) {  # nonspecific case never a cros-class cov
+  if(length(colons) == 0) {  # nonspecific case never a cross-class cov
     stop("match.vars() - should never get here:\n")
   }
   else { # specific case
