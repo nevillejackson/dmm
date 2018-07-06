@@ -11,8 +11,8 @@
 
 \title{ Estimating class-specific genetic parameters with {\em dmm()}}
 \author{Neville Jackson }
-\date{18 Mar 2017 \\
-      For dmm\_2.1-2}   % Deleting this command produces today's date.
+\date{6 July 2018 \\
+      For dmm\_2.1-5}   % Deleting this command produces today's date.
 
  
 \begin{document} 
@@ -49,7 +49,9 @@ This document deals with how to use {\em dmm()} to obtain class specific compone
 The same is not possible for the individual environmental variance component "VarE(I)". It can only be estimated ignoring Sex. So we leave "VarE(I)" as a "components" argument and put "VarG(Ia)" as a "specific.components" argument in the call to {\em dmm()}, as follows
 
 \begin{verbatim}
-> sheep.fitss <- dmm(sheep.mdf, Ymat ~ 1 + Year + Sex,components=c("VarE(I)"),specific.components=list(Sex=c("VarG(Ia)")))
+> sheep.fitss <- dmm(sheep.mdf, Ymat ~ 1 + Year + Sex,
+   components=c("VarE(I)"),
+   specific.components=list(Sex=c("VarG(Ia)")))
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a normal dataframe:
 Random effect partitioned into components: Residual:
@@ -439,7 +441,9 @@ That is as far as we can go. We cannot use these sex-specific parameters to do p
 Assume that we now wish to extend the analysis of the sheep.df data , fitting 3 variance components "VarE(I)", "VarG(Ia)", and "VarG(Ma)". We will make "VarG(Ia)" sex-specific, as above, and we will make "VarG(Ma)" tb-specific. "Tb" stands for 'type of birth' and is a factor with 2 levels, "S" for single born lambs, and "T" for twin born lambs. The call to {\em dmm()} is as follows
 
 \begin{verbatim}
-> sheep.fitssts <- dmm(sheep.mdf,Ymat ~ 1 + Tb,components="VarE(I)",specific.components=list(Sex=c("VarG(Ia)"),Tb=c("VarG(Ma)")))
+> sheep.fitssts <- dmm(sheep.mdf,Ymat ~ 1 + Tb,
+   components="VarE(I)",
+   specific.components=list(Sex=c("VarG(Ia)"),Tb=c("VarG(Ma)")))
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a normal dataframe:
 Random effect partitioned into components: Residual:
@@ -578,7 +582,9 @@ The component or parameter labelled "VarP(I)" will always be specific to  all fa
 \subsection{More than one parameter specific to a factor}
 Assume that we now wish to change the analysis of the sheep.df data, so that components "VarG(Ia)" and "VarG(Ma)" are both Sex-specific.  The call to {\em dmm()} for this case is as folllows
 \begin{verbatim}
-> sheep.fitss2<- dmm(sheep.mdf, Ymat ~ 1 + Year + Sex,components=c("VarE(I)"),specific.components=list(Sex=c("VarG(Ia)","VarG(Ma)")))
+> sheep.fitss2<- dmm(sheep.mdf, Ymat ~ 1 + Year + Sex,
+   components=c("VarE(I)"),
+   specific.components=list(Sex=c("VarG(Ia)","VarG(Ma)")))
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a normal dataframe:
 Random effect partitioned into components: Residual:
@@ -614,6 +620,11 @@ The limitations first
 This will be addressed in a future release of {\em dmm()}.
 \item a component can not be made specific to more than one factor simultaneously. If you really want, for example, "VarG(Ia)" to be both Sex-specific and Tb-specific, you should define a new factor combining Sex and Tb in the data frame, and use that factor. This restriction occurs because the way {\em dmm()} sets up estimation equations for a class specific component amounts to a 'cell means' model. It fits the component to each class of a factor. It can not, for example, separate a component into two main effects and an interaction. It is felt that this corresponds to what a user wants from class-specific component estimation - one component estimate for each class of the population, not a study of fixed factor effects on components.
 \item Missing values ('NA') for a factor used to make class-specific components can be a problem, if the factor is not fitted as a fixed effect. This occurs because {\em dmm()} deals with 'NA's at the fixed model fitting stage. The way around the problem is to fit the factor as a fixed effect, even if you think its fixed effect negligable.
+\item If one of the cross-effect covariances (eg CovG(Ia,Ma)) are fitted and are class specific, then the corresponding variances ( ie VarG(Ia) and VarG(Ma)) must be fitted and must also be class specific. 
+
+ If If one of the cross-effect covariances (eg CovG(Ia,Ma)) are fitted and are not class specific, then the corresponding variances ( ie VarG(Ia) and VarG(Ma)) must be fitted and must also not be class specific.
+
+ At the moment {\em dmm} does not have the ability to find the appropriate variances for calculation of correlations from cross-effect covariances, unless these variances are also defined within the same set ( ie either the nonspecific components set, or the specific components set)
 \item In {\em dmm\_2.1-2} release, any component can be made class-specific, as long as the specific factor has mutually exclusive classes. The components "VarE(I)",  "CovE(I,M)", "CovE(M,I)","CovE(I,M\&!C)", "CovE(M\&!C,I)" do not have estimable cross-class covariances, so these are excluded from the estimation process, and marked as NA.  {\em dmm()} only sets up  the within-class equations, for these components. The class specific within-class variances should be estimable, for these environmental components.
 
    The reason that the cross-class components are not estimable for these individual environmental components, is that the class levels are mutually exclusive, so there is no cross-class replication. When it comes to class-specific factors such as Age, where the class levels may not be mutually exclusive, then the cross-class covariances should be estimable. 
@@ -662,7 +673,10 @@ We do an analysis of both traits simultaneously
 > warcolak.mdf <- warcolak.df,pedcols=c(1:3),factorcols=4,
     ycols=c(5:6),sexcode=c("M","F"),relmat=c("E","A","D","S"),keep=T)
   .....
-> warcolak.fitsp <- dmm(warcolak.mdf,Ymat ~ 1 + Sex, components=c("VarE(I)"),specific.components=list(Sex=c("VarG(Ia)","VarG(Id)","VarGs(Ia)")),relmat="withdf")
+> warcolak.fitsp <- dmm(warcolak.mdf,Ymat ~ 1 + Sex,
+    components=c("VarE(I)"),
+    specific.components=list(Sex=c("VarG(Ia)","VarG(Id)","VarGs(Ia)")),
+    relmat="withdf")
 Dyadic mixed model fit for datafile: warcolak.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
