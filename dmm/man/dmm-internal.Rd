@@ -42,8 +42,9 @@
 \alias{make.gsummarytables}
 \alias{make.matcline}
 \alias{make.patyline}
-\alias{match.crosseffect.vars}
-\alias{match.vars}
+\alias{match.cecov.nonspecific}
+\alias{match.cecov.specific}
+\alias{match.var.specific}
 \alias{part.add}
 \alias{partocov}
 \alias{permpaste}
@@ -57,7 +58,6 @@
 \alias{traitpairstotraits}
 \alias{varlz}
 \alias{varz}
-\alias{vc.posdef}
 \alias{vt}
 \title{
 Functions internal to dmm
@@ -98,7 +98,7 @@ dae.specific(zpre, rel, zpost, mmat, factorno, componentname,
 dae.specific.S(zpre1, zpost1, zpre2, zpost2, zop, mmat, factorno,
      componentname, effnames, effcodes, effnandc, comcodes, varcodes,
      cnames, cnamesie, emat, vmat, icol, iecol, gls, ctable)
-dmesolve(mdf, fixform = Ymat ~ 1, components = c("VarE(I)", "VarG(Ia)"),
+dmesolve(mdf, fixform = Ymat ~ 1, components = NULL,
      specific.components = NULL, cohortform = NULL, posdef = T, gls = F,
      glsopt = list(maxiter = 200, bdamp = 0.8, stoptol = 0.01),
      dmeopt = "qr", ncomp.pcr = "rank", relmat = "inline",
@@ -129,8 +129,9 @@ make.gsummarytables(dmmobj, traitset = "all",
      componentset = "all", bytrait = T, gls = F, digits = 3)
 make.matcline(df)
 make.patyline(df)
-match.crosseffect.vars(longrowname)
-match.vars(longrowname)
+match.cecov.nonspecific(longrowname)
+match.cecov.specific(longrowname)
+match.var.specific(longrowname)
 part.add(x, p, prow, pcol)
 partocov(par, covt)
 permpaste(x)
@@ -144,8 +145,6 @@ sigatovc(siga, vsiga, sesiga, am, nsf)
 traitpairstotraits(tp)
 varlz(vz, z)
 varz(vlz, z)
-vc.posdef(vc, ic, rownames.vc.long, siga, am, ctable,
-     varopt = "both", covopt = "bound")
 vt(v, l, vsiga, il, jl)
 }
 \author{

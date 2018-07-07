@@ -1,5 +1,5 @@
 dmesolve <-
-function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.components=NULL,cohortform=NULL,posdef=T,gls=F,glsopt=list(maxiter=200,bdamp=0.8,stoptol=0.01), dmeopt="qr",ncomp.pcr="rank",relmat="inline",dmekeep=F,dmekeepfit=F) {
+function(mdf,fixform = Ymat ~ 1,components=NULL,specific.components=NULL,cohortform=NULL,posdef=T,gls=F,glsopt=list(maxiter=200,bdamp=0.8,stoptol=0.01), dmeopt="qr",ncomp.pcr="rank",relmat="inline",dmekeep=F,dmekeepfit=F) {
 # dmesolve() - dyadic model equations solved by ols and (optionally) gls
   #
   # fixform is the model formula for fixed effects
@@ -450,7 +450,6 @@ function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.comp
 
 # map siga into vc list of phencovclasses
   vclist <- sigatovc(ielist$siga,ielist$vsiga,ielist$sesiga,am,nsf)
-
 
     # genetic parameters
     ols.specific.genpar.list <- vector("list",length=length(vclist$phencovclasses))
