@@ -1,7 +1,14 @@
-dmm_2.1-5       dealt with bug with message
+dmm_2.1-5       1. dealt with bug with message
                 Error in if (class1 == class2) { : missing value where 
                 TRUE/FALSE needed
                 concerns class specific analyses only
+                csbug.dmm_2.1-5 branch
+                2. dealt with bug with message
+                Error in match.crosseffect.vars(rownames(siga)[i]) : 
+                match.crosseffect.vars() - should never get here:
+                matchvarbug.dmm_2.1-5 branch
+                3. add component check code to dmesolve()
+                componentcheck.dmm_2.1-5 branch
 
 dmm_2.1-4	Bring version nos into line
 		Fix gsummary() bug and NAMESPACE issues
