@@ -1,5 +1,5 @@
 dmesolve <-
-function(mdf,fixform = Ymat ~ 1,components=NULL,specific.components=NULL,cohortform=NULL,posdef=T,gls=F,glsopt=list(maxiter=200,bdamp=0.8,stoptol=0.01), dmeopt="qr",ncomp.pcr="rank",relmat="inline",dmekeep=F,dmekeepfit=F) {
+function(mdf,fixform = Ymat ~ 1,components=c("VarE(I)","VarG(Ia)"),specific.components=NULL,cohortform=NULL,posdef=T,gls=F,glsopt=list(maxiter=200,bdamp=0.8,stoptol=0.01), dmeopt="qr",ncomp.pcr="rank",relmat="inline",dmekeep=F,dmekeepfit=F) {
 # dmesolve() - dyadic model equations solved by ols and (optionally) gls
   #
   # fixform is the model formula for fixed effects
@@ -39,6 +39,18 @@ function(mdf,fixform = Ymat ~ 1,components=NULL,specific.components=NULL,cohortf
       if(any(is.na(match(specific.components[[i]],ctable$all)))){ 
         print(specific.components[i])
         stop("Component(s) not recognized:\n")
+      }
+    }
+  }
+# check nonspecific and specific components dont clash
+  if(!is.null(specific.components)){
+    for(i in 1:length(specific.components)) {
+      if(any(!is.na(match(specific.components[[i]],components)))){
+        cat("Components = ")
+        print(components)
+        cat(" clashes with specific component = ")
+        print(specific.components[i])
+        stop("A component can not be both nonspecific and class specific\n")
       }
     }
   }

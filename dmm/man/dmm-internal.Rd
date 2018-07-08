@@ -98,7 +98,7 @@ dae.specific(zpre, rel, zpost, mmat, factorno, componentname,
 dae.specific.S(zpre1, zpost1, zpre2, zpost2, zop, mmat, factorno,
      componentname, effnames, effcodes, effnandc, comcodes, varcodes,
      cnames, cnamesie, emat, vmat, icol, iecol, gls, ctable)
-dmesolve(mdf, fixform = Ymat ~ 1, components = NULL,
+dmesolve(mdf, fixform = Ymat ~ 1, components = c("VarE(I)", "VarG(Ia)"),
      specific.components = NULL, cohortform = NULL, posdef = T, gls = F,
      glsopt = list(maxiter = 200, bdamp = 0.8, stoptol = 0.01),
      dmeopt = "qr", ncomp.pcr = "rank", relmat = "inline",
