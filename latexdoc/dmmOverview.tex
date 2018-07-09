@@ -2630,14 +2630,14 @@ This means that the set of components fitted is more than can be estimated from 
 \item omit some of the components, rerun dmm() and see if the problem disappears
 \item start with a  minimal set of components (eg components=c("VarE(I)","VarG(Ia)")), and sequentially add components until the problem occurs
 \item use dmeopt="pcr" to force dmm() to produce an output object, then look at the correlations among the columns of the dyadic model equations matrix (W matrix) using {\em print(dmmobject\$dme.correl)} 
-\item as from dmm\_2.1-3 a dmm output object will be returned when the 'not of full rank' message occurs, so there is no need to use dmeopt="pcr", you can inspect the correlations of the columns of the W matrix directly with {\em print(dmmobject\$dme.correl)}
+\item as from dmm\_2.1-3 a dmm output object will be returned when the 'not of full rank' message occurs, so there is no need to use dmeopt="pcr", you can inspect the correlations of the columns of the W matrix directly with {\em print(dmmobject\$dme.correl)}. As from dmm\_2.1-5 the print method for objects of class {\em dmm} will print the above correlations of the columns of the W matrix, at the end of its usual output. 
 \end{itemize}
 
 Deciding which components can be estimated from a particular pedigree is not always easy. There are some general rules
 \begin{itemize}
 \item to partition individual variation into VarE(I) and VarG(Ia) there must be some individuals in the pedigree which are related ( ie have a relationship coefficient other than zero). If the relationship matrix is an identity ( all individuals unrelated) the above partitioning is impossible. In general this means that at least a 2 generation pedigree is required to partition individual effects.
-\item to partition maternallvariation into VarE(M) and VarG(Ma) there must be some dams in the pedigree which are related. In general this means that at least a 3 generation pedigree is required to partition maternal effects.
-\item to partition sexlinked genetic variation the must be individuals of both sexex present in the pediggree and having observations.
+\item to partition maternal variation into VarE(M) and VarG(Ma) there must be some dams in the pedigree which are related. In general this means that at least a 3 generation pedigree is required to partition maternal effects.
+\item to partition sexlinked genetic variation the must be individuals of both sexex present in the pedigree and having observations.
 \end{itemize}
 
 The easiest way to see if a particular pedigree design will estimate the components one desires is to construct an artificial dataset with that pedigree and attempt to analyse it.
