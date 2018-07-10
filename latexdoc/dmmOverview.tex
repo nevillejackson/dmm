@@ -2648,7 +2648,7 @@ I would like to thank Paloma Moran Martinez for bringing these issues to my atte
 \subsection{Genetic parameters and their standard errors}
 Strictly speaking, any set of parameters which quantify genetic and environmental variation in a set of traits can be called genetic parameters. So causal variance and covariance components are genetic parameters. However, there is a convention that 'genetic parameters' refers to heritabilities and genetic correlations ( and for completeness phenotypic (co)variance). Geneticists seem to prefer standardized unitless quantities to describe their populations.
  
- When people say 'heritability' , without qualification, they imply individual additive genetic variationas a proportion of total phenotypic variation. Similarly an unqualified 'genetic correlation' implies the correlation based on the individual additive genetic covariance. There are, of coarse, equivalent parameters for the non-additive, sel-linked, and maternal components. We avoid using qualifiers in {\em dmm()} by using the terms {\em proportion} for each variance component as a proportion of the total or phenotypic variance, and {\em correlation} for each covariance component scaled by the appropriate variances to a correlation. We use the component names defined in Tables~\ref{tab.wcol} and ~\ref{tab.wcol2} as qualifying labels.
+ When people say 'heritability' , without qualification, they imply individual additive genetic variation as a proportion of total phenotypic variation. Similarly an unqualified 'genetic correlation' implies the correlation based on the individual additive genetic covariance. There are, of coarse, equivalent parameters for the non-additive, sex-linked, and maternal components. We avoid using qualifiers in {\em dmm()} by using the terms {\em proportion} for each variance component as a proportion of the total or phenotypic variance, and {\em correlation} for each covariance component scaled by the appropriate variances to a correlation. We use the component names defined in Tables~\ref{tab.wcol} and ~\ref{tab.wcol2} as qualifying labels.
 
 So {\em proportion} is defined as 
 
@@ -2761,6 +2761,18 @@ Var(Z) & = & \bar{Z^{2}}(\exp[Var(lnZ) - 1) \\
        &   &  - \ln(1 + CC^{2}_{W,X})]) - \ln(1 + CC^{2}_{W,Y})]) + 0.5 \ln(1 + CC^{2}_{X,Y})])
 \end{eqnarray*}
 
+\subsubsection{Problems with genetic parameter calculation}
+	To calculate the genetic parameters corresponding to a cross-effect covariance, {\em dmm(()} requires that the corresponding variance components are also estimated. For example, for CovG(Ia,Ma) the corresponding variances (VarG(Ia) and VarG(Ma)) must also be estimated, and so must appear in the {\em components=} argument for {\em dmm()}.
+	If this is not done, you  will get error messages similar to
+\begin{verbatim}
+....
+DME substep completed:
+Error in varcomp[var2, ii] : subscript out of bounds
+>
+\end{verbatim}
+nd execution will terminate. No output will be returned.
+
+	It does not make sense to estimate a cross-effect-covariance without simultaneously estimating the corresponding variances. If two effects have a covariance, they must also have variances. All variances and covariances that are significantly different from zero should be in the dyadic model used to partition residual variance. If a large and significant variance or covariance is omitted, estimates for all the other included variances and covariances are biased. This is known as the 'omitted variable effect'. It is well known is a regression context, but it applies also to partitioning of variance components.
 
 
 
