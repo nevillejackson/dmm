@@ -12,7 +12,7 @@
 
 \title{ An Overview of the R Package dmm}
 \author{Neville Jackson }
-\date{28 Jun 2018 \\
+\date{16 Jul 2018 \\
       For dmm\_2.1-5}   % Deleting this command produces today's date.
 
  
@@ -3484,12 +3484,14 @@ so in this small demonstration case VarE(M\&!C) turns out larger than VarE(M) so
 
 \subsection{Using robust regression to solve DME's}
  
- One of the advantages of turning variance component estimation into a regression is that one can use regression techniques other than least squares. One option is robust regression. There are several packages for robust regression available in R. All of them are only capable of multiple regression with a univariate response.  In {\em dmm()} the function {\em lmrob()} from package {\em robustbase} is used  instead of QR to solve the dyadic model equations, if the argument {\em dmeopt="lmrob"} is specified.
+ One of the advantages of turning variance component estimation into a regression is that one can use regression techniques other than least squares. One option is robust regression. There are several packages for robust regression available in R. All of them are only capable of multiple regression with a univariate response.  In {\em dmm()} the function {\em lmrob()} from package {\em robustbase} can be used  instead of QR to solve the dyadic model equations, if the argument {\em dmeopt="lmrob"} is specified.
 
   There is no information on the properties of the variance component estimates obtained by {\em dmm()} using {\em lmrob()}. Their standard errors are obtained as the standard errors of coefficients returned by {\em lmrob()}.
 
- Experience has shown that "lmrob" estimates do not even agree with QR estimates for a balanced dataset. Apparently robust algorithms will always remove some perceived outlier data points, and this will naturally lead to different estimates of regression coefficients.
+ Experience has shown that "lmrob" estimates do not exactly agree with QR estimates for a balanced dataset. Apparently robust algorithms will always remove some perceived outlier data points, and this will naturally lead to slightly different estimates of regression coefficients.
 They also usually lead to smaller standard errors.
+
+One possible use for the robust regression option is to check whether the usual regression estimates obtained by ordinary least squares ({\em qr} or {\em lm} options) have been unduly affected by outliers. If the robust regression estimates of variance components are vastly different from the OLS estimates, then some serious outliers are indicated. In this case the robust regression estimates are probably superior. The best course of action would be to find the reason for the outliers and remove or correct them.
 
 \subsection{Using principal component regression to solve DME's}
 \label{pcreg}
