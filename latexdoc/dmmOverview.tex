@@ -12,8 +12,8 @@
 
 \title{ An Overview of the R Package dmm}
 \author{Neville Jackson }
-\date{3 Jun 2020 \\
-      For dmm\_2.1-6}   % Deleting this command produces today's date.
+\date{10 Apr 2021 \\
+      For dmm\_2.1-7}   % Deleting this command produces today's date.
 
  
 \begin{document} 
@@ -30,9 +30,9 @@ publicly available in the R environment. This package builds on their work, and 
 \clearpage
 \section{Abstract}
  Package {\em dmm} estimates a variety of genetic and environmental (co)variance
-components from pedigree data. It can transform these to genetic parameters, and to estimates of response to selection. The statistical method used is an heirarchical model with the first level a normal fixed effects model and the second level a dyadic model or derived model which equates dyadic covariances to their expectations. The dyadic model is linear and therefore reduces variance component estimation to a linear regression problem. 
+components from pedigree data. It can transform these to genetic parameters, and to estimates of response to selection. The statistical method used is an heirarchical model with the first level a normal fixed effects model and the second level a dyadic model or model which equates dyadic covariances to their expectations. The dyadic model is linear and therefore reduces variance component estimation to a linear regression problem. 
 The package uses standard regression techniques (qr or lm functions) to estimate components as regression coefficients, and also offers robust regression (lmrob function) and principal component regression (pls package) as experimental alternative options.
-Estimating variance components in this way is feasable only for datasets of less than around 10000 individuals. The package may therefore be useful for modest sized research datasets, but not for extensive field data. The variance component estimates obtained by directly solving the dyadic model equations in the above way are equivalent to MINQUE estimates if the fixed model is fitted with OLS, and are equivalent to bias-corrected ML estimates if the fixed model is fitted with GLS. The package includes a number of test data sets which are useful to demonstrate correctness of its calculations, and to illustrate its capabilities.
+Estimating variance components in this way is feasable only for datasets of less than around 10000 individuals. The package may therefore be useful for modest sized research datasets, but not for extensive field data. The variance component estimates obtained by directly solving the dyadic model equations in the above way are equivalent to MINQUE estimates if the fixed model is fitted with OLS (ordinary least squares), and are equivalent to bias-corrected-ML estimates if the fixed model is fitted with GLS (generalised least squares). The package includes a number of test data sets which are useful to demonstrate correctness of its calculations, and to illustrate its capabilities.
 
 \clearpage
 \section{Introduction} 
@@ -4051,6 +4051,46 @@ There are, of coarse, other arrays in the R code, and the total amount of physic
 When using the {\em dmeopt="pcr"} method for solving the DME's, the memory requirements are more demanding. The {\em pls} package uses three dimensional arrays of size $n^{2} \times l^{2} \times ncomp$ because it solves the DME's for all values of the number of components retained from $1$ up to $ncomp$. This is a severe limitation and some effort will be made to circumvent it in future versions of {\em dmm}.
 
 If the {\em gls=T} option is used there is an additional memory requirement which is more restrictive. The product $n^{2} \times l^{2} \times c$ must not exceed $2^{31} - 1$. This is very restrictive indeed. For example with the dataset {\em merino.df} we have $n = 2599$, $l = 11$, and $c = 2 upto 8$. Here we have $2599^{2} \times 11^{2} = 8 \times 10^{8}$ so there is only room for $c=2$ unless the number of traits is reduced. There are several issues, including the above,  suggesting a rethink of the {\em gls=T} part of the algorithm.
+
+\subsection{Using R with Openblas libraries}
+The compute time of dmm() can be improved dramatically by using a version of R compiled with the {\em Openblas} libraries for blas and lapack, rather than the default R libraries. Around 15x improvement in execution time can be expected because the Openblas libraries will make use of all available cpu's in a modern PC. The R function sessionInfo() can be used to find which versions of the blas and lapack libraries are being used by the current R session.
+
+The step in dmm() which benefits most from use of R with Openblas is the construction of the dyadic model equations. This involves a 5-fold matrix multiply with each matrix of order n (number of animals with data). 
+
+There are various ways of geting access to a version of R compiled with Openblas libraries. The followwing hints apply to R under the Linux operating system.
+\begin{itemize}
+\item Use a version of Linux which comes with an R package compiled with Openblas. Solus and Void Linux do this, Debian does not.
+\item Install R from the source code.  I recommend doing this in your home directory, away from the package system.
+The openblas package will need to have been installed.
+
+The source code will be a file like R-4.0.4.tar.gz. Unpack it and it will make a subdirecty R-4.0.4. Go into the subdirectory to do the configure and compile.
+
+Before compiling set the configuration options as follows
+
+./configure --enable-threads --enable-openmp --with-blas --with-lapack
+
+and replace libRblas.so and libRlapack.so in the 'lib' subdirectory with links to 
+/usr/lib/x86\_64-linux-gnu/openblas/libblas.so.3 and 
+/usr/lib/x86\_64-linux-gnu/openblas/liblapack.so.3
+respectively. This is where the openblas package install under Debian. In other distributions it may be elsewhere.
+
+After ./configure simply do
+
+make
+
+and R will compile and place the R binary in the 'bin' subdirectory.
+You can start this version of R by giving the path
+~/src/R-4.0.4/bin/R
+or you can make an alias in .bashrc
+
+You can install R elsewhere by
+
+make install --prefix=where-to-install
+
+but this is unnecessary and can cause confusion if there is another install of R on the system
+\item There are ways of compiling R from source with alternate libraries within the package system using the update-alternatives command.
+\item There is an ropenblas() package available on CRAN which  will link Openblas libraries to the current R session.
+\end{itemize}
 
 \clearpage
 \section{Analysis of a large multivariate dataset} 
