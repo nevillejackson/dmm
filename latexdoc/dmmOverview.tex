@@ -12,7 +12,7 @@
 
 \title{ An Overview of the R Package dmm}
 \author{Neville Jackson }
-\date{10 Apr 2021 \\
+\date{12 Apr 2021 \\
       For dmm\_2.1-7}   % Deleting this command produces today's date.
 
  
@@ -73,7 +73,7 @@ this indicates that the {\em dmm} package has not been installed on your system.
 \item[Observations] Numeric values for each observation or trait
 \end{description}
 
- So we start by having a look at an example dataframe.  We shall use the dataset {\em sheep.df} which is part of the {\em dmm} package. So load the dataset
+ We start by having a look at an example dataframe.  We shall use the dataset {\em sheep.df} which is part of the {\em dmm} package. So load the dataset
 
 \begin{verbatim}
 > data(sheep.df)
@@ -96,7 +96,7 @@ and get an overview of its contents using the {\em str()} function
 > 
 \end{verbatim}
 
-So it has the columns Id,SId,DId,Sex noted above and it has Year and Tb which are potential fixed effects, and it has three traits Cww,Diam,Bwt.
+The dataframe {\em sheep.df} has the columns Id,SId,DId,Sex noted above and it has Year and Tb which are potential fixed effects, and it has three traits Cww,Diam,Bwt.
 
 Another way of getting an overview is to print the first few rows
 
@@ -119,7 +119,7 @@ There are two immediately obvious problems with the way this dataset has been se
 \item The Year column is not a factor. If we want to use it as a fixed effect with discrete levels, it should be a factor.
 \end{itemize}
 
-So we first need to use the {\em mdf()} function to convert this dataframe to a suitable format. We may also wish to use the {\em mdf()} function to setup relationship matrices required to estimate various genetic (co)variance components: it depends on our genetic model - if we just require the additive genetic relationship matrix, {\em dmm()} will  calculate this 'on the fly', but if we require non-additive or sex-linked relationship matrices, these must be pre-calculated with function {\em mdf()}. In the present example we will use just the additive relationship matrix and let {\em dmm()} calculate it {\em inline}.
+Therefore we first need to use the {\em mdf()} function to convert this dataframe to a suitable format. We may also wish to use the {\em mdf()} function to setup relationship matrices required to estimate various genetic (co)variance components: it depends on our genetic model - if we just require the additive genetic relationship matrix, {\em dmm()} will  calculate this 'on the fly', but if we require non-additive or sex-linked relationship matrices, these must be pre-calculated with function {\em mdf()}. In the present example we will use just the additive relationship matrix and let {\em dmm()} calculate it {\em inline}.
 
 To learn to use {\em mdf()} we need to look at its help page
 
@@ -224,7 +224,7 @@ OLS-b step completed:
 > 
 \end{verbatim}
 
-So what are all these lines displayed on the screen? Well most are just reporting the stage of computation; a large problem can take some time and it helps to know the stage reached. This is particularly important if the iterative GLS-b step is used.
+What are all these lines displayed on the screen? Well most are just reporting the stage of computation; a large problem can take some time and it helps to know the stage reached. This is particularly important if the iterative GLS-b step is used.
 
  If the fixed effect model is singular the process will stop with a message
 \begin{verbatim}
