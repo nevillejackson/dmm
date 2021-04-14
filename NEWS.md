@@ -1,3 +1,13 @@
+# dmm_2.1-7 Release notes
+
+## Comment
+  Considerable improvement in execution times with dmm() can be obtained by linking R with the Openblas library instead of the Rblas library. Hints on setting up R with Openblas libraries have been added to dmmOverview.pdf, Section 8, page 108.
+
+# dmm_2.1-6 Release notes
+
+##Comment
+  This is just a fix of the namespace.
+
 # dmm_2.1-5 Release notes
 
 ## Comment
