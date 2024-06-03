@@ -1,0 +1,7 @@
+\begin{eqnarray}
+  V & = & A \sigma^{2}_{A} + I \sigma^{2}_{E} \\
+    & = & \left[ \begin{matrix}{cc} 1 r \\ r 1 \end{array} \right] \sigma^{2}_{A
+}
+        +  \left[ \begin{array}{c c} 1 0 \\ 0 1 \end{array} \right] \sigma^{2}_{
+E}\\
+\end{eqnarray}

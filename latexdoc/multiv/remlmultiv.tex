@@ -1,0 +1,171 @@
+%
+% Draft  document remlmultiv.tex
+% Notes on  multivariate reml calculations in dmm()
+%
+ 
+\documentclass{report}  % Latex2e
+\usepackage{graphicx,lscape,subfigure}
+\usepackage{bm}
+\usepackage{textcomp}
+ 
+
+\title{ Tests on multivariate REML using dmm().}
+\author{Neville Jackson }
+\date{18 Aug 2021 }
+ 
+\begin{document} 
+ 
+\maketitle      
+
+\section{Introduction} 
+ We want to test multivariate REML estimation using dmeopt="fgls" in dmm(). The code for multivariate {\em fgls} in {\em dmm()} uses the conventional approach to multivariate analysis of stacking all traits in succesive blocks in the data vector so that the analysis treats the data vector as if it were all one trait. This requires appropriate blocking od the associated matrices. In the case of "fgls" on the dyadic model, this is not simple; the dyadic model errors have a covariance structure which is specified by a commutation matrix combined with the  covriance matrix of fixed model residuals.
+
+\section{Methods}
+Make up a small dataset, 4 traits with various levels of correlation between the traits. 
+\begin{verbatim}
+> wxyz.df
+  Id y x   w z
+1  1 1 2 2.5 3
+2  2 2 3 2.7 2
+3  3 3 2 0.6 3
+4  4 2 3 2.1 2
+
+> cor(wxyz.df)
+           Id          y          x          w          z
+Id  1.0000000  0.6324555  0.4472136 -0.4484507 -0.4472136
+y   0.6324555  1.0000000  0.0000000 -0.8164966  0.0000000
+x   0.4472136  0.0000000  1.0000000  0.5165766 -1.0000000
+w  -0.4484507 -0.8164966  0.5165766  1.0000000 -0.5165766
+z  -0.4472136  0.0000000 -1.0000000 -0.5165766  1.0000000
+
+\end{verbatim}
+We can use this probe the multivariate code for sanity.
+
+\section{Results}
+The data has no genetic variance component, only VarE(I). 
+
+\subsection{Two uncorrelated traits}
+Traits y and x have zero correlation. 
+\begin{verbatim}
+junk <- dmm(wxyz.df,I(cbind(x,y))  ~ 1, components=c("VarE(I)"),dmeopt="fgls")
+..............
+        Traitpair Estimate StdErr CI95lo CI95hi
+VarE(I)       x:x      0.5  0.353 -0.192   1.19
+
+        Traitpair Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       x:y 3.22e-05 5.35e-05 -7.26e-05 0.000137
+
+        Traitpair Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       y:x 3.22e-05 5.35e-05 -7.26e-05 0.000137
+
+        Traitpair Estimate StdErr CI95lo CI95hi
+VarE(I)       y:y 4.56e-09  0.353 -0.692  0.692
+\end{verbatim}
+  So all the variance goes to the first trait (x). Is that right? Well lets look at the variances of y and x separately, and then combined
+\begin{verbatim}
+attach(wxyz.df)
+> var(y)
+[1] 0.6666667
+> var(x)
+[1] 0.3333333
+> var(c(x,y))
+[1] 0.5
+\end{verbatim}
+
+So if we "stack" x and y we get the figure estimated by REML.
+But why did REML assign all the "stacked" variance to x rather than to y?
+I dont know.
+
+\subsection{Swap the order of traits}
+One test of blocking is to put traits in reverse order
+\begin{verbatim}
+junk <- dmm(wxyz.df,I(cbind(y,x))  ~ 1, components=c("VarE(I)"),dmeopt="fgls")
+..................
+        Traitpair Estimate StdErr CI95lo CI95hi
+VarE(I)       y:y 4.56e-09  0.353 -0.692  0.692
+
+        Traitpair Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       y:x 3.22e-05 5.35e-05 -7.26e-05 0.000137
+
+        Traitpair Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       x:y 3.22e-05 5.35e-05 -7.26e-05 0.000137
+
+        Traitpair Estimate StdErr CI95lo CI95hi
+VarE(I)       x:x      0.5  0.353 -0.192   1.19
+\end{verbatim}
+ Yes, the estimates come out in reverse order, and are the same.
+So the blocking passes this test.
+
+\subsection{Correlated traits}
+We can look at $r=1$ by putting the same trait in twice
+\begin{verbatim}
+junk <- dmm(wxyz.df,I(cbind(x,x))  ~ 1, components=c("VarE(I)"),dmeopt="fgls")
+.......................
+        Traitpair Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       x:x 1.72e-05 0.000192 -0.000358 0.000393
+
+        Traitpair Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       x:x 1.72e-05 0.000192 -0.000358 0.000393
+
+        Traitpair Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       x:x 1.72e-05 0.000192 -0.000358 0.000393
+
+        Traitpair Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       x:x 1.72e-05 0.000192 -0.000358 0.000393
+\end{verbatim}
+All the estimates are the same, which is correct, but why are they effectively zero. The "stacked" variance is not zero but it is less than the univariate variance of x
+\begin{verbatim}
+> var(c(x,x))
+[1] 0.2857143
+\end{verbatim}
+
+Perhaps we can explain the above of we look at other correlations. Try $r=-1$
+\begin{verbatim}
+junk <- dmm(wxyz.df,I(cbind(x,z))  ~ 1, components=c("VarE(I)"),dmeopt="fgls")
+................
+        Traitpair Estimate   StdErr   CI95lo  CI95hi
+VarE(I)       x:x 0.000107 0.000754 -0.00137 0.00158
+
+        Traitpair  Estimate   StdErr   CI95lo  CI95hi
+VarE(I)       x:z -0.000107 0.000754 -0.00158 0.00137
+
+        Traitpair  Estimate   StdErr   CI95lo  CI95hi
+VarE(I)       z:x -0.000107 0.000754 -0.00158 0.00137
+
+        Traitpair Estimate   StdErr   CI95lo  CI95hi
+VarE(I)       z:z 0.000107 0.000754 -0.00137 0.00158
+
+> var(c(x,z))
+[1] 0.2857143
+\end{verbatim}
+ So the components do correspond to a -1 correlation, but I expected stacking two negatively correlated traits would increase the variance. Pooling negatively correlated things increases the information content more than double!
+
+Finally lets try $r=0.5$
+\begin{verbatim}
+junk <- dmm(wxyz.df,I(cbind(x,w))  ~ 1, components=c("VarE(I)"),dmeopt="fgls")
+............
+        Traitpair Estimate StdErr CI95lo CI95hi
+VarE(I)       x:x 3.56e-08  0.133  -0.26   0.26
+
+        Traitpair Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       x:w 7.95e-05 9.98e-05 -0.000116 0.000275
+
+        Traitpair Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       w:x 7.95e-05 9.98e-05 -0.000116 0.000275
+
+        Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)       w:w    0.187  0.133 -0.0735  0.449
+
+> var(c(x,w))
+[1] 0.6083929
+\end{verbatim}
+ So we have some variance (.187) and it seems to have arbitrarily assigned it to w, but it is not as large as the "stacked" variance (.608). That seems OK, I would expect positively correlated pooling to achieve less than twice the information. 
+
+\section{Conclusion}
+We have not found anything that looks dramatically wrong. I am not happy with the somewhat arbitrary allocation of variance to one trait, and I am not happy with the magnitude of the multivariate variances. 
+
+Can anyone come up with a better test?
+
+
+
+\end{document}

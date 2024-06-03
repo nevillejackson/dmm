@@ -72,7 +72,7 @@ function (df, pedcols = c(1:3), factorcols = NULL, ycols = NULL, sexcode = NULL,
     cat("No of rows with Id == NA removed from dataframe = ",nona,"\n")
 #
 # Remove duplicate Id's
-    df3 <- df2[!duplicated(df2$Id) & !duplicated.first(df2$Id), ]
+    df3 <- df2[!duplicated(df2$Id) & !duplicated_first(df2$Id), ]
     nodup <- length(df2$Id) - length(df3$Id)
     cat("No of rows with duplicated Id removed from dataframe = ",nodup,"\n")
     cat("No of rows remaining after duplicates and NA's removed = ",nrow(df3),"\n")

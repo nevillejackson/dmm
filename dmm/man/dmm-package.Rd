@@ -11,8 +11,8 @@ Dyadic mixed model analysis with multi-trait responses and pedigree-based partit
 \tabular{ll}{
 Package: \tab dmm\cr
 Type: \tab Package\cr
-Version: \tab 2.1-6\cr
-Date: \tab 2020-06-03\cr
+Version: \tab 2.1-8\cr
+Date: \tab 2023-07-13\cr
 License: \tab GPL-2 \cr
 }
 This package provides tools for setting up and solving dyadic model equations 
@@ -111,10 +111,11 @@ In the \code{dmm} package
 }
 Other R packages
 \itemize{
-\item{pedigreemm}
-\item{nadiv}
-\item{varComp}
-\item{minque}
+\item pedigreemm 
+\item nadiv 
+\item varComp 
+\item minque 
+\item gremlin
 }
 }
 \examples{
@@ -124,13 +125,13 @@ library(dmm)
 data(dt8bal.df)
 dt8.fit <- dmm(dt8bal.df, CWW ~ 1 + Sex,
    components=c("VarE(I)","VarG(Ia)"))  
-summary(dt8.fit)  # fixed effect and environmental and additive genetic components
+summary(dt8.fit)  # fixed effects and variance components
 gsummary(dt8.fit) # heritability with se's
 rm(dt8.fit)
 rm(dt8bal.df)
 
-# Note: 'dt8bal.df is a small demo dataset. Results are 
+# Note: 'dt8bal.df' is a small demo dataset. Results are 
 #        illustrative but not meaningful.
 # for more examples see 'dmm' help page and references
-# for a tutorial and fully documented examples see {\em dmmOverview.pdf}
+# for a tutorial and fully documented examples see  'dmmOverview.pdf'
 }

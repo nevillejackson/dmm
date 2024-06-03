@@ -1,0 +1,358 @@
+%
+% Draft  document dyadicerrorcov.tex
+% Notes on error covariance structure for the dyadic model
+%
+ 
+\documentclass[titlepage]{article}  % Latex2e
+\usepackage{graphicx,lscape,subfigure}
+\usepackage{bm}
+\usepackage{textcomp}
+\usepackage{amsmath}
+ 
+
+\title{ Error covariance structure for the dyadic model used in {\em dmm()}}
+\author{Neville Jackson }
+\date{19 Aug 2021}
+
+ 
+\begin{document} 
+ 
+\maketitle      
+\tableofcontents
+
+\section{The dyadic model equations}
+The dyadic model is presented in Section 6.2.2  of the document {\em dmmOvervire.pdf}~\cite{jack:15}. It results in a set of equations (the DME's) which are given in matrix form as equation 12, which is reproduced below
+
+\begin{equation}
+%\mbox{\boldmath $\Psi = W \Gamma + \Delta$}   \label{eqn:dme}
+\mbox{$\bm{\Psi} = \bm{W}\bm{\Gamma} + \bm{\Delta}$}   \label{eqn:dme}
+\end{equation}
+
+It is important to understand each of the matrix components of these equations, so we elaborate as follows
+
+First, the following variables set the size of the problem and the sizes of the above matrices
+\begin{description}
+\item[n] number of individuals with data
+\item[m] number of individuals in pedigree
+\item[l] number of traits
+\item[k] number of fixed effects
+\item[c] number of variance components to be estimated
+\end{description}
+
+Now we explain each matrix 
+\begin{description}
+\item[$\bm{\Psi}$] $n^{2} \times l^{2}$ matrix of dyadic covariances for each pair of individuals (row) and each traitpair (col). Each covariance needs to be appropriately adjusted for fixed effects. The columns of $\bm{\Psi}$ become the dependent variables in a multi-trait multiple regression.
+\item[$\bm{W}$] $n^{2} \times c$ matrix containing the coefficients of the dyadic model equations, which become the independent variables of a multiple regression. Each column of $\bm{W}$ has the form $Vec{\bm{(MZ_{c} R_{c} Z_{c}^{\prime}M^{\prime})}}$ where $Vec$ is an operator that vectorizes a matrix, $\bm{M}$ is a matrix from the fixed effect model such that \mbox{\boldmath $Y - X \hat{\alpha} = M Y$}, $\bm{Z_{c}}$ is an incidence matrix relating individuals with data to individuals in the pedigree, and $\bm{R_{c}}$ is a relationship matrix relevant to component $c$. Note that relationship matrices are used, not their inverse.
+\item[$\bm{\Gamma}$] $c \times l^{2}$ matrix of (co)variance component parameters to be estimated, which become the partial regression coefficients of a multiple regression.
+\item[$\bm{\Delta}$] $n^{2} \times l^{2}$ matrix of dyadic model residuals. Note the variance of these is not the individual environmental variance component - that has to be explicitely fitted as one of the columns of matrix $\bm{W}$ and appears as one row of matrix $\bm{\Gamma}$. The $\bm{\Delta}$ matrix elements are the extent to which each dyadic covariance in matrix $\bm{\Psi}$ deviates from its expectation. The (co)variances of the elements of $\bm{\Delta}$ enter into the standard errors of variance component estimates, in the same way that the (co)variances of residuals enter into the standard errors of any regression coefficient estimates. 
+\end{description}
+
+Matrices $\bm{\Psi}$ and $\bm{W}$ have $n^{2}$ rows, so we are looking at solving $n^{2}$ equations in $c$ unknowns. This is an overdetermined system. We can use least squares to obtain an approximate solution. 
+
+\section{Dyadic model assumptions}
+Before attempting a regression fit of model (1), it is worth looking at how well the data conform to the assumptions made in using using least squares to fit a multiple regression model. The critical assumptions are
+
+\begin{itemize}
+\item the independent variables ( columns of $\bm{W}$) are uncorrelated
+\item the residuals (columns of $\bm{\Delta}$) are uncorrelated with each other and with the independent variates
+\end{itemize}
+
+A least squares fit does not involve assumptions regarding the distribution of residuals, but this does become involved when using residuals to obtain standard errors of parameter estimates.
+
+\subsection{The assumption of independence of columns of $\bm{W}$}
+
+The correlations among independent variables (columns of $\bm{W}$) are returned by {\em dmm()} in the attribute {\em dme.correl} of the returned object.  These are pairwise correlations between the columns of the $\bm{W}$ matrix. They are not quite the same thing as correlations between relationship matrix elements, because the columns of $\bm{W}$ also involve $\bm{M}$ and $\bm{Z}$ matrices, as defined in dmmOverview.pdf~\cite{jack:15} Tables 5 and 6.
+
+The $\bm{Z}$ matrix simply selects a subset of the relationship matrix corresponding to those individuals which have observations. The $\bm{M}$ matrix comes from the fixed effects model, and consists of a set of weights which adjust for the degrees of freedom involved in each of the fixed effects applicable to each individual. The $\bm{M}$ matrix is related to the {\em hat} matrix $(\bm{M} = \bm{I} - \bm{H})$. So the columns of the $\bm{W}$ matrix are a weighted subset of the elements of the appropriate relationship matrix. Their correlations are therefore not the same as relationship matrix element correlations.
+, but are usually similar
+
+In the case of a dataset with mean only, and all individuals in the pedigree with data, such as the {\em warcolak} dataset, the subset is all of the relationship matrix and the weights in $\bm{M}$ are all equal, so the correlations of the columns of $\bm{W}$ are exactly the same as the correlations of the elements of the relationship matrices, in this special case.
+
+In regression analysis it is generally considered that if there are collinearities among the independent variates amounting to correlations greater than around 0.5 then the estimates of regression coefficients are suspect. Translating this to our dyadic model, the variance component estimates are not likely to achieve a realistic separation if the columns of $\bm{W}$ have correlations exceeding 0.5. The option of using principal component regression ({\em dmeopt="pcr"} has been developed as an experimental approach to dealing with serious collinearities among the components.
+
+If we want to plot these $\bm{M}$ matrix column correlations ( eg as scatteplots) we need argument {\em dmekeep=T} in calling {\em dmm()}. The dafault for {\em dmm()} is not to save the DME's in its return object. This can be overridden with argument {\em dmekeep=T}. This results in 2 attributes {\em dme.psi} and {\em dme.wmat} being added to the returned object. Caution, this can result in a very large returned object. The attribute {\em dme.wmat} is the $\bm{W}$ matrix, and its columns can be plotted with the standard {\em plot()} routine.
+
+\subsection{The assumptions of independence of dyadic residuals}
+To check the dyadic residuals, we can use the S3 {\em plot()} method included in the {\em dmm} package. This will output histograms, qqnorm plots, and scatterplots of residuals against fitted and observed values. Plots tend to be more informative for datasets with smaller numbers of individuals.
+
+Dyadic residuals are usually not far from normally distributed, but may be leptokurtic and slightly skewed to the right.
+
+If dyadic residuals are correlated with fitted values of the components, then there is something wrong with the model, probably some extra component should be fitted. 
+
+One can expect dyadic residuals to be correlated with observed dyadic covariances. It is normal for the fitted components in a dyadic model to explain only a small fraction of the total variation, (ie the dyadic residuals $\bm\Delta$ are large ) and this of course leads to the observed covariances being highly correlated with residuals.
+
+The question of patterns of correlation among the dyadic residuals themselves is a seriously difficult area. The covariances (or correlations) among the dyadic residuals for one trait form an $n^{2} \times n^{2}$ matrix - ie $n^{4}$ elements. Too many to compute and cant be stored in R, except for very small datasets. This issue is discussed in the document {\em dmmOverview.pdf}~\cite{jack:15} in relation to why {\em dmm()} is not able to do REML estimates. REML estimates require that the covariance (or correlation) matrix of the dyadic residuals be constructed and used to compute a GLS rather than an OLS solution to the DME's. That is only computationally feasible for very small datasets.
+
+The covariance structure of dyadic residuals is actually known. It is derived in Searle et al (1992)~\cite{sear:92} on pages 407-413. It involves fourth moments of the observations.
+
+\section{Covariance structure of dyadic residuals}
+ Searle et al (1992)~\cite{sear:92} give the following for the covariance matrix of the observations, and therefore of the errors, of a dispersion-mean model.
+
+\begin{eqnarray}
+\label{eqn:searle}
+ \bm{\mathcal{V}} & = & cov(\bm{\Psi})  \\
+          & = & (\bm{B} \otimes \bm{B}) (\bm{I} + \bm{S}) \\
+          & = & (\bm{I} + \bm{S}) (\bm{B} \otimes \bm{B})
+\end{eqnarray}
+where
+\begin{description}
+\item[$\bm{I}$] is an identity matrix of order $n^{2}$
+\item[$\bm{S}$] is a commutation matrix $n^{2} \times n^{2}$
+\item[$\bm{B}$] is the covariance matrix  all the observations, after removing fixed effects. The observations after fixed effects removed by least squares are $\bm{M}\bm{y}$  and the set of covariances (or products) of these residuals is $\bm{M}\bm{y} \otimes \bm{M}\bm{y}$. Now the covariance  matrix of $\bm{M}\bm{y}$ is  $\bm{B} = \bm{M}\bm{V}\bm{M}$, where $\bm{V}$ is $cov(\bm{y})$. 
+\end{description}
+The term $\bm{B} \otimes \bm{B}$ gives the covariance matrix of all the covariances of products of residuals. 
+
+So $\bm{\mathcal{V}}$ is the expected value of the covariance of dyadic residuals $\bm{\Delta}$. Searle's equation~\ref{eqn:searle} only applies if $\bm{y}$ is normally distributed. There are additional terms involving the fourth moments of $\bm{y}$ if it is not normal.
+
+Searle's presentation is univariate. There is only one observed trait in the vector $\bm{y}$. The term $(\bm{I} + \bm{S})$ is not trait dependent, but $\bm{B}$ depends on $\bm{V}$ which depends on the variance component estimates for a trait as well as on relationship matrices.
+
+We need to look at each of the components of these errors of the dyadic model in order to understand why a set of products of data values has correlated errors and why a fit of data to the dyadic model often has a large amount of unexplained variance. The dyadic model residuals, $\bm{\Delta}$, need to be understood .
+
+\subsection{Covariance structue arising from sets of products of data values}
+ Let there be 4 observations $(x,y,u,v)$ and form the two products $xy$ and $uv$. The covariance between these two products is 
+\begin{eqnarray}
+Cov(xy,uv) & = & E(x)E(u)Cov(y,v) + E(x)E(v)Cov(y,u) + \\
+           &   &  E(y)E(u)Cov(x,v) + E(y)E(v)Cov(x,u) + \\
+           &   &  Cov(x,u)Cov(y,v) + Cov(x,v)Cov(y,u)
+\end{eqnarray}
+In our case the data values $(x,y,u,v)$ are all adjusted for fixed effects, so the expected values are all zero and the formula reduces to 
+\begin{equation}
+Cov(xy,uv) = Cov(x,u)Cov(y,v) + Cov(x,v)Cov(y,u)
+\end{equation}
+
+We now look at what this implies, using a small example of just 2 data values $y_{1}$ and $y_{2}$ leading to a set of 4 products $y_{1}y_{1}$, $y_{1}y_{2}$, $y_{2}y_{1}$ and $y_{2}y_{2}$. Applying the above formula we have, for the case where $y_{1}$ and $y_{2}$ are independent
+\begin{eqnarray}
+Cov(y_{1}y_{1},y_{1}y_{1}) & = & 2 Cov^{2}(y_{1},y_{1}) \\
+                           & = & 2 Var^{2}(y_{1}) \\
+Cov(y_{1}y_{2},y_{1}y_{1}) & = & 0 \\
+Cov(y_{2}y_{2},y_{1}y_{1}) & = & 0 \\
+Cov(y_{1}y_{2},y_{1}y_{2}) & = & Cov(y_{1},y_{1})Cov(y_{2},y_{2}) + Cov(y_{1},y_{2})Cov(y_{2},y_{1}) \\
+                           & = & Var(y_{1}) Var(y_{2}) \\
+Cov(y_{1}y_{2},y_{2}y_{1}) & = & Cov(y_{1},y_{2})Cov(y_{2},y_{1}) + Cov(y_{1},y_{1})Cov(y_{2},y_{2}) \\
+                           & = & Var(y_{1}) Var(y_{2})
+\end{eqnarray}
+ This is a sample of the 16 possible combinations, forming the covariance matrix of all the products of 2 data values.The pattern should be obvious. Table ~\ref{tab:y1y2indep} shows the full pattern for the case of $y_{1}$ and $y_{2}$ independent.
+\input{taby1y2indep.tex}
+If $Var(y_{1}) = Var(y_{2})$ the entries reduce to $2 V_{2}$ for the covariances of self products with themselves, and $V_{2}$ for the remaining non-zero block diagonal covariances.
+
+This is the pattern specified by the $(\bm{I} + \bm{S})$ part of equation~\ref{eqn:searle} If we construct a commutation matrix of size $4$ and add an identity matrix to it we get
+\begin{verbatim}
+kmat <- function(m,n)
+# commutation matrix or order m x n
+{
+ K <- matrix(0,m*n,m*n)
+ for (i in 1 : m){
+  for (j in 1 : n){
+    K[i + m*(j - 1), j + n*(i - 1)] <- 1
+  }
+ }
+return(K)
+}
+
+> kmat(2,2)
+     [,1] [,2] [,3] [,4]
+[1,]    1    0    0    0
+[2,]    0    0    1    0
+[3,]    0    1    0    0
+[4,]    0    0    0    1
+> 
+> kmat(2,2) + diag(4)
+     [,1] [,2] [,3] [,4]
+[1,]    2    0    0    0
+[2,]    0    1    1    0
+[3,]    0    1    1    0
+[4,]    0    0    0    2
+> 
+\end{verbatim}
+
+So the term $(\bm{I} + \bm{S})$ specifies the pattern of covariances of products of observations that are independent and have unit variance. If these assumptions are removed, we have the set of covariances of products shown in Table~\ref{tab:y1y2general}
+\input{taby1y2general.tex}
+In interpreting Table~\ref{tab:y1y2general} we have to remember that covariances  like $Cov(y_{1},y_{2})$ between observations are covariances between individuals arising from genetic relationships between individuals. So information from the relationship matrix enters into the dyadic errors via the covariances in Table~\ref{tab:y1y2general}. Also inbreeding information enters into the dyadic errors via the variances in Table~\ref{tab:y1y2general}. For example terms such as the covariance of $y_{1}y_{1}$ with itself contain only variances, and are the same in the independent case of Table~\ref{tab:y1y2indep}.
+
+\subsection{How does Searle's equation~\ref{eqn:searle} generate the covariance structure of Table~\ref{tab:y1y2general}}
+  Start with 2 observations on related individuals. After fixed effects, the covariance matrix among individuals is 
+\begin{eqnarray}
+  \bm{V} & = & \bm{A} \sigma^{2}_{A} + \bm{I} \sigma^{2}_{E} \\
+    & = &  \begin{bmatrix} 1 & r \\ r & 1 \end{bmatrix} \sigma^{2}_{A} 
+         +  \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} \sigma^{2}_{E} \\ \label{eqn:regv}
+    & = & \begin{bmatrix} (\sigma^{2}_{A} + \sigma^{2}_{E}) & r \sigma^{2}_{A} \\ r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E}) \end{bmatrix}
+\end{eqnarray}
+ where
+\begin{description}
+\item[$r$] is the additive relationship coefficient between the two individuals
+\item[$\sigma^{2}_{A}$] is additive genetic variance
+\item[$\sigma^{2}_{E}$] is environmental variance
+\item[$\bm{A}$] is additive relationship matrix
+\item[$\bm{I}$] is identity matrix 
+\item[$\bm{V}$] is covariance matrix among individuals
+\end{description}
+
+We are interested in matrix $\bm{B} = \bm{M} \bm{V} \bm{M}$. Here we  ignore $\bm{M}$ for simplicity which is equivalent to there being no fixed effects.  So $\bm{B}$  is just $\bm{V}$ here , and we can form $\bm{B} \otimes \bm{B}$ as follows
+
+\begin{eqnarray}
+\bm{B} \otimes \bm{B} & = & \begin{bmatrix} (\sigma^{2}_{A} + \sigma^{2}_{E}) & r \sigma^{2}_{A} \\ r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E}) \end{bmatrix}
+\otimes
+\begin{bmatrix} (\sigma^{2}_{A} + \sigma^{2}_{E}) & r \sigma^{2}_{A} \\ r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E}) \end{bmatrix} \\
+    & = & \begin{bmatrix} (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & r^{2} \sigma^{4}_{A}\\ 
+ (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} & r^{2} \sigma^{4}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} \\
+(\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & r^{2} \sigma^{4}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} \\
+r^{2} \sigma^{4}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} \end{bmatrix}
+\end{eqnarray}
+ $\bm{B} \otimes \bm{B}$ is the covariance matrix among all product combinations of the individual $y$ values, allowing for relationship matrices among individuals and the variance components estimates, but not allowing for the covariance structure of sets of products. We can see how this reduces to a diagonal structure if the additive relationship coefficient $(r)$ is zero. 
+
+We now need to multiply this with the $(\bm{I} + \bm{S})$ matrix, as in equation~\ref{eqn:searle}. 
+\begin{eqnarray}
+\bm{\mathcal{V}} & = & (\bm{I} + \bm{S}) (\bm{B} \otimes \bm{B}) \\
+ & = & \begin{bmatrix} 2 & 0 & 0 & 0 \\ 0 & 1 & 1 & 0 \\ 0 & 1 & 1 & 0 \\ 0 & 0 & 0 & 2 \end{bmatrix} 
+\begin{bmatrix} (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & r^{2} \sigma^{4}_{A}\\
+ (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2 }_{E})^{2} & r^{2} \sigma^{4}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} \\
+(\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & r^{2} \sigma^{4}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} \\
+r^{2} \sigma^{4}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} \end{bmatrix} \\
+ & = &  \begin{bmatrix} 2 (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} & 2 (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & 2 (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & 2 r^{2} \sigma^{4}_{A} \\
+ 2 (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} + r^{2} \sigma^{4}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} + r^{2} \sigma^{4}_{A} & 2 (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} \\
+ 2 (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} + r^{2} \sigma^{4}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} + r^{2} \sigma^{4}_{A} & 2 (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} \\
+ 2 r^{2} \sigma^{4}_{A} & 2 (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & 2 (\sigma^{2}_{A} + \sigma^{2}_{E})r \sigma^{2}_{A} & 2 (\sigma^{2}_{A} + \sigma^{2}_{E})^{2} \end{bmatrix} \label{eqn:vcal}
+\label{eqn:covres}
+\end{eqnarray}
+
+$\bm{\mathcal{V}}$ is the covariance matrix of residuals for the dyadic model, allowing for correlated residuals due to both the covariance structure of products and  the relationships between individuals and the variance component estimates.
+ This structure agrees with Table~\ref{tab:y1y2general} . For example the term $r^{2}\sigma_{A}^{4}$ is the equivalent of $Cov(y_{1},y_{2})Cov(y_{2},y_{1})$, because only $\sigma^{2}_{A}$ contributes to covariance between individuals. So equation~\ref{eqn:searle} is based on the expected covariances of products with a commutation matrix added to allow for the structure of a set of products.
+
+It would be possible to dissect $\bm{\mathcal{V}}$ into 
+\begin{itemize}
+\item part due to the variance components and relationships only $\bm{B} \otimes \bm{B}$
+\item part due to the covariance structure of a set of all product combinations  in adddition to that due to variance components and relationships $(\bm{I} + \bm{S})(\bm{B} \otimes \bm{B}) $. This is the REML method. REML is GLS allowing for {\em all} correlated errors, regardless of the cause of the correlations.
+\item part ignoring relationships (set $\bm{A}$ to $\bm{I}$ in calculating $\bm{B}$)
+\end{itemize}
+ 
+So what the covariances of product combinations do is add a  term  to some of the elements of $\bm{B} \otimes  \bm{B})$
+
+
+
+
+\section{What part of the variance of sets of products is explained by fitting the dyadic model}
+
+
+Our dyadic model $(\bm{\Psi} = \bm{W} \bm{\Gamma} + \bm{\Delta})$ is a multiple regression equation. We need to ask how much of the variance of $\bm{\Psi}$ is explained by the regression fit, and what is the source of the residuals $\bm{\Delta}$. 
+
+\subsection{OLS}
+
+Under the assumptions of ordinary least squares (OLS), ie that errors are $N(0,\sigma^{2}I)$,
+the sum of squares of $\bm{\Psi}$ is $\bm{\Psi}^{`}\bm{\Psi}$. Note this is a different thing from the covariance structure of $\bm{\Psi}$ discussed in the previous sections, which is $\bm{\Psi}\bm{\Psi}^{`}$. 
+
+The normal equation for the dyadic model considered as a regression is
+\begin{displaymath}
+\bm{W}^{`} \bm{W} \bm{\Gamma} = \bm{W}^{`} \bm{\Psi}
+\end{displaymath}
+which if we multiply both sides by $\bm{\Gamma}^{`}$ is
+\begin{eqnarray*}
+\bm{\Gamma}^{`} \bm{W}^{`} \bm{W} \bm{\Gamma} & = & \bm{\Gamma}^{`} \bm{W}^{`} \bm{\Psi} \\
+(\bm{W}\bm{\Gamma})^{`} (\bm{W}\bm{\Gamma}) & = & \bm{\Gamma}^{`} \bm{W}^{`} \bm{\Psi} \\
+ & = & \bm{W}(\bm{W}^{`}\bm{W})^{-1}\bm{W}^{`}
+\end{eqnarray*}
+The left hand side is the variance of $\bm{W}\bm{\Gamma}$ (with $1/n$ omitted), so this is the part of the total sum of squares $\bm{\Psi}^{`}\bm{\Psi}$ which is explained by the regression fit. The residual sum of squares $(\bm{\Delta}^{`} \bm{\Delta})$ is then the difference $\bm{\Psi}^{`}\bm{\Psi} - \bm{\Gamma}^{`} \bm{W}^{`} \bm{\Psi}$.
+
+For our simple example with 2 observations $y_{1}$ and $y_{2}$ forming four products $y_{1}y_{1}$, $y_{1}y_{2}$, $y_{2}y_{1}$, $y_{2}y_{2}$, the dyadic model is 
+\begin{eqnarray*}
+\bm{\Psi} & = &  Vec \begin{bmatrix} 1 & r \\ r & 1 \end{bmatrix} \sigma^{2}_{A}
+         + Vec \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix} \sigma^{2}_{E} 
+         + Vec \bm{\Delta} \\
+ \begin{bmatrix} y_{1}y_{1} \\ y_{1}y_{2} \\ y_{2}y_{1} \\ y_{2}y_{2} \end{bmatrix}          & = & \begin{bmatrix} 1 & 1 \\ r & 0 \\ r & 0 \\ 1 & 1 \end{bmatrix} \begin{bmatrix} \sigma^{2}_{A} \\ \sigma^{2}_{E} \end{bmatrix} +  
+  \begin{bmatrix} \delta_{11} \\ \delta_{12} \\ \delta_{21} \\ \delta_{22} \end{bmatrix}
+\end{eqnarray*}
+ and the residual sum of squares is 
+\begin{eqnarray*}
+\bm{\Delta}^{`} \bm{\Delta} & = &  \bm{\Psi}^{`}\bm{\Psi} - (\bm{W}\bm{\Gamma})^{`} (\bm{W}\bm{\Gamma}) \\
+ & = & \begin{bmatrix} y_{1}y_{1} & y_{1}y_{2} & y_{2}y_{1} & y_{2}y_{2} \end{bmatrix} \begin{bmatrix} y_{1}y_{1} \\ y_{1}y_{2} \\ y_{2}y_{1} \\ y_{2}y_{2} \end{bmatrix} - \\ & &  \begin{bmatrix} \sigma^{2}_{A} + \sigma^{2}_{E} & r \sigma^{2}_{A} & r \sigma^{2}_{A} & \sigma^{2}_{A} + \sigma^{2}_{E} \end{bmatrix}
+\begin{bmatrix}\sigma^{2}_{A} + \sigma^{2}_{E} \\ r \sigma^{2}_{A} \\ r \sigma^{2}_{A} \\ \sigma^{2}_{A} + \sigma^{2}_{E} \end{bmatrix} \\
+\end{eqnarray*}
+
+
+Note that 
+\begin{eqnarray*}
+\bm{\Psi}^{`}\bm{\Psi} & = & tr(\bm{\Psi}\bm{\Psi}^{`}) \\
+                       & = & tr(\bm{\mathcal{V}})
+\end{eqnarray*}
+so comparison with equation~\ref{eqn:covres} is valid. 
+
+We can substitute for $\bm{\Psi}^{`}\bm{\Psi}$ and subtract $(\bm{W}\bm{\Gamma})^{`} (\bm{W}\bm{\Gamma})$ to get
+\begin{eqnarray*}
+\bm{\Delta}^{`} \bm{\Delta} & = & 6(\sigma^{2}_{A} + \sigma^{2}_{E})^{2} + 2(r \sigma^{2}_{A})^{2} \\
+   & = & - 2(\sigma^{2}_{A} + \sigma^{2}_{E})^{2} - 2(r \sigma^{2}_{A})^{2} \\
+   & = &  4(\sigma^{2}_{A} + \sigma^{2}_{E})^{2}
+\end{eqnarray*}
+
+
+So the dyadic residual sum of squares clearly depends on what is in the sum of squares of products of $y_{1}$ and $y_{2}$ that is not explained by the model and its regression fit.  The trace of $\bm{\mathcal{V}}$ (equation~\ref{eqn:covres}) contains all of the SS due to regression plus an additional $4((\sigma^{2}_{A} + \sigma^{2}_{E})^{2}$. So the regression fit of the dyadic model is not removing all of the systematic effects. An amount $4(\sigma^{2}_{A} + \sigma^{2}_{E})^{2}$ is ending up in the residual sum of squares, presumably in addition to random rtesiduals such as those due to measurement errors in the $\bm{\Psi}$ values. This is puzzling. Perhaps the expectation matrix $\bm{W}$ should contain more terms. 
+
+One can see why the $R^{2}$ values for a dyadic model fit are typically less than $10$ percent.
+
+
+
+
+\subsection{GLS}
+Under the assumptions of generalised least squares, ie that the errors are $N(0,V)$,the total sum of squares is $\Psi^{`} R^{-1} \Psi$, where $R$ is the correlation matrix corresponding to $V$  
+
+So we have for our simple example
+\begin{eqnarray*}
+\bm{V} & = & \begin{bmatrix} (\sigma^{2}_{A} + \sigma^{2}_{E}) & r \sigma^{2}_{A} \\ r \sigma^{2}_{A} & (\sigma^{2}_{A} + \sigma^{2}_{E}) \end{bmatrix} \\
+\bm{R} & = & \begin{bmatrix} 1 & \frac{r \sigma^{2}_{A}}{(\sigma^{2}_{A} + \sigma^{2}_{E})} \\ \frac{r \sigma^{2}_{A}}{(\sigma^{2}_{A} + \sigma^{2}_{E})} & 1 \end{bmatrix} \\
+\bm{R}^{-1} & = & \begin{bmatrix} \frac{1}{1 - (\frac{r \sigma^{2}_{A}}{(\sigma^{2}_{A} + \sigma^{2}_{E})})^{2}}  & - \frac{\frac{r \sigma^{2}_{A}}{(\sigma^{2}_{A} + \sigma^{2}_{E})}}{1 - (\frac{r \sigma^{2}_{A}}{(\sigma^{2}_{A} + \sigma^{2}_{E})})^{2}} \\ &  \end{bmatrix}
+\end{eqnarray*}
+
+A small numerical example is illuminating. 
+\begin{verbatim}
+> rmat
+     [,1] [,2]
+[1,]  1.0  0.4
+[2,]  0.4  1.0
+> rmatn
+     [,1] [,2]
+[1,]  1.0 -0.4
+[2,] -0.4  1.0
+> psi
+[1] 1 2
+> t(psi) %*% psi
+     [,1]
+[1,]    5
+> t(psi) %*% solve(rmat) %*% psi
+         [,1]
+[1,] 4.047619
+> t(psi) %*% solve(rmatn) %*% psi
+         [,1]
+[1,] 7.857143
+> 
+\end{verbatim}
+So a positive correlation {\em reduces} the total sum of squares, and a negative correlation {\em increases} it. That makes sense, positively correlatesd variates contribute less total information than independent variates, negatively correlated variates contribute more.
+
+The normal equations for the dyadic model considered as a regression fitted by GLS are
+\begin{displaymath}
+\bm{W}^{`} \bm{V}^{-1} \bm{W} \bm{\Gamma} = \bm{W}^{`} \bm{V}^{-1} \bm{\Psi}
+\end{displaymath}
+which if we multiply both sides by $\bm{\Gamma}_{`}$ is
+\begin{eqnarray*}
+\bm{\Gamma}^{`} \bm{W}^{`} \bm{V}^{-1} \bm{W} \bm{\Gamma} & = & \bm{\Gamma}^{`} \bm{W}^{`} \bm{V}^{-1} \bm{\Psi}  \\
+(\bm{W}\bm{\Gamma})^{`} \bm{V}^{-1} (\bm{W}\bm{\Gamma}) & = & \bm{\Gamma}^{`} \bm{W}^{`} \bm{V}^{-1} \bm{\Psi} \\
+& = & \bm{W}(\bm{W}^{`} \bm{V}^{-1} \bm{W})^{-}\bm{W}^{`} \bm{V}^{-1} ??
+\end{eqnarray*}
+
+The left hand side is the GLS sum of squares of $\bm{W} \bm{\Gamma}$, so this is the part of the total GLS sum of squares $\bm{\Psi} \bm{V}^{-1} \bm{\Psi}$ which is explained by the regression fit. The residual GLS sum of squares $\bm{\Delta}^{`} \bm{\Delta}$ is the difference $\bm{\Psi} \bm{V}^{-1} \bm{\Psi} - \bm{\Gamma}^{`}\bm{W}^{`} \bm{V}^{-1} \bm{\Psi}$.
+
+
+\begin{thebibliography}{99}
+
+\bibitem{jack:15}
+Jackson, N. (2015) An Overview of the R package dmm.
+    From http://cran.r-project.org/package=dmm 
+    Or https://github.com/cran/dmm
+
+\bibitem{sear:92}
+Searle, S.R., Casella, G., and McCullock, C.E. (1992) Variance Components.
+    John Wiley and Sons, New York.
+
+\bibitem{wola:14}
+Wolak, M.E. (2014) nadiv: an R package to create relatedness matrices for
+    estimating non-additive genetic variances in animal models.
+    Methods in Ecology and Evolution 3:792-796.
+\end{thebibliography}
+\end{document}
