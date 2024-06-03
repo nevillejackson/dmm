@@ -1,3 +1,8 @@
+# dmm_2.1-10 Release notes
+ There has been a gap in versions when dmm was unable to use nadiv() due to problems with modifications to the {Matrix} package. That has now been corrected, and from release 2.1-10 onwards dmm() must use release 2.18.0 of the {nadiv} package.
+ Apologies for any inconvenience, and assistance from Matthew Wolak ( author of nadiv) is greatly appreciated.
+  dmm_2.1-10 has been completely retested against all examples in dmmOverview.pdf and gives the same results as in that document.
+
 # dmm_2.1-7 Release notes
 
 ## Comment
