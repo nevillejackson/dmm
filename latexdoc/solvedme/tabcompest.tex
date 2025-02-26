@@ -1,0 +1,22 @@
+%\documentclass{article}
+%\usepackage{lscape}
+%\begin{document}
+
+\begin{table}[h]
+\centering
+\caption{Relationship between fitting methods for fixed and dyadic models and tpyes of variance component estimate obtained}
+\label{tab:compest}
+\vspace{0.1in}
+\begin{tabular}{|p{1.0in}|p{1.0in}|p{1.0in}|p{1.0in}|} \hline
+Method for fixed model  & \multicolumn{3}{c|}{Method for dyadic model} \\ \cline{2-4}
+                        & Ordinary Least Squares & Generlised Least Squares & Robust Regression \\ 
+                        & qr or lm or pls & fgls & lmrob \\ \hline
+
+ ols & MINQUE & REML & robust MINQUE  \\
+ gls & BCML   & REML & robust ML \\ \hline
+
+ 
+\end{tabular}
+\end{table}
+
+%\end{document}

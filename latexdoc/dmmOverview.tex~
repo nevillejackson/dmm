@@ -4,34 +4,16 @@
 % supplements help files
 %
  
-\documentclass[titlepage,a4paper,12pt]{article}  % Latex2e
+\documentclass[titlepage]{article}  % Latex2e
 \usepackage{graphicx,lscape,subfigure}
 \usepackage{bm}
 \usepackage{textcomp}
-
-\usepackage{amssymb,amsmath}
-\usepackage[utf8]{inputenc}
-
-\usepackage[T1]{fontenc}
-\usepackage{textcomp}
-\usepackage{mathptmx}
-%\usepackage[margin=2.5cm]{geometry}
-\usepackage[margin=0.5in]{geometry}
-\usepackage{listings}
-\lstset{upquote=true,basicstyle={\small\ttfamily}}
-
-\usepackage{color}
-\usepackage{tcolorbox}
-\tcbuselibrary{breakable}
-\tcbuselibrary{listings}
-\usepackage{fancyvrb}
-
  
 
 \title{ An Overview of the R Package dmm}
 \author{Neville Jackson }
-\date{22 Feb 2025 \\
-      For dmm\_3.1-1}   % Deleting this command produces today's date.
+\date{10 Apr 2021 \\
+      For dmm\_2.1-7}   % Deleting this command produces today's date.
 
  
 \begin{document} 
@@ -48,38 +30,23 @@ publicly available in the R environment. This package builds on their work, and 
 \clearpage
 \section{Abstract}
  Package {\em dmm} estimates a variety of genetic and environmental (co)variance
-components from pedigree data. It can transform these to genetic parameters, and to estimates of response to selection. The statistical method used is an heirarchical mixed model with the first level a monadic fixed effects model of individuals, and the second level a dyadic model, that is a model which equates dyadic covariances (ie covariances between pairs of individuals) to their expectations. The dyadic model is linear and therefore reduces variance component estimation to a linear regression problem. 
-The fixed effects model equations can be solved by OLS or GLS.
-The random effects dyadic model equations can be solved by standard regression techniques (OLS via qr or lm functions and FGLS via an iterative algorithm)  to estimate (co)variance components as regression coefficients. The package also offers robust regression (lmrob function) and principal component regression (pls package) as experimental alternative varince component estimation options.
-
-The type of (co)variance component estimate obtained  depends on 
-\begin{itemize}
-\item whether the monadic fixed effects equations are solved by OLS or GLS 
-\item whether the dyadic random effect equations are solved by OLS, FGLS, or robust regression
-\end{itemize}
-Table~\ref{tab.est} shows that (co)variance component estimates from dmm can be MINQUE, bias-corrected ML (BCML) , REML, or robust MINQUE (R-MINQUE) or robust BCML (R-BCML), depending on how the fixed and dyadic model equations are solved
-
-\input{tabest.tex}
-
-Note that it does not matter how fixed effects are estimated when using FGLS to get REML estimates.
-That is in line with REML theory, any set of {\em error contrasts} can be used for a REML iteration.
-
-Estimating variance components in this way is feasable only for datasets of less than around 10000 individuals ( less than that in the REML case). The package may therefore be useful for modest sized research datasets, but not for extensive field data. The variance component estimates obtained by directly solving the dyadic model equations by OLS are equivalent to MINQUE estimates if the fixed model is fitted with OLS (ordinary least squares), and are equivalent to bias-corrected-ML (BCML) estimates if the fixed model is fitted with GLS (generalised least squares). To get REML estimates the dyadic model equations must be solved by FGLS, and this is only feasable for very small datasets. The REML estimates are therefore only a demonstration of correctness of the method rather than of any practical use with large datasets. The dmm package includes a number of test data sets which are useful to demonstrate correctness of its calculations, and to illustrate its capabilities.
+components from pedigree data. It can transform these to genetic parameters, and to estimates of response to selection. The statistical method used is an heirarchical model with the first level a normal fixed effects model and the second level a dyadic model or model which equates dyadic covariances to their expectations. The dyadic model is linear and therefore reduces variance component estimation to a linear regression problem. 
+The package uses standard regression techniques (qr or lm functions) to estimate components as regression coefficients, and also offers robust regression (lmrob function) and principal component regression (pls package) as experimental alternative options.
+Estimating variance components in this way is feasable only for datasets of less than around 10000 individuals. The package may therefore be useful for modest sized research datasets, but not for extensive field data. The variance component estimates obtained by directly solving the dyadic model equations in the above way are equivalent to MINQUE estimates if the fixed model is fitted with OLS (ordinary least squares), and are equivalent to bias-corrected-ML estimates if the fixed model is fitted with GLS (generalised least squares). The package includes a number of test data sets which are useful to demonstrate correctness of its calculations, and to illustrate its capabilities.
 
 \clearpage
 \section{Introduction} 
- Quantitative genetic analysis uses what we can infer from a pedigree about the genetic relationship between pairs of individuals, to analyse variation among a sample of individuals in metric traits, and to make inferences regarding the causes of variation in the population from which individuals have been sampled. In {\em dmm()} pairs of individuals are called {\em dyads}, and a dyadic model is used for variance component estimation. The {\em dmm} package sets up dyadic model equations (DME's) from relationship matrices and observations. DME's equate observations on a dyad to their expectation (in terms of genetic and environmental (co)variance components). Estimates of (co)variance components are derived by solving the DME's directly (eg using the QR method). {\em dmm()} does not form Henderson's mixed model equations, and does not require inverses of relationship matrices. {\em dmm()} then computes genetic parameters ( ie proportions of variance and correlations), from the estimated variance components. There is also a facility to post-compute genetic response to selection.
+ Quantitative genetic analysis uses what we can infer from a pedigree about the genetic relationship between pairs of individuals, to analyse variation among a sample of individuals in metric traits, and to make inferences regarding the causes of variation in the population from which individuals have been sampled. In {\em dmm()} pairs of individuals are called {\em dyads}, and a dyadic model is used for variance component estimation. The {\em dmm} package sets up dyadic model equations (DME's) from relationship matrices and observations. DME's equate obserations on a dyad to their expectation (in terms of genetic and environmental (co)variance components). Estimates of (co)variance components are derived by solving the DME's directly (eg using the QR method). {\em dmm()} does not form Henderson's mixed model equations, and does not require inverses of relationship matrices. {\em dmm()} then computes genetic parameters ( ie proportions of variance and correlations), from the estimated variance components. There is also a facility to post-compute genetic response to selection.
 
- The approach taken by {\em dmm()} is suited to small to medium multi-trait datasets; typically research data rather than field data, of less than around 10000 individuals. {\em dmm()} is less compute intensive than iterative likelihood-based techniques, such as REML, and extends easily to multiple traits and multiple (co)variance components, but has a high computer memory requirement.
+ The approach taken by {\em dmm()} is suited to small multi-trait datasets; typically research data rather than field data, of less than around 10000 individuals. {\em dmm()} is less compute intensive than iterative likelihood-based techniques, such as REML, and extends easily to multiple traits and multiple (co)variance components, but has a high computer memory requirement.
 
- Research datasets are likely to have a pedigree design which permits estimation of individual and maternal components for additive, non-additive, or sex-linked genetic (co)variances. {\em dmm()}  allows estimation of any or all of the above genetic components, including all possible cross-effect genetic covariances. The number of components estimated has little effect on compute intensity. {\em dmm()} includes an experimental approach to dealing with multicollinearities among the variance components, using principal component regression. {\em dmm()} also includes an FGLS method of solving the dyadic model equations , which leads to REML estimates. Unfortunaltely FGLS on the DME's is only feasable with very small datasets. It may be useful one day when we get quantum computers.
+ Research datasets are likely to have a pedigree design which permits estimation of individual and maternal components for additive, non-additive, or sex-linked genetic (co)variances. {\em dmm()}  allows estimation of any or all of the above genetic components, including all possible cross-effect genetic covariances. The number of components estimated has little effect on compute intensity. {\em dmm()} includes an experimental approach to dealing with multicollinearities among the variance components, using principal component regression.
 
  Research datasets may also have one or more environmental factors. {\em dmm()} allows the usual estimation of fixed effects in a mixed model, either by OLS or GLS. {\em dmm()} also allows a specific environmental factor called {\em cohort} to be defined, and allows {\em cohort} to be fitted as an environmental variance component, and thus to be part of phenotypic variance. The {\em cohort} concept represents a different approach to the issue of 'common environmental variance'. 
 
 The pro's for {\em dmm()} are that it is simple (has a low compute requirement), flexible (will fit any combination of variance components), multi-trait (will handle more traits without increased complexity), and yields estimates which are unbiased and the same as {\em aov} estimates for balanced designs.  Because {\em dmm()} uses standard regression techniques for variance component estimation, it has access to well known and tested methods for obtaining standard errors.
 
-The con's for {\em dmm()} are that it is very demanding of computer memory (not suited to large datasets), and yields estimates which are MINQUE or bias-corrected-ML (BCML)(depending on whether fixed effects are fitted by OLS or GLS respectively). These will only be the same as REML estimates for balanced designs, although they are likely to be similar if the degree of unbalance is not  severe. 
-{\em dmm()} will do valid REML estimates by using FGLS on the DME's , but it can only do it for small datasets.
+The con's for {\em dmm()} are that it is very demanding of computer memory (not suited to large datasets), and yields estimates which are MINQUE or bias-corrected-ML (depending on whether fixed effects are fitted by OLS or GLS respectively). These will only be the same as REML estimates for balanced designs, although they are likely to be similar if the degree of unbalance is not  severe.
  
 \clearpage
 \section{Getting started with dmm}
@@ -94,7 +61,7 @@ If you get the message
 Error in library(dmm) : there is no package called ‘dmm’
 \end{verbatim}
 
-this indicates that the {\em dmm} package has not been installed on your system. You need to look at the instructions for downloading and installing an R package.  Try the manual {\em R Installation and Administration} which deals with add-on packages in Chapter 6, and is located at any CRAN mirror site (start at {\em https://www.r-project.org} and choose CRAN, then choose a mirror site, then choose Packages).
+this indicates that the {\em dmm} package has not been installed on your system. You need to look at the instructions for downloading and installing an R package.  Try the manual {\em R Installation and Administration} which deals with add-on packages in Chapter 6, and is located at any CRAN mirror site (start at {\em http://www.r-project.org} and choose CRAN, then choose a mirror site, then choose Packages).
 
  To use dmm one first must put the dataset to be analysed into an R workspace as a dataframe object. The minimum requirement is for a dataframe with columns labelled :
 \begin{description}
@@ -237,34 +204,27 @@ So we now call function {\em dmm()} to do the above model fitting, and save its 
 We need to give the name of the dataframe, the fixed model with the {\em fixform} argument, and the variances to be partitioned with the {\em components} argument. The components argument in this case is actually the default, but we shall specify it for clarity. Note that {\em dmm()} is different from most other variance component programs in that it requires the individual environmental variance ("VarE(I)") to be explicitely fitted.
 
 \begin{verbatim}
-> sheep.fit1 <- dmm(sheep.mdf, Ymat ~ 1 + Sex + Year + Tb,
-      components = c("VarE(I)","VarG(Ia)"))
+>sheep.fit1 <- dmm(sheep.mdf, Ymat ~ 1 + Sex + Year + Tb,
+                   components = c("VarE(I)","VarG(Ia)"))
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a normal dataframe:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 2 
+OLS-b step:
 no of fixed effect df (k) =  9 
 no of traits (l) =  3 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 2 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  36 
 Rank of X: 9   No of Fixed Effects: 9 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  2 
-No of components estimable =  2 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+DME substep completed:
+OLS-b step completed:
 > 
 \end{verbatim}
 
-What are all these lines displayed on the screen? Well most are just reporting the stage of computation; a large problem can take some time and it helps to know the stage reached. This is particularly important if the iterative GLS-fixed-effects step is used.
+What are all these lines displayed on the screen? Well most are just reporting the stage of computation; a large problem can take some time and it helps to know the stage reached. This is particularly important if the iterative GLS-b step is used.
 
  If the fixed effect model is singular the process will stop with a message
 \begin{verbatim}
@@ -289,7 +249,7 @@ VarG(Ia) 0.8125828 1.0000000
 In this case the correlation between ''VarE(I)'' and ''VarG(Ia)'' is $0.81$ which should sound warning bells. If this were a serious analysis it would be best to obtain some more data with a structure which would better separate the two components of interest. As this is only a tutorial, we shall proceed to look at estimates of fixed effects and variance components. The object {\em sheep.fit1} returned by {\em dmm()} is an object of class {\em dmm} and there is a print method for this class which gives a brief view of the 'fit' object as follows:
 
 \begin{verbatim}
-> print(sheep.fit1)
+> print(sheep.fit1)  # or just sheep.fit1 will imply print
 Call:
 dmm.default(mdf = sheep.mdf, fixform = Ymat ~ 1 + Sex + Year + 
     Tb, components = c("VarE(I)", "VarG(Ia)"))
@@ -301,7 +261,7 @@ Var/Covariance components:
 [1] "VarE(I)"  "VarG(Ia)" "VarP(I)" 
 Traits:
 [1] "Cww"  "Diam" "Bwt" 
-Fitted OLS-fixed-effects:
+Fitted OLS fixed effects:
                    Cww        Diam       Bwt
 (Intercept) 4.08994992 20.68664709 49.706459
 SexM        0.21661950  0.30933131  3.978543
@@ -312,27 +272,20 @@ Year1985    0.63093009  0.03065326 -3.203542
 Year1986    0.95145594  0.85505128 -4.948870
 Year1987    0.46112683  0.18022290 -8.992848
 TbT         0.03015024 -0.35994127 -2.119376
-Var/covariance components partitioned by DME after OLS-fixed-effects fit:
+Var/covariance components partitioned by DME after OLS fit:
             Cww:Cww    Cww:Diam   Cww:Bwt    Diam:Cww Diam:Diam Diam:Bwt
 VarE(I)  0.02624452 -0.04600793 0.2737025 -0.04600793 0.2670173 1.166502
-VarG(Ia) 0.35379493  0.46601661 1.7435379  0.46601661 0.7903752 2.231398
+VarG(Ia) 0.35379492  0.46601661 1.7435379  0.46601661 0.7903752 2.231398
            Bwt:Cww Bwt:Diam   Bwt:Bwt
 VarE(I)  0.2737025 1.166502 17.397968
 VarG(Ia) 1.7435379 2.231398  8.616402
-Observed (residual) var/covariance after OLS-fixed-effects fit:
+Observed (residual) var/covariance after OLS fit:
            Cww      Diam       Bwt
 Cww  0.2219876 0.3489707  1.824223
 Diam 0.3489707 0.9569698  3.134368
 Bwt  1.8242230 3.1343678 24.994537
-Correlations between columns of W matrix of dyadic model equations:
-         VarE(I) VarG(Ia)
-VarE(I)   1.0000   0.8126
-VarG(Ia)  0.8126   1.0000
 > 
 \end{verbatim}
-
-Notice that the print method also showthe correlations between columns of the dyadic model euations
-ch we obtained above by printing  the element \verb+$dme.correl+ from the object sheep.fit1 directly.
 
  In the above view, there are no standard errors, and we always get all fixed effects across all traits, and all components across all traitpairs. The matrix labelled 'Observed (residual) var/covariance after OLS fit:' is covariance matrix the residual terms $r_{ijkl}$ from the fitted fixed model. It is {\em not} the phenotypic covariance matrix in most cases, because the individuals are related. The print.dmm method is documented on its help page:
 
@@ -384,47 +337,55 @@ Year1987      Bwt    -8.99   3.60 -16.041  -1.94
 TbT           Bwt    -2.12   1.82  -5.693   1.45
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
          Traitpair Estimate StdErr  CI95lo CI95hi
 VarE(I)    Cww:Cww   0.0262 0.0533 -0.0782  0.131
 VarG(Ia)   Cww:Cww   0.3538 0.0491  0.2576  0.450
+VarP(I)    Cww:Cww   0.3800 0.0316  0.3181  0.442
 
          Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Cww:Diam   -0.046  0.112 -0.266  0.174
-VarG(Ia)  Cww:Diam    0.466  0.103  0.264  0.668
+VarE(I)   Cww:Diam   -0.046 0.1121 -0.266  0.174
+VarG(Ia)  Cww:Diam    0.466 0.1033  0.264  0.668
+VarP(I)   Cww:Diam    0.420 0.0665  0.290  0.550
 
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)    Cww:Bwt    0.274  0.575 -0.853   1.40
 VarG(Ia)   Cww:Bwt    1.744  0.530  0.705   2.78
+VarP(I)    Cww:Bwt    2.017  0.341  1.349   2.69
 
          Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Diam:Cww   -0.046  0.112 -0.266  0.174
-VarG(Ia)  Diam:Cww    0.466  0.103  0.264  0.668
+VarE(I)   Diam:Cww   -0.046 0.1121 -0.266  0.174
+VarG(Ia)  Diam:Cww    0.466 0.1033  0.264  0.668
+VarP(I)   Diam:Cww    0.420 0.0665  0.290  0.550
 
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)  Diam:Diam    0.267  0.232 -0.187  0.721
 VarG(Ia) Diam:Diam    0.790  0.213  0.372  1.208
+VarP(I)  Diam:Diam    1.057  0.137  0.788  1.326
 
          Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)   Diam:Bwt     1.17   1.20 -1.1874   3.52
-VarG(Ia)  Diam:Bwt     2.23   1.11  0.0625   4.40
+VarE(I)   Diam:Bwt     1.17  1.201 -1.1874   3.52
+VarG(Ia)  Diam:Bwt     2.23  1.107  0.0625   4.40
+VarP(I)   Diam:Bwt     3.40  0.712  2.0023   4.79
 
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)    Bwt:Cww    0.274  0.575 -0.853   1.40
 VarG(Ia)   Bwt:Cww    1.744  0.530  0.705   2.78
+VarP(I)    Bwt:Cww    2.017  0.341  1.349   2.69
 
          Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)   Bwt:Diam     1.17   1.20 -1.1874   3.52
-VarG(Ia)  Bwt:Diam     2.23   1.11  0.0625   4.40
+VarE(I)   Bwt:Diam     1.17  1.201 -1.1874   3.52
+VarG(Ia)  Bwt:Diam     2.23  1.107  0.0625   4.40
+VarP(I)   Bwt:Diam     3.40  0.712  2.0023   4.79
 
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)    Bwt:Bwt    17.40   6.07   5.49   29.3
 VarG(Ia)   Bwt:Bwt     8.62   5.60  -2.35   19.6
+VarP(I)    Bwt:Bwt    26.01   3.60  18.96   33.1
 
-> 
+>
 \end{verbatim} 
- Notice that the function is summary() but the call is summary.dmm(). That is because 'dmm' is a method for the pre-existing generic summary() function.
 
  So now we get one parameter estimate per line with standard errors and confidence limits.With lots of traits and parameters this can get to be rather voluminous, so the summary method for {\em dmm} objects has arguments for choosing subsets of traits or components. There is also an argument to change the ordering from bytrait to byparameter. Consult the help page as follows
 
@@ -433,9 +394,7 @@ VarG(Ia)   Bwt:Bwt     8.62   5.60  -2.35   19.6
  ...  help page should appear here
 \end{verbatim}
 
-We have to use help(syummary.dmm) not help(summary) because help(summary) gives the help page for the generic summary() function.
-
- We may wish to view genetic parameter estimates instead of variance components. In this case there is a gprint.dmm method which produces an abbreviated output (analagous to print.dmm) and a gsummary.dmm method which produces a full output  with standard errors (analagous to summary.dmm).
+We may wish to view genetic parameter estimates instead of variance components. In this case there is a gprint.dmm method which produces an abbreviated output (analagous to print.dmm) and a gsummary.dmm method which produces a full output  with standard errors (analagous to summary.dmm).
 These functions have help pages
 
 \begin{verbatim}
@@ -448,12 +407,12 @@ These functions have help pages
  In this case we shall view the gsummary output for just 2 traits
 
 \begin{verbatim}
-> gsummary(sheep.fit1,traitset=c("Diam","Bwt"))
+>gsummary(sheep.fit1,traitset=c("Diam","Bwt"))
 Call:
 gsummary.dmm(dmmobj = sheep.fit1, traitset = c("Diam", "Bwt"))
 
 Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+ to each component (OLS-b):
 
          Trait Estimate StdErr CI95lo CI95hi
 VarE(I)   Diam    0.253  0.199 -0.138  0.643
@@ -467,7 +426,7 @@ VarP(I)    Bwt    1.000  0.000  1.0000  1.000
 
 
 Correlation corresponding to each var/covariance component:
- partitioned by DME (OLS-fixed-effects):
+ partitioned by DME (OLS-b):
 
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)  Diam:Diam        1      0      1      1
@@ -490,7 +449,7 @@ VarG(Ia)   Bwt:Bwt        1      0      1      1
 VarP(I)    Bwt:Bwt        1      0      1      1
 
 
-Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects):
+Phenotypic var/covariance from components partitioned by DME (OLS-b):
 
   Traitpair Estimate StdErr CI95lo CI95hi
 1 Diam:Diam     1.06  0.137  0.788   1.33
@@ -537,12 +496,12 @@ CovG(Ma,Ia) 0.3504908 0.6573003 0.6613528 0.7067437   0.5009414   1.0000000
  For a small dataset, the column correlations are reasonable, except for the $0.96$ between "VarE(M)" and "VarG(Ma)" and the $0.81$ which was there in the previous analysis. We will just view the genetic parameters for two traits
 
 \begin{verbatim}
-> gsummary(sheep.fit2, traitset = c("Diam", "Cww"))
+>gsummary(sheep.fit2, traitset = c("Diam", "Cww"))
 Call:
 gsummary.dmm(dmmobj = sheep.fit2, traitset = c("Diam", "Cww"))
 
 Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+ to each component (OLS-b):
 
             Trait Estimate StdErr CI95lo CI95hi
 VarE(I)      Diam   0.0411 0.0903 -0.136  0.218
@@ -564,16 +523,16 @@ VarP(I)       Cww   1.0000 0.0000  1.0000  1.0000
 
 
 Correlation corresponding to each var/covariance component:
- partitioned by DME (OLS-fixed-effects):
+ partitioned by DME (OLS-b):
 
-            Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)     Diam:Diam    1.000 1.0000 -0.960  2.960
-VarG(Ia)    Diam:Diam    1.000 0.0000  1.000  1.000
-VarE(M)     Diam:Diam    1.000 0.0000  1.000  1.000
-VarG(Ma)    Diam:Diam    1.000 0.0000  1.000  1.000
-CovG(Ia,Ma) Diam:Diam   -0.511 0.0839 -0.675 -0.346
-CovG(Ma,Ia) Diam:Diam   -0.511 0.0839 -0.675 -0.346
-VarP(I)     Diam:Diam    1.000 0.0000  1.000  1.000
+            Traitpair Estimate   StdErr CI95lo CI95hi
+VarE(I)     Diam:Diam    1.000 2.11e-08  1.000  1.000
+VarG(Ia)    Diam:Diam    1.000 0.00e+00  1.000  1.000
+VarE(M)     Diam:Diam    1.000 1.49e-08  1.000  1.000
+VarG(Ma)    Diam:Diam    1.000 0.00e+00  1.000  1.000
+CovG(Ia,Ma) Diam:Diam   -0.511 8.39e-02 -0.675 -0.346
+CovG(Ma,Ia) Diam:Diam   -0.511 8.39e-02 -0.675 -0.346
+VarP(I)     Diam:Diam    1.000 0.00e+00  1.000  1.000
 
             Traitpair Estimate   StdErr    CI95lo  CI95hi
 VarE(I)      Diam:Cww   0.0229   0.0312   -0.0382   0.084
@@ -593,17 +552,17 @@ CovG(Ia,Ma)  Cww:Diam  -0.5528   0.1008   -0.7505  -0.355
 CovG(Ma,Ia)  Cww:Diam  -0.4762   0.1222   -0.7157  -0.237
 VarP(I)      Cww:Diam   0.6596   0.0537    0.5544   0.765
 
-            Traitpair Estimate   StdErr CI95lo CI95hi
-VarE(I)       Cww:Cww    1.000 0.00e+00  1.000    1.0
-VarG(Ia)      Cww:Cww    1.000 0.00e+00  1.000    1.0
-VarE(M)       Cww:Cww    1.000 1.49e-08  1.000    1.0
-VarG(Ma)      Cww:Cww    1.000 0.00e+00  1.000    1.0
-CovG(Ia,Ma)   Cww:Cww   -0.404 1.04e-01 -0.607   -0.2
-CovG(Ma,Ia)   Cww:Cww   -0.404 1.04e-01 -0.607   -0.2
-VarP(I)       Cww:Cww    1.000 0.00e+00  1.000    1.0
+            Traitpair Estimate StdErr CI95lo CI95hi
+VarE(I)       Cww:Cww    1.000  0.000  1.000    1.0
+VarG(Ia)      Cww:Cww    1.000  0.000  1.000    1.0
+VarE(M)       Cww:Cww    1.000  0.000  1.000    1.0
+VarG(Ma)      Cww:Cww    1.000  0.000  1.000    1.0
+CovG(Ia,Ma)   Cww:Cww   -0.404  0.104 -0.607   -0.2
+CovG(Ma,Ia)   Cww:Cww   -0.404  0.104 -0.607   -0.2
+VarP(I)       Cww:Cww    1.000  0.000  1.000    1.0
 
 
-Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects):
+Phenotypic var/covariance from components partitioned by DME (OLS-b):
 
   Traitpair Estimate StdErr CI95lo CI95hi
 1 Diam:Diam    3.003 0.2743  2.466   3.54
@@ -621,83 +580,45 @@ Notice also that the correlations for a trait with itself are always $1.0$, exce
 Notice also that the cross-trait-cross-effect correlations are not equal, as mentioned above. For example the correlation corresponding to "CovG(Ia,Ma)" for traits "Diam:Cww" is $-0.476$, while the reciprocal correlation corresponding to "CovG(Ma,Ia)" for traits "Diam:Cww" is $-0.552$. 
 
 Let us now assume that the above model is our final choice for these data. 
-Up until now all {\em dmm()} runs have defaulted to what we term {\em OLS-fixed-effects} estimates, that is the dyadic model equations are setup using ordinary least squares estimates of the fixed effects. This leads to variance component estimates which are equivalent to MINQUE estimates. 
+Up until now all {\em dmm()} runs have defaulted to what we term {\em OLS-b} estimates, that is the dyadic model equations are setup using ordinary least squares estimates of the fixed effects. This leads to variance component estimates which are equivalent to MINQUE estimates. 
 
-We may now wish, for the final model, to obtain the more desirable {\em GLS-fixed-effects} estimates, where the dyadic model equations are setup using generalised least squares estimates of the fixed effects.  This leads to variance component estimates which are equivalent to 'bias-corrected ML' (BCML) estimates. The disadvantage here is that the procedure becomes iterative, so it makes sense to reserve it for the final analysis. We simply add the {\em fixedgls=T} argument as follows
+We may now wish, for the final model, to obtain the more desirable {\em GLS-b} estimates, where the dyadic model equations are setup using generalised least squares estimates of the fixed effects.  This leads to variance component estimates which are equivalent to 'bias-corrected ML' estimates. The disadvantage here is that the procedure becomes iterative, so it makes sense to reserve it for the final analysis. We simply add the {\em gls=T} argument as follows
 
 \begin{verbatim}
-> sheep.fit2g <- dmm(sheep.mdf, Ymat ~ 1 + Sex + Year ,
-  components=c("VarE(I)","VarG(Ia)","VarE(M)","VarG(Ma)","CovG(Ia,Ma)","CovG(Ma,Ia)"),
-  fixedgls=T)
-Dyadic mixed model fit for datafile: sheep.mdf  
-Data file is a normal dataframe:
-Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
-no of fixed effect df (k) =  9 
-no of traits (l) =  3 
-Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 6 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
-no of individuals in pedigree (m) =  44 
-no of individuals with data and X codes (n) =  37 
-Rank of X: 9   No of Fixed Effects: 9 
-OLS-fixed-effects step completed:
-DME substep:
-No of components defined =  6 
-No of components estimable =  6 
-Checking dyadic model equations:
-QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+sheep.fit2g <- dmm(sheep.mdf, Ymat ~ 1 + Sex + Year ,
+                   components=c("VarE(I)","VarG(Ia)","VarE(M)","VarG(Ma)",
+                   "CovG(Ia,Ma)","CovG(Ma,Ia)"),gls=T)
+ ...
+OLS-b step completed:
 
-GLS-fixed-effects step:
+GLS-b step:
 Warning: Multivariate GLS is not same as multiple univariate GLS's
-Round =  1  Stopcrit =  0.3658621 
-Round =  2  Stopcrit =  4.557446 
-Round =  3  Stopcrit =  7.026983 
-Round =  4  Stopcrit =  5.739107 
-Round =  5  Stopcrit =  3.973461 
-Round =  6  Stopcrit =  9.759143 
- .......
-Round =  199  Stopcrit =  0.6030025 
-Round =  200  Stopcrit =  18.54845 
-Iteration(gls-fixed-effects) completed - count =  200 
+Round =  1  Stopcrit =  1.000393 
+Round =  2  Stopcrit =  6.171278 
+Round =  3  Stopcrit =  3.063188 
+Round =  4  Stopcrit =  3.975422 
+Round =  5  Stopcrit =  3.353479 
+Round =  6  Stopcrit =  4.5497 
+Round =  7  Stopcrit =  17.41195 
+Round =  8  Stopcrit =  17.14175 
+  .....
+Round =  199  Stopcrit =  9.455716 
+Round =  200  Stopcrit =  4.414117 
+Iteration completed - count =  200 
 Failed to converge
-GLS-fixed-effects step abandoned:
+GLS-b step abandoned:
 >
 \end{verbatim}
 
- So the {\em GLS-fixed-effects} step fails to converge. We cannot get {\em GLS-fixed-effects} estimates in this case.  Not surprising given the small dataset and the collinearities among the components. So let us go back to the simpler model and do {\em GLS-fixed-effects} estimates there:
+ So the {\em GLS-b} step fails to converge. We cannot get {\em GLS-b} estimates in this case.  Not surprising given the small dataset and the collinearities among the components. So let us go back to the simpler model and do {\em GLS-b} estimates there:
 
 \begin{verbatim}
 > sheep.fitg <- dmm(sheep.mdf, Ymat ~ 1 + Sex + Year + Tb,
-      components = c("VarE(I)","VarG(Ia)"),fixedgls=T)
-Dyadic mixed model fit for datafile: sheep.mdf  
-Data file is a normal dataframe:
-Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
-no of fixed effect df (k) =  9 
-no of traits (l) =  3 
-Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 2 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
-no of individuals in pedigree (m) =  44 
-no of individuals with data and X codes (n) =  36 
-Rank of X: 9   No of Fixed Effects: 9 
-OLS-fixed-effects step completed:
-DME substep:
-No of components defined =  2 
-No of components estimable =  2 
-Checking dyadic model equations:
-QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+                    components = c("VarE(I)","VarG(Ia)"),gls=T)
+ ...
+OLS-b step completed:
 
-GLS-fixed-effects step:
+GLS-b step:
 Warning: Multivariate GLS is not same as multiple univariate GLS's
 Round =  1  Stopcrit =  0.4485067 
 Round =  2  Stopcrit =  0.1680281 
@@ -708,18 +629,15 @@ Round =  6  Stopcrit =  0.02106319
 Round =  7  Stopcrit =  0.02599891 
 Round =  8  Stopcrit =  0.0157828 
 Round =  9  Stopcrit =  0.01001712 
-Round =  10  Stopcrit =  0.007371432 
-Iteration(gls-fixed-effects) completed - count =  10 
+Round =  10  Stopcrit =  0.007371433 
+Iteration completed - count =  10 
 Convergence achieved
-GLS-fixed-effects step completed successfully:
-DME substep:
 Components to genetic parameters and SE's:
-GLS-fixed-effects - genetic parameters with nonspecific components:
-DME substep completed:
+GLS-b step completed successfully:
 > 
 \end{verbatim}
 
- So in this case the iteration works and converges quite rapidly, despite the high correlation between the two components. Note that this run does both {\em OLS-fixed-effects} and {\em GLS-fixed-effects} estimates, in fact the {\em OLS-fixed-effects} step provides intital estimates of the variance components for the {\em GLS-fixed-effects} step. The saved object {\em sheep.fitg} contains the results of both steps. We can see the structure of {\em sheep.fitg} as follows
+ So in this case the iteration works and converges quite rapidly, despite the high correlation between the two components. Note that this run does both {\em OLS-b} and {\em GLS-b} estimates, in fact the {\em OLS-b} step provides intital estimates of the variance components for the {\em GLS-b} step. The saved object {\em sheep.fitg} contains the results of both steps. We can see the structure of {\em sheep.fitg} as follows
 
 \begin{verbatim}
 >attributes(sheep.fitg)
@@ -751,15 +669,15 @@ $names
 > 
 \end{verbatim}
 
- So {\em sheep.fitg} now contains results of the {\em OLS-fixed-effects} step plus an attribute "gls" which itself contains results of the {\em GLS-fixed-effects} step.
+ So {\em sheep.fitg} now contains results of the {\em OLS-b} step plus an attribute "gls" which itself contains results of the {\em GLS-b} step.
 
- All the S3 methods (print(),summary(),gprint(),gsummary()) will report the {\em GLS-fixed-effects} results as well as the {\em OLS-fixed-effects} results, if given the argument {\em fixedgls=T}. For example, let us view the variance components and fixed effect estimates as follows
+ All the S3 methods (print(),summary(),gprint(),gsummary()) will report the {\em GLS-b} results as well as the {\em OLS-b} results, if given the argument {\em gls=T}. For example, let us view the variance components and fixed effect estimates as follows
 
 \begin{verbatim}
-> summary(sheep.fitg,fixedgls=T,traitset=c("Cww","Diam"))
+> summary(sheep.fitg,gls=T,traitset=c("Cww","Diam"))
 Call:
 summary.dmm(object = sheep.fitg, traitset = c("Cww", "Diam"), 
-    fixedgls = T)
+    gls = T)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -786,23 +704,27 @@ Year1987     Diam   0.1802  0.704 -1.199  1.559
 TbT          Diam  -0.3599  0.357 -1.059  0.339
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
          Traitpair Estimate StdErr  CI95lo CI95hi
 VarE(I)    Cww:Cww   0.0262 0.0533 -0.0782  0.131
 VarG(Ia)   Cww:Cww   0.3538 0.0491  0.2576  0.450
+VarP(I)    Cww:Cww   0.3800 0.0316  0.3181  0.442
 
          Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Cww:Diam   -0.046  0.112 -0.266  0.174
-VarG(Ia)  Cww:Diam    0.466  0.103  0.264  0.668
+VarE(I)   Cww:Diam   -0.046 0.1121 -0.266  0.174
+VarG(Ia)  Cww:Diam    0.466 0.1033  0.264  0.668
+VarP(I)   Cww:Diam    0.420 0.0665  0.290  0.550
 
          Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Diam:Cww   -0.046  0.112 -0.266  0.174
-VarG(Ia)  Diam:Cww    0.466  0.103  0.264  0.668
+VarE(I)   Diam:Cww   -0.046 0.1121 -0.266  0.174
+VarG(Ia)  Diam:Cww    0.466 0.1033  0.264  0.668
+VarP(I)   Diam:Cww    0.420 0.0665  0.290  0.550
 
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)  Diam:Diam    0.267  0.232 -0.187  0.721
 VarG(Ia) Diam:Diam    0.790  0.213  0.372  1.208
+VarP(I)  Diam:Diam    1.057  0.137  0.788  1.326
 
 
 Coefficients fitted by GLS for fixed effects:
@@ -830,32 +752,32 @@ Year1987     Diam  -0.2972  1.087 -2.428  1.834
 TbT          Diam  -0.2187  0.509 -1.216  0.779
 
 
-Components partitioned by DME from residual var/covariance after GLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after GLS-b fit:
 
          Traitpair Estimate StdErr  CI95lo CI95hi
 VarE(I)    Cww:Cww   0.0661 0.0457 -0.0234  0.156
 VarG(Ia)   Cww:Cww   0.9807 0.0398  0.9027  1.059
+VarP(I)    Cww:Cww   1.0468 0.0226  1.0025  1.091
 
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Cww:Diam  -0.0429 0.0899 -0.219  0.133
 VarG(Ia)  Cww:Diam   1.6542 0.0783  1.501  1.808
+VarP(I)   Cww:Diam   1.6113 0.0445  1.524  1.699
 
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Diam:Cww  -0.0429 0.0899 -0.219  0.133
 VarG(Ia)  Diam:Cww   1.6542 0.0783  1.501  1.808
+VarP(I)   Diam:Cww   1.6113 0.0445  1.524  1.699
 
          Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Diam:Diam   0.0389  0.176 -0.305  0.383
-VarG(Ia) Diam:Diam   2.8223  0.153  2.522  3.122
+VarE(I)  Diam:Diam   0.0389 0.1757 -0.305  0.383
+VarG(Ia) Diam:Diam   2.8223 0.1530  2.522  3.122
+VarP(I)  Diam:Diam   2.8612 0.0871  2.691  3.032
 
 > 
 \end{verbatim}
 
-Notice that the {\em GLS-fixed-effects} estimates differ from the {\em OLS-fixed-effects} estimates, both for fixed effects and for variance components, and that the {\em GLS-fixed-effects} estimates generally have smaller standard errors. That is as would be expected. 
-
-One can , of course use the gsummary() function on an object like {\em sheep.fitg} and it will report heritabilities and genetic correlations based on whatever option is chosen for solving the DMRE's, for both {\em OLS-fixed-effects} and {\em GLS-fixed-effects}.  For example if {\em dmeopt="lm"} the resulting component estimates and heritabilities and genetic correelations will be MINQUE estimates with {\em OLS-fixed-effects} amd BCML estimates with {\em GLS-fixed-effects}.
-
-There is also a function {\em csummary()} which lists (co)variance component estimates alone.
+Notice that the {\em GLS-b} estimates differ from the {\em OLS-b} estimates, both for fixed effects and for variance components, and that the {\em GLS-b} estimates generally have smaller standard errors. That is as would be expected. 
 
 That is enough for a tutorial. Here is a list of further aspects which the user may wish to investigate
 
@@ -864,9 +786,8 @@ That is enough for a tutorial. Here is a list of further aspects which the user 
 \item Sexlinked genetic variance components
 \item Calculation of response to selection
 \item Plotting the dyadic model residuals
-\item Using alternative regression methods ( ie alternatives to OLS) to solve the dyadic model equations. Options are feasable-gls, robust regression and principal components regression
+\item Using alternative regression methods to solve the dyadic model equations. Options are robust regression and principal components regression
 \item Defining a cohort effect
-\item Class specific variance compponent estimates ( eg sex-specific)
 \end{itemize}
 
 
@@ -887,11 +808,11 @@ First the {\em dmm()} analysis. We will just analyse the trait "CWW", so we can 
 
 \begin{verbatim}
 >data(dt8bal.df)
->dt8bal.fit <- dmm(dt8bal.df,CWW ~ 1, fixedgls=T)
+>dt8bal.fit <- dmm(dt8bal.df,CWW ~ 1, gls=T)
  ...
-> summary(dt8bal.fit,fixedgls=T)
+>summary(dt8bal.fit,gls=T)
 Call:
-summary.dmm(object = dt8bal.fit, fixedgls = T)
+summary.dmm(dmmobj = dt8bal.fit, gls = T)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -899,29 +820,31 @@ Coefficients fitted by OLS for fixed effects:
 1   CWW     4.97  0.128   4.72   5.23
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    CWW:CWW   0.0713  0.163 -0.249  0.392
-VarG(Ia)   CWW:CWW   0.0617  0.164 -0.260  0.383
+         Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)    CWW:CWW   0.0713  0.163 -0.2490  0.392
+VarG(Ia)   CWW:CWW   0.0617  0.164 -0.2601  0.383
+VarP(I)    CWW:CWW   0.1329  0.041  0.0525  0.213
 
 
 Coefficients fitted by GLS for fixed effects:
 
   Trait Estimate StdErr CI95lo CI95hi
-1   CWW     4.98  0.136   4.71   5.24
+1   CWW     4.97  0.136   4.71   5.24
 
 
-Components partitioned by DME from residual var/covariance after GLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after GLS-b fit:
 
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    CWW:CWW   0.0713  0.163 -0.249  0.392
-VarG(Ia)   CWW:CWW   0.0617  0.164 -0.260  0.383
+         Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)    CWW:CWW   0.0713  0.163 -0.2490  0.392
+VarG(Ia)   CWW:CWW   0.0617  0.164 -0.2601  0.383
+VarP(I)    CWW:CWW   0.1329  0.041  0.0525  0.213
 
 > 
 \end{verbatim}
  
-So the OLS-fixed-effect and GLS-fixed-effect estimates of variance components are identical. That is as expected for balanced data.
+So the OLS-b and GLS-b estimates of variance components are identical. That is as expected for balanced data.
 
 Now we wish to do an analysis of variance between and within sire families, for the same data.
 
@@ -952,45 +875,9 @@ and solve these two equations to obtain $\sigma^{2}_{G(Ia)} = 0.0616$ and $\sigm
 
 These agree exactly with the analysis using function {\em dmm()} above. Most methods of variance component estimation agree with the analysis of variance method for balanced designs, and this agreement extends to pedigree based causal components. This shows that {\em dmm} belongs to this family, and that its arithmetic is substantially correct.
 
-
-If we use the {\em dmeopt="fgls"} option with the dataset {\em dt8bal.df} we get the following
-
-\begin{verbatim}
-> dt8bal.fgls.fit <- dmm(dt8bal.df,CWW ~ 1,dmeopt="fgls")
-  .....
-
-Iteration(fgls) round:  0 
-siga in fgls.update:
-           [,1]
-[1,] 0.07125000
-[2,] 0.06166667
-Round =  1  Stopcrit =  4.544976e-16 
-Iteration(fgls) completed - count =  1 
-Convergence achieved (fgls)
->
-> summary(dt8bal.fgls.fit)
-Call:
-summary.dmm(object = dt8bal.fgls.fit)
-
-Coefficients fitted by OLS for fixed effects:
-
-  Trait Estimate StdErr CI95lo CI95hi
-1   CWW     4.97  0.128   4.72   5.23
-
-
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)    CWW:CWW   0.0713  0.276 -0.470  0.612
-VarG(Ia)   CWW:CWW   0.0617  0.294 -0.514  0.637
-
-> 
-\end{verbatim}
- So the REML estimates obtained from {\em dmeopt="fgls"} are also the same as the analysis of variance estimates for this balanced design, as expected.  This constitutes a somewhat trivial validation of the code for obtaining REML estimates via {\em dmeopt="fgls"}.
-
 \clearpage
 \subsection{The quercus program's demo2 dataset}
- The dataset {\em quercus.df} is a demonstrtation dataset from the program package QUERCUS, developed by Ruth G. Shaw and Frank H. Shaw. It is known to QUERCUS as the 'demo2' dataset. The QUERCUS program package is available from https://cbs.umn.edu/eeb/about-eeb/helpful-links/quercus-quantitative-genetics-software. 
+ The dataset {\em quercus.df} is a demonstrtation dataset from the program package QUERCUS, developed by Ruth G. Shaw and Frank H. Shaw. It is known to QUERCUS as the 'demo2' dataset. The QUERCUS program package is available from http://www.cbs.umn.edu/academics/departments/eeb/quercus. 
 
  We are going to use the program 'nf3.p' from within the QUERCUS package to compute both ML and REML estimates of components "VarE(I)", "VarG(Ia)", and "VarG(Id)", for the dataset 'demo2' which has a 2 generation pedigree with full-sib and half-sib families. The program 'nf3.p' requires a Pascal compiler - here we used the GNU gpc compiler. To run 'nf3.p' the data must be in a file called {\em sibships} as follows
 
@@ -1156,47 +1043,35 @@ Return mdf as an object of class mdf containing the dataframe as mdf$df and
 Note that {\em mdf()} has added 20 base sires and 60 base dams. We now do the {\em dmm()} analysis, with only the mean as a fixed effect
 
 \begin{verbatim}
->  quercus.fit <- dmm(quercus.mdf, Ymat ~ 1,components=c("VarE(I)","VarG(Ia)","VarG(Id)"),relmat="withdf", fixedgls=T)
+> quercus.fit <- dmm(quercus.mdf, Ymat ~ 1,
+                     components=c("VarE(I)","VarG(Ia)","VarG(Id)"),
+                     relmat="withdf", gls=T)
 Dyadic mixed model fit for datafile: quercus.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 3 
+OLS-b step:
 no of fixed effect df (k) =  1 
 no of traits (l) =  2 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 3 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  260 
 no of individuals with data and X codes (n) =  180 
 Rank of X: 1   No of Fixed Effects: 1 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  3 
-No of components estimable =  3 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
-
-GLS-fixed-effects step:
-Warning: Multivariate GLS is not same as multiple univariate GLS's
-Round =  1  Stopcrit =  4.163336e-17 
-Iteration(gls-fixed-effects) completed - count =  1 
-Convergence achieved
-GLS-fixed-effects step completed successfully:
-DME substep:
-Components to genetic parameters and SE's:
-GLS-fixed-effects - genetic parameters with nonspecific components:
 DME substep completed:
+OLS-b step completed:
+
+GLS-b step:
+Warning: Multivariate GLS is not same as multiple univariate GLS's
+Round =  1  Stopcrit =  2.914335e-16 
+Iteration completed - count =  1 
+Convergence achieved
+GLS-b step completed successfully:
 > 
-\end{verbatim}
-So the fixedgls iteration completed successfully. We can inspect the results.
-\begin{verbatim}
->  summary(quercus.fit,fixedgls=T)
+> summary(quercus.fit,gls=T)
 Call:
-summary.dmm(object = quercus.fit, fixedgls = T)
+summary.dmm(dmmobj = quercus.fit, gls = T)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -1207,28 +1082,31 @@ Coefficients fitted by OLS for fixed effects:
 1 Trait2  -0.0855  0.101 -0.283  0.112
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
              Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)  Trait1:Trait1   0.0348  0.294 -0.5414  0.611
-VarG(Ia) Trait1:Trait1   0.1966  0.143 -0.0836  0.477
-VarG(Id) Trait1:Trait1   0.9386  0.373  0.2082  1.669
+VarE(I)  Trait1:Trait1   0.0348 0.2940 -0.5414  0.611
+VarG(Ia) Trait1:Trait1   0.1966 0.1430 -0.0836  0.477
+VarG(Id) Trait1:Trait1   0.9386 0.3727  0.2082  1.669
+VarP(I)  Trait1:Trait1   1.1700 0.0863  1.0008  1.339
 
-             Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait1:Trait2    0.135  0.369 -0.589  0.858
-VarG(Ia) Trait1:Trait2    0.134  0.179 -0.218  0.486
-VarG(Id) Trait1:Trait2   -0.113  0.468 -1.030  0.804
+             Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)  Trait1:Trait2    0.135  0.369 -0.5887  0.858
+VarG(Ia) Trait1:Trait2    0.134  0.179 -0.2177  0.486
+VarG(Id) Trait1:Trait2   -0.113  0.468 -1.0301  0.804
+VarP(I)  Trait1:Trait2    0.156  0.108 -0.0568  0.368
 
-             Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait2:Trait1    0.135  0.369 -0.589  0.858
-VarG(Ia) Trait2:Trait1    0.134  0.179 -0.218  0.486
-VarG(Id) Trait2:Trait1   -0.113  0.468 -1.030  0.804
+             Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)  Trait2:Trait1    0.135  0.369 -0.5887  0.858
+VarG(Ia) Trait2:Trait1    0.134  0.179 -0.2177  0.486
+VarG(Id) Trait2:Trait1   -0.113  0.468 -1.0301  0.804
+VarP(I)  Trait2:Trait1    0.156  0.108 -0.0568  0.368
 
              Traitpair Estimate StdErr  CI95lo CI95hi
 VarE(I)  Trait2:Trait2    0.975  0.460  0.0726   1.88
 VarG(Ia) Trait2:Trait2    0.813  0.224  0.3745   1.25
 VarG(Id) Trait2:Trait2    0.047  0.584 -1.0967   1.19
-
+VarP(I)  Trait2:Trait2    1.835  0.135  1.5701   2.10
 
 Coefficients fitted by GLS for fixed effects:
 
@@ -1239,32 +1117,36 @@ Coefficients fitted by GLS for fixed effects:
 1 Trait2  -0.0855  0.147 -0.374  0.203
 
 
-Components partitioned by DME from residual var/covariance after GLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after GLS-b fit:
 
              Traitpair Estimate StdErr   CI95lo CI95hi
-VarE(I)  Trait1:Trait1   0.0348  0.208 -0.37332  0.443
-VarG(Ia) Trait1:Trait1   0.1966  0.101 -0.00184  0.395
-VarG(Id) Trait1:Trait1   0.9386  0.264  0.42128  1.456
+VarE(I)  Trait1:Trait1   0.0348 0.2082 -0.37332  0.443
+VarG(Ia) Trait1:Trait1   0.1966 0.1012 -0.00184  0.395
+VarG(Id) Trait1:Trait1   0.9386 0.2639  0.42128  1.456
+VarP(I)  Trait1:Trait1   1.1700 0.0611  1.05018  1.290
+
+             Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)  Trait1:Trait2    0.135 0.2609 -0.3768  0.646
+VarG(Ia) Trait1:Trait2    0.134 0.1269 -0.1147  0.383
+VarG(Id) Trait1:Trait2   -0.113 0.3308 -0.7615  0.535
+VarP(I)  Trait1:Trait2    0.156 0.0766  0.0054  0.306
+
+             Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)  Trait2:Trait1    0.135 0.2609 -0.3768  0.646
+VarG(Ia) Trait2:Trait1    0.134 0.1269 -0.1147  0.383
+VarG(Id) Trait2:Trait1   -0.113 0.3308 -0.7615  0.535
+VarP(I)  Trait2:Trait1    0.156 0.0766  0.0054  0.306
 
              Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait1:Trait2    0.135  0.261 -0.377  0.646
-VarG(Ia) Trait1:Trait2    0.134  0.127 -0.115  0.383
-VarG(Id) Trait1:Trait2   -0.113  0.331 -0.761  0.535
+VarE(I)  Trait2:Trait2    0.975 0.3260  0.336  1.614
+VarG(Ia) Trait2:Trait2    0.813 0.1585  0.502  1.124
+VarG(Id) Trait2:Trait2    0.047 0.4133 -0.763  0.857
+VarP(I)  Trait2:Trait2    1.835 0.0957  1.647  2.023
 
-             Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait2:Trait1    0.135  0.261 -0.377  0.646
-VarG(Ia) Trait2:Trait1    0.134  0.127 -0.115  0.383
-VarG(Id) Trait2:Trait1   -0.113  0.331 -0.761  0.535
-
-             Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait2:Trait2    0.975  0.326  0.336  1.614
-VarG(Ia) Trait2:Trait2    0.813  0.159  0.502  1.124
-VarG(Id) Trait2:Trait2    0.047  0.413 -0.763  0.857
-
-> 
+>
 \end{verbatim}
 
-So the {\em dmm OLS-fixed-effects} and {\em dmm GLS-fixed-effects} estimates of variance components are exactly the same, and are also exactly the same as the QUERCUS REML estimates. The QUERCUS ML estimates are different.  That is because the quercus ML estimates are not bias-corrected whereas the dmm BCML estimates ( obtained after fitting fixed effects by GLS) are.
+So the {\em dmm OLS-b} and {\em dmm GLS-b} estimates of variance components are exactly the same, and are also exactly the same as the QUERCUS REML estimates. The QUERCUS ML estimates are different. 
 
 The var-cov matrix of the estimates given by QUERCUS leads to larger standard errors than those given by {\em dmm}. This is not surprising, QUERCUS uses large-sample covariances from the matrix of second derivatives, while {\em dmm()} uses standard errors from the regression technique used to fit the dyadic model. 
 
@@ -1335,7 +1217,8 @@ The columns labelled {\em t1\_a} to {\em t2\_r} are the random effects for the a
   We now need to preprocess {\em warcolak.df} with {\em mdf()} to renumber the Id's and to append the additive, dominance, and sex-linked relationship matrices. Matthew Wolak ( author of the {\em nadiv} package) has kindly assisted me with the information that the sexlinked breeding vales in the {\em warcolak} dataset were generated with the assumption of no global dosage compensation. This means that the appropriate model for dosage compensation should be "ngdc". Unfortunately an earlier release of {\em dmm} (dmm\_1.5-1) assumed "hopi" and the analysis reported in this document for release (dmm\_1.5-1) is wrong. It was corrected in release (dmm\_1.6-1). Also the warcolak dataset was resimulated in {\em nadiv} release (nadiv\_2.14.0), requiring a recompute of the {\em dmm} analyses of the warcolak data. This recompute is included in release  (dmm\_1.6-3) and later, and is reported below.
 
 \begin{verbatim}
->  warcolak.mdf <- mdf(warcolak.df,pedcols=c(1:3),factorcols=4,ycols=c(5:6),sexcode=c("M","F"),relmat=c("E","A","D","S"),keep=T)
+> warcolak.mdf <- mdf(warcolak.df,pedcols=c(1:3),factorcols=4,ycols=c(5:6),
+                  sexcode=c("M","F"),relmat=c("E","A","D","S"),keep=T)
 Pedigree Id check:
 No of rows with Id in original dataframe =  5400 
 No of sex codes not in sexcode[] so changed to NA =  0 
@@ -1349,45 +1232,35 @@ Add matrix of multivariate traits:
 Setup pedigree for nadiv():
 Make relationship matrices:
 starting to make D....done 
+Assuming male heterogametic (e.g., XX/XY) sex chromosome system
+S-inverse made: Starting to make S....done 
 Return mdf as an object of class mdf:
  containing the dataframe as mdf$df:
  and the relationship matrices as mdf$rel:
-Warning message:
-In makeS(ped2, heterogametic = sexcode[1], returnS = T, DosageComp = "ngdc") :
-  Assuming male heterogametic (e.g., XX/XY) sex chromosome system
 > 
 \end{verbatim}
  
 We can now run {\em dmm()} and we shall fit a mean and a Sex difference as the only fixed effects. We shall do separate runs for each trait, as Trait1 should not have a sexlinked additive variance component fitted. Firstly Trait1 
 
 \begin{verbatim}
->  warcolak.fit1 <- dmm(warcolak.mdf, Trait1 ~ 1 + Sex,components = c("VarE(I)","VarG(Ia)", "VarG(Id)"), relmat = "withdf")
+> warcolak.fit1 <- dmm(warcolak.mdf, Trait1 ~ 1 + Sex,
+   components = c("VarE(I)","VarG(Ia)", "VarG(Id)"), relmat = "withdf")
 Dyadic mixed model fit for datafile: warcolak.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 3 
+]OLS-b step:
 no of fixed effect df (k) =  2 
 no of traits (l) =  1 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 3 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  5400 
 no of individuals with data and X codes (n) =  5400 
 Rank of X: 2   No of Fixed Effects: 2 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  3 
-No of components estimable =  3 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+DME substep completed:
+OLS-b step completed:
 > 
-\end{verbatim}
-We look to see if the 3 compoents are correlated
-\begin{verbatim}
 > warcolak.fit1$dme.corre
            VarE(I)  VarG(Ia)  VarG(Id)
 VarE(I)  1.0000000 0.4856324 0.9190639
@@ -1411,13 +1284,13 @@ Coefficients fitted by OLS for fixed effects:
 SexM        Trait1    -1.02 0.0269  -1.07 -0.968
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
              Traitpair Estimate  StdErr CI95lo CI95hi
 VarE(I)  Trait1:Trait1    0.282 0.03487  0.213  0.350
 VarG(Ia) Trait1:Trait1    0.391 0.00857  0.374  0.408
 VarG(Id) Trait1:Trait1    0.295 0.03592  0.225  0.365
->
+VarP(I)  Trait1:Trait1    0.968 0.01315  0.942  0.993
 \end{verbatim}
 
  The estimated components VarE(I), VarG(Ia), VarG(Id) agree reasonably well with the stated population values (0.3,0.4,0.3 respectively).The confidence limits include the stated population value.  The collinearities noted above do not seem to have grossly affected the results.
@@ -1440,39 +1313,29 @@ VarG(Id) Trait1:Trait1    0.295 0.03592  0.225  0.365
 \end{verbatim}
 We had to compute separately for each sex, because there is a Sex difference. The sample values are close to the stated population values, as expected for a sample of size 5400. The confidence limits of the {\em dmm} estimates include the sample values, except for the male additive genetic variance.
 
-	The above {\em dmm} analysis is with {\em OLS-fixed-effects}, that is fixed effects fitted by ordinary least squares. There is no reason to do a {\em GLS-fixed-effects} run in this case as the data are balanced ( there is only a mean and a balanced Sex effect to fit), and the estimates of variance components after {\em GLS-fixed-effects} would be identical to those after {\em OLS-fixed-effects}.
+	The above {\em dmm} analysis is OLS-b, that is fixed effects fitted by ordinary least squares. There is no reason to do a GLS-b run in this case as the data are balanced ( there is only a mean and a balanced Sex effect to fit), and the estimates of variance components after GLS-b would be identical to those after OLS-b.
 
 	We now look at the analysis of Trait2.
 \begin{verbatim}
-> warcolak.fit2 <- dmm(warcolak.mdf,Trait2 ~ 1 + Sex,components=c("VarE(I)","VarG(Ia)","VarG(Id)","VarGs(Ia)"),relmat="withdf")
+> warcolak.fit2 <- dmm(warcolak.mdf,Trait2 ~ 1 + Sex,
+   components=c("VarE(I)","VarG(Ia)","VarG(Id)","VarGs(Ia)"),relmat="withdf")
 Dyadic mixed model fit for datafile: warcolak.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 4 
+OLS-b step:
 no of fixed effect df (k) =  2 
 no of traits (l) =  1 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 4 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  5400 
 no of individuals with data and X codes (n) =  5400 
 Rank of X: 2   No of Fixed Effects: 2 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  4 
-No of components estimable =  4 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
-> 
-\end{verbatim}
-We again check the correlations among columns of the DME's
-
-\begin{verbatim}
-> warcolak.fit2$dme.corre
+DME substep completed:
+OLS-b step completed:
+>
+>warcolak.fit2$dme.corre
             VarE(I)  VarG(Ia)  VarG(Id) VarGs(Ia)
 VarE(I)   1.0000000 0.4856324 0.9190639 0.4080959
 VarG(Ia)  0.4856324 1.0000000 0.6255619 0.8268400
@@ -1480,7 +1343,7 @@ VarG(Id)  0.9190639 0.6255619 1.0000000 0.5254999
 VarGs(Ia) 0.4080959 0.8268400 0.5254999 1.0000000
 > 
 \end{verbatim}
- There is an additional serious collinearitty between "VarG(Ia)" and "VarGs(Ia)". We shall keep this in mind as we view the results
+ There is an additiona serious collinearitty between "VarG(Ia)" and "VarGs(Ia)". We shall keep this in mind as we view the results
 
 \begin{verbatim}
 > summary(warcolak.fit2)
@@ -1494,16 +1357,17 @@ Coefficients fitted by OLS for fixed effects:
 SexM        Trait2    -1.00 0.0269  -1.06 -0.951
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
               Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Trait2:Trait2   0.2954 0.0349 0.2271  0.364
 VarG(Ia)  Trait2:Trait2   0.2750 0.0126 0.2502  0.300
 VarG(Id)  Trait2:Trait2   0.3366 0.0359 0.2662  0.407
 VarGs(Ia) Trait2:Trait2   0.0776 0.0123 0.0535  0.102
->
-\end{verbatim}
+VarP(I)   Trait2:Trait2   0.9845 0.0134 0.9582  1.011
 
+> 
+\end{verbatim}
 The estimated components VarE(I), VarG(Ia), VarG(Id), and VarGs(Ia), agree well with the stated population values (0.3,0.3,0.3,0.1 respectively). The confidence limits include the stated population value. The collinearities noted above do not seem to have affected the results.
 
 We compute the sample values for VarE(I), VarG(Ia), VarG(Id), and VarGs(Ia) by computing the variances of t2\_r, t2\_a, t2\_d, and t2\_s. These are shown below
@@ -1526,7 +1390,7 @@ We compute the sample values for VarE(I), VarG(Ia), VarG(Id), and VarGs(Ia) by c
 [1] 0.09356907
 > 
 \end{verbatim}
-The confidence limits of the {\em dmm} estimated components span the sample values. In the case of the sexlinked additive component the computed sample variance of effect t2\_s for males is half of that for females. That is correct. The estimated variance component VarGs(Ia) is adjusted to an all-female basis, so its confidence limits should include the above sample variance for females, and that is what we see. 
+The confidence limits of the {\em dmm} estimated components include the sample values. In the case of the sexlinked additive component the computed sample variance of effect t2\_s for males is half of that for females. That is correct. The estimated variance component VarGs(Ia) is adjusted to an all-female basis, so its confidence limits should include the above sample variance for females, and that is what we see. 
 
 
  We conclude that  comparison of {\em dmm()} estimates of variance components from the simulated {\em warcolak} data with the data's population values, and with the data's sample values computed from effect values included in the {\em warcolak} dataset, suggests that {\em dmm()} estimates are correct, within the limits expected from sampling variation.
@@ -1534,32 +1398,24 @@ The confidence limits of the {\em dmm} estimated components span the sample valu
  There is one other thing that can be done as a check, and that is to analyse each of the effects instead of the phenotypic values. We will do this just for effect t2\_s
 
 \begin{verbatim}
->  warcolak.fit2s <- dmm(warcolak.mdf,t2_s ~ 1 + Sex,components=c("VarE(I)","VarG(Ia)","VarG(Id)","VarGs(Ia)"),relmat="withdf")
+> warcolak.fit2s <- dmm(warcolak.mdf,t2_s ~ 1 + Sex,
+   components=c("VarE(I)","VarG(Ia)","VarG(Id)","VarGs(Ia)"),relmat="withdf")
 Dyadic mixed model fit for datafile: warcolak.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 4 
+OLS-b step:
 no of fixed effect df (k) =  2 
 no of traits (l) =  1 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 4 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  5400 
 no of individuals with data and X codes (n) =  5400 
 Rank of X: 2   No of Fixed Effects: 2 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  4 
-No of components estimable =  4 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
-> 
-\end{verbatim}
-\begin{verbatim}
+DME substep completed:
+OLS-b step completed:
+>
 > summary(warcolak.fit2s)
 Call:
 summary.dmm(object = warcolak.fit2s)
@@ -1571,23 +1427,23 @@ Coefficients fitted by OLS for fixed effects:
 SexM         t2_s -0.00324 0.00744 -0.01783 0.0113
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
           Traitpair Estimate   StdErr   CI95lo  CI95hi
 VarE(I)   t2_s:t2_s 1.00e-09 0.002662 -0.00522 0.00522
 VarG(Ia)  t2_s:t2_s 1.00e-09 0.000965 -0.00189 0.00189
 VarG(Id)  t2_s:t2_s 2.97e-03 0.002742 -0.00241 0.00834
 VarGs(Ia) t2_s:t2_s 9.32e-02 0.000939  0.09138 0.09506
+VarP(I)   t2_s:t2_s 9.62e-02 0.001025  0.09418 0.09820
 
 > 
 \end{verbatim}
 What we expect to get here is near-zero for all of the components except VarGs(Ia), which should be close to its sample value. We find that the estimate of VarGs(Ia) is indeed very close to its sample value for females of 0.0935. Much closer than the estimate of VarGs(Ia) of 0.0776 obtained above from analysis of the phenotypic values for Trait 2. We conclude that there is some evidence that the collinearities among columns of the $W$ matrix for components has affected estimation of components.  Some consideration could be given to using principal component regression in this case. We will not do that here, there is a section~\ref{pcreg} demonstrating principal component regression.
 
-As far as {\em dmm()} is concerned all of the analyses of the {\em warcolak} dataset indicate that it is performing correctly. We conclude with a word of caution. The above analyses ignore the possibility that genetic parameters are sex-specific. While this is OK for {\em warcolak} because we know from the simulation that genetic effects do not differ between the sexes, it should not be assumed in general. It is possible to use {\em dmm} to perform sex-specific analyses. See the separate document {\em dmmClassSpecific.pdf}~\cite{jack:17}. 
+As far as {\em dmm()} is concerned all of the analyses of the {\em warcolak} dataset indicate that it is performing correctly. We conclude with a word of caution. The above analyses ignore the possibility that genetic parameters are sex-specific. While this is OK for {\em warcolak} because we know from the simulation that genetic effects do not differ between the sexes, it should not be assumed in general. It is possible to use {\em dmm} to perform sex-specific analyses. See the separate document {\em dmmClassSpecific.pdf}. 
 
 \clearpage
 \subsection{The Harvey dataset}
-\label{sec:harv}
  The {\em harv101.df} dataset comes originally from Harvey(1960)~\cite{harv:60}. It is real data, average daily gain on 65 Hereford steers. It has been extensively used as a test example for many years. It is unbalanced in both the fixed effects and the pedigree families.
 
 We are going to compare estimates of additive genetic and environmental variance components obtained from these data with two programs, {\em dmm()} and DFREML. The program DFREML was written by Karin Meyer, and does REML estimates only. We shall also compare with estimates from Harvey's original analysis by the fitting constants method, which is an analysis of variance method, commonly known as Henderson's Method-3.
@@ -1828,6 +1684,8 @@ We now wish to analyse these data with {\em dmm()}. We start with data preparati
 > 
 > harv101.mdf <- mdf(harv101.df, pedcols=c(1:3), factorcols=c(4:5,9),
                  ycols=8, sexcode=c(1,2),keep=T)
+Loading required package: Matrix
+Loading required package: lattice
 Pedigree Id check:
 No of rows with Id in original dataframe =  139 
 No of sex codes not in sexcode[] so changed to NA =  0 
@@ -1860,40 +1718,30 @@ Notice that we are using argument {\em keep=T} with {\em mdf()} to force it to k
 First we will fit the model without interaction used with DFREML above and we can use the default components (environmental and additive genetic)
 
 \begin{verbatim}
-> harv101.fit1 <- dmm(harv101.mdf,Adg ~ 1 + Line + Agedam + Age + Weight, fixedgls=T)
+> harv101.fit1 <- dmm(harv101.mdf,
+                  Adg ~ 1 + Line + Agedam + Age + Weight, gls=T)
 Dyadic mixed model fit for datafile: harv101.mdf  
 Data file is a normal dataframe:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 2 
+OLS-b step:
 no of fixed effect df (k) =  7 
 no of traits (l) =  1 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 2 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  139 
 no of individuals with data and X codes (n) =  65 
 Rank of X: 7   No of Fixed Effects: 7 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  2 
-No of components estimable =  2 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+DME substep completed:
+OLS-b step completed:
 
-GLS-fixed-effects step:
+GLS-b step:
 Round =  1  Stopcrit =  0.02352827 
 Round =  2  Stopcrit =  0.004211696 
-Iteration(gls-fixed-effects) completed - count =  2 
+Iteration completed - count =  2 
 Convergence achieved
-GLS-fixed-effects step completed successfully:
-DME substep:
-Components to genetic parameters and SE's:
-GLS-fixed-effects - genetic parameters with nonspecific components:
-DME substep completed:
+GLS-b step completed successfully:
 >
 >harv101.fit1$dme.corre
            VarE(I)  VarG(Ia)
@@ -1901,9 +1749,9 @@ VarE(I)  1.0000000 0.8755222
 VarG(Ia) 0.8755222 1.0000000
 
 >
-> summary(harv101.fit1,fixedgls=T)
+>summary(harv101.fit1,gls=T)
 Call:
-summary.dmm(object = harv101.fit1, fixedgls = T)
+summary.dmm(dmmobj = harv101.fit1, gls = T)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -1917,11 +1765,12 @@ Age           Adg -0.00816 0.00289 -0.013820 -0.00251
 Weight        Adg  0.00252 0.00090  0.000755  0.00428
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
-         Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)    Adg:Adg   0.0167 0.0155 -0.0136 0.0471
-VarG(Ia)   Adg:Adg   0.0520 0.0147  0.0230 0.0809
+         Traitpair Estimate  StdErr  CI95lo CI95hi
+VarE(I)    Adg:Adg   0.0167 0.01550 -0.0136 0.0471
+VarG(Ia)   Adg:Adg   0.0520 0.01475  0.0230 0.0809
+VarP(I)    Adg:Adg   0.0687 0.00758  0.0538 0.0836
 
 
 Coefficients fitted by GLS for fixed effects:
@@ -1936,148 +1785,48 @@ Age           Adg -0.00854 0.002918 -0.014257 -0.00282
 Weight        Adg  0.00245 0.000869  0.000748  0.00415
 
 
-Components partitioned by DME from residual var/covariance after GLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after GLS-b fit:
 
-         Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)    Adg:Adg   0.0183 0.0154 -0.0119 0.0484
-VarG(Ia)   Adg:Adg   0.0498 0.0145  0.0215 0.0781
-
-> 
-\end{verbatim}
-
-So both the OLS-fixed-effects and GLS-fixed-effects estimates of VarE(I) and VarG(Ia) are close to the DFREML estimates $0.01781$ and $0.05071$, but they are not exactly equal. That is as expected, because these are MINQUE and BCML estimates, wheras the DFREML estimates are REML estimates.
-
-If we rerun the above job using {\em dmeopt="fgls"} option we get REML estimates from {\em dmm}.
-\begin{verbatim}
-> harv101.fgls.fit1 <- dmm(harv101.mdf,Adg ~ 1 + Line + Agedam + Age + Weight, dmeopt="fgls")
-Dyadic mixed model fit for datafile: harv101.mdf  
-Data file is a normal dataframe:
-Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
-no of fixed effect df (k) =  7 
-no of traits (l) =  1 
-Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 2 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
-no of individuals in pedigree (m) =  139 
-no of individuals with data and X codes (n) =  65 
-Rank of X: 7   No of Fixed Effects: 7 
-OLS-fixed-effects step completed:
-DME substep:
-No of components defined =  2 
-No of components estimable =  2 
-Checking dyadic model equations:
-fgls iteration starting siga from ols:
-            Adg:Adg
-VarE(I)  0.01674900
-VarG(Ia) 0.05195215
-Residual var for DME (vard):
-            Adg:Adg
-Adg:Adg 0.003253705
-Total var for DME (vart):
-            Adg:Adg
-Adg:Adg 0.003320518
-Iteration(fgls) round:  0 
-siga in fgls.update:
-           [,1]
-[1,] 0.01783227
-[2,] 0.05069428
-Round =  1  Stopcrit =  0.0009364542 
-Iteration(fgls) completed - count =  1 
-Convergence achieved (fgls)
-diagvsiga:
-             Adg:Adg
-VarE(I)  0.001643798
-VarG(Ia) 0.002516052
-diagvsiga posdef:
-             Adg:Adg
-VarE(I)  0.001643798
-VarG(Ia) 0.002516052
-sesiga:
-            Adg:Adg
-VarE(I)  0.04054378
-VarG(Ia) 0.05016026
-DME substep with OLS-fixed-effects completed:
-> 
-> 
-> 
-> summary(harv101.fgls.fit1)
-Call:
-summary.dmm(object = harv101.fgls.fit1)
-
-Coefficients fitted by OLS for fixed effects:
-
-            Trait Estimate  StdErr    CI95lo   CI95hi
-(Intercept)   Adg  2.85434 0.50581  1.862946  3.84574
-Line2         Adg  0.09427 0.09566 -0.093231  0.28176
-Line3         Adg  0.03574 0.07817 -0.117471  0.18895
-Agedam4       Adg -0.03049 0.09770 -0.221988  0.16100
-Agedam5       Adg -0.14197 0.08708 -0.312642  0.02871
-Age           Adg -0.00816 0.00289 -0.013820 -0.00251
-Weight        Adg  0.00252 0.00090  0.000755  0.00428
-
-
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
-
-         Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)    Adg:Adg   0.0176 0.0405 -0.0619 0.0971
-VarG(Ia)   Adg:Adg   0.0509 0.0502 -0.0474 0.1493
+         Traitpair Estimate  StdErr  CI95lo CI95hi
+VarE(I)    Adg:Adg   0.0183 0.01539 -0.0119 0.0484
+VarG(Ia)   Adg:Adg   0.0498 0.01446  0.0215 0.0781
+VarP(I)    Adg:Adg   0.0681 0.00756  0.0533 0.0829
 
 > 
 \end{verbatim}
-Now the variance component estimates are very close to those obtained with DFREML program. 
-They are not exactly equal because DFREML and {\em dmm} are both iterative , and will converge to slightly different points in the parameter space.
-Both DFREML and {\em dmm} give an heritability estimate of $0.74$ but the standard error estimates differ, as expected given the difference in methodology.
 
-The OLS-fixed-effects and GLS-fixed-effects (ie fixed effect estimates) are also close but not equal, as expected for an unbalanced dataset. The fixed effects for covariates 'Age' and 'Weight' also agree with DFREML, but the constants fitted for 'Line' and 'Agedam' differ because DFREML uses a different set of contrasts to the default used in R.
-
+So both the OLS-b and GLS-b estimates of VarE(I) and VarG(Ia) are close to the DFREML estimates $0.01781$ and $0.05071$, but they are not exactly equal. The OLS-b and GLS-b estimates are also close but not equal, as expected for an unbalanced dataset. The fixed effects for covariates 'Age' and 'Weight' also agree with DFREML, but the constants fitted for 'Line' and 'Agedam' differ because DFREML uses a different set of contrasts to the default used in R.
 
 We now do another fit with the 'Line x Agedam' interaction included
 
 \begin{verbatim}
-> harv101.fit2 <- dmm(harv101.mdf,Adg ~ 1 + Line + Agedam + Line:Agedam + Age + Weight, fixedgls=T)
+> harv101.fit2 <- dmm(harv101.mdf,
+        Adg ~ 1 + Line + Agedam + Line:Agedam + Age + Weight, gls=T)
 Dyadic mixed model fit for datafile: harv101.mdf  
 Data file is a normal dataframe:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 2 
+OLS-b step:
 no of fixed effect df (k) =  11 
 no of traits (l) =  1 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 2 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  139 
 no of individuals with data and X codes (n) =  65 
 Rank of X: 11   No of Fixed Effects: 11 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  2 
-No of components estimable =  2 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+DME substep completed:
+OLS-b step completed:
 
-GLS-fixed-effects step:
+GLS-b step:
 Round =  1  Stopcrit =  0.07444493 
 Round =  2  Stopcrit =  0.01458684 
 Round =  3  Stopcrit =  0.00358769 
-Iteration(gls-fixed-effects) completed - count =  3 
+Iteration completed - count =  3 
 Convergence achieved
-GLS-fixed-effects step completed successfully:
-DME substep:
-Components to genetic parameters and SE's:
-GLS-fixed-effects - genetic parameters with nonspecific components:
-DME substep completed:
-> 
-
-> summary(harv101.fit2, fixedgls = T)
-Call:
-summary.dmm(object = harv101.fit2, fixedgls = T)
+GLS-b step completed successfully:
+>
+> summary(harv101.fit2, gls = T)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -2095,11 +1844,12 @@ Line2:Agedam5   Adg -0.02430 0.240672 -0.49602  0.44741
 Line3:Agedam5   Adg -0.20179 0.206156 -0.60586  0.20227
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
          Traitpair Estimate StdErr  CI95lo CI95hi
 VarE(I)    Adg:Adg  0.00293 0.0147 -0.0259 0.0317
 VarG(Ia)   Adg:Adg  0.06472 0.0139  0.0374 0.0920
+VarP(I)    Adg:Adg  0.06764 0.0071  0.0537 0.0816
 
 
 Coefficients fitted by GLS for fixed effects:
@@ -2118,19 +1868,19 @@ Line2:Agedam5   Adg -0.12788 0.223753 -0.566433  0.31068
 Line3:Agedam5   Adg -0.36253 0.194124 -0.743015  0.01795
 
 
-Components partitioned by DME from residual var/covariance after GLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after GLS-b fit:
 
-         Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)    Adg:Adg  0.00191 0.0146 -0.0267 0.0305
-VarG(Ia)   Adg:Adg  0.06593 0.0135  0.0394 0.0924
+         Traitpair Estimate  StdErr  CI95lo CI95hi
+VarE(I)    Adg:Adg  0.00191 0.01461 -0.0267 0.0305
+VarG(Ia)   Adg:Adg  0.06593 0.01352  0.0394 0.0924
+VarP(I)    Adg:Adg  0.06784 0.00713  0.0539 0.0818
 
 > 
 \end{verbatim}
 
- So both the OLS-fixed-effects and GLS-fixed-effects estimates of VarE(I) and VarG(Ia) are now very close to those from Harvey's fitting constants analysis  $0.0030$ and $0.0656$. The fixed effects differ from Harvey, and this is not surprising as Harvey's model includes a 'Sire' effect. It is also not surprising that the variance components are now a little different from the DFREML estimates, as the fixed effects model differs.
+ So both the OLS-b and GLS-b estimates of VarE(I) and VarG(Ia) are now very close to those from Harvey's fitting constants analysis  $0.0030$ and $0.0656$. The fixed effects differ from Harvey, and this is not surprising as Harvey's model includes a 'Sire' effect. It is also not surprising that the variance components are now a little different from the DFREML estimates, as the fixed effects model differs.
 
-What we can conclude is that {\em dmm()} can  produce reasonable estimates of variance components from an unbalanced dataset with MINQUE or BCML estimates, and that they are close to REML estimates in this case.  If we use {\em dmeopt="fgls"} and get REML estimates from {\em dmm} then obviously they are exactly the same as REML estimates otained by other techniques.
-Unfortunately REML estimates with {\em dmm} are not always feasable, as explained elsewhere.
+What we can conclude is that {\em dmm()} has produced reasonable estimates of variance components from an unbalanced dataset, and that they are close to REML estimates in this case. It is also clear that OLS-b and GLS-b estimates will differ for an unbalanced dataset; we do not expect MINQUE and bias-corrected-ML to be the same.
 
 
 \clearpage
@@ -2356,53 +2106,41 @@ List of 2
 Now we can do the {\em dmm} fit of the same simple model as used for DFREML
 
 \begin{verbatim}
->  tstmo1.fit1 <- dmm(tstmo1.mdf, Ymat ~ 1 + Gen,components=c("VarE(I)","VarG(Ia)"), fixedgls=T)
+> tstmo1.fit1 <- dmm(tstmo1.mdf, Ymat ~ 1 + Gen,
+                 components=c("VarE(I)","VarG(Ia)"), gls=T)
 Dyadic mixed model fit for datafile: tstmo1.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 2 
+OLS-b step:
 no of fixed effect df (k) =  2 
 no of traits (l) =  1 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 2 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  306 
 no of individuals with data and X codes (n) =  282 
 Rank of X: 2   No of Fixed Effects: 2 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  2 
-No of components estimable =  2 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+DME substep completed:
+OLS-b step completed:
 
-GLS-fixed-effects step:
+GLS-b step:
 Round =  1  Stopcrit =  1.01928 
 Round =  2  Stopcrit =  0.2283226 
 Round =  3  Stopcrit =  0.04124407 
 Round =  4  Stopcrit =  0.007648931 
-Iteration(gls-fixed-effects) completed - count =  4 
+Iteration completed - count =  4 
 Convergence achieved
-GLS-fixed-effects step completed successfully:
-DME substep:
-Components to genetic parameters and SE's:
-GLS-fixed-effects - genetic parameters with nonspecific components:
-DME substep completed:
-> 
-
+GLS-b step completed successfully:
 >
 >tstmo1.fit1$dme.corre
            VarE(I)  VarG(Ia)
 VarE(I)  1.0000000 0.4158424
 VarG(Ia) 0.4158424 1.0000000
 >
-> summary(tstmo1.fit1,fixedgls=T)
+> summary(tstmo1.fit1,gls=T)
 Call:
-summary.dmm(object = tstmo1.fit1, fixedgls = T)
+summary.dmm(dmmobj = tstmo1.fit1, gls = T)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -2411,11 +2149,12 @@ Coefficients fitted by OLS for fixed effects:
 Gen2         Ymat     18.3  1.184   15.9   20.6
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)  Ymat:Ymat     32.7   6.41   20.1   45.3
 VarG(Ia) Ymat:Ymat     70.0   2.82   64.5   75.6
+VarP(I)  Ymat:Ymat    102.7   5.83   91.3  114.2
 
 
 Coefficients fitted by GLS for fixed effects:
@@ -2425,59 +2164,41 @@ Coefficients fitted by GLS for fixed effects:
 Gen2         Ymat     15.8   1.30   13.3   18.4
 
 
-Components partitioned by DME from residual var/covariance after GLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after GLS-b fit:
 
          Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)  Ymat:Ymat     33.6   6.54   20.8   46.4
 VarG(Ia) Ymat:Ymat     78.4   2.86   72.8   84.0
+VarP(I)  Ymat:Ymat    112.0   5.91  100.4  123.6
 
-> 
+>
 \end{verbatim}
 
-So the OLS-fixed-effects and GLS-fixed-effects are not identical (as expected for an unbalanced dataset) but of more concern is that they differ substantially from the DFREML estimates. This requires some consideration. Firstly, they are not expected to agree exactly because {\em dmm()} estimates are not REML equivalent. Secondly, the 'Gen' fixed effect in these data is not independent of the pedigree; generation 1 are parents and generation 2 are their offspring. So there is a parent/offspring correlation between generations 1 and 2, and this means that the levels of the 'Gen' fixed effect are not independent. So the  analyses violate one of the basic assumptions of the model, both for DFREML and {\em dmm()}.  Correlated levels of an effect is as serious a problem as correlated residuals. It would be expected that DFREML and {\em dmm()} would be biassed in different ways in such a case. We should conclude that neither program is 'correct' in this case, because the model is flawed..
+So the OLS-b and GLS-b estimates are not identical (as expected for an unbalanced dataset) but of more concern is that they differ substantially from the DFREML estimates. This requires some consideration. Firstly, they are not expected to agree exactly because {\em dmm()} estimates are not REML equivalent. Secondly, the 'Gen' fixed effect in these data is not independent of the pedigree; generation 1 are parents and generation 2 are their offspring. So there is a parent/offspring correlation between generations 1 and 2, and this means that the levels of the 'Gen' fixed effect are not independent. So the  analyses violate one of the basic assumptions of the model, both for DFREML and {\em dmm()}.  Correlated levels of an effect is as serious a problem as correlated residuals. It would be expected that DFREML and {\em dmm()} would be biassed in different ways in such a case. We should conclude that neither program is 'correct' in this case.
  
 
 There remains the question of whether we can match the stated population parameters for this dataset, notwithstanding the problem with the 'Gen' effect. This requires another run with more variance components fitted, as follows
 
 \begin{verbatim}
-> tstmo1.fit2 <- dmm(tstmo1.mdf, Ymat ~ 1 + Gen,components=c("VarE(I)","VarG(Ia)","VarE(M)","VarG(Ma)","CovG(Ia,Ma)","CovG(Ma,Ia)"), fixedgls=T)
-Dyadic mixed model fit for datafile: tstmo1.mdf  
-Data file is a list containing a dataframe and a list of relationship matrices:
-Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
-no of fixed effect df (k) =  2 
-no of traits (l) =  1 
-Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 6 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
-no of individuals in pedigree (m) =  306 
-no of individuals with data and X codes (n) =  282 
-Rank of X: 2   No of Fixed Effects: 2 
-OLS-fixed-effects step completed:
-DME substep:
-No of components defined =  6 
-No of components estimable =  6 
-Checking dyadic model equations:
+> tstmo1.fit2 <- dmm(tstmo1.mdf, Ymat ~ 1 + Gen,
+      components=c("VarE(I)","VarG(Ia)","VarE(M)","VarG(Ma)","CovG(Ia,Ma)",
+      "CovG(Ma,Ia)"), gls=T)
+ ...
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
-
-GLS-fixed-effects step:
-Round =  1  Stopcrit =  0.7502715 
-Round =  2  Stopcrit =  0.1639629 
-Round =  3  Stopcrit =  0.03181733 
-Round =  4  Stopcrit =  0.006011582 
-Iteration(gls-fixed-effects) completed - count =  4 
-Convergence achieved
-GLS-fixed-effects step completed successfully:
-DME substep:
-Components to genetic parameters and SE's:
-GLS-fixed-effects - genetic parameters with nonspecific components:
 DME substep completed:
-> 
+OLS-b step completed:
 
+GLS-b step:
+Fixed effects iterated -> GLS b
+Partitioned variance components from DME after GLS b 
+Round =  1  Stopcrit =  7.486482 
+Round =  2  Stopcrit =  5.989145 
+Round =  3  Stopcrit =  6.283543 
+ ...
+Round =  200  Stopcrit =  6.234484 
+Iteration completed - count =  200 
+Failed to converge
+GLS-b step abandoned:
 >
 >tstmo1.fit2$dme.corre
               VarE(I)  VarG(Ia)   VarE(M)  VarG(Ma) CovG(Ia,Ma) CovG(Ma,Ia)
@@ -2490,12 +2211,12 @@ CovG(Ma,Ia) 0.2209086 0.7658688 0.6383430 0.8376605   0.7037866   1.0000000
 >
 \end{verbatim}
 
- The correlations of these components are rather high, but we can still have a look at the  estimates
+So the GLS-b iteration fails to converge, another sign of problems with the model or dataset. The correlations of these components are rather high, but we can still have a look at the OLS-b estimates
 
 \begin{verbatim}
-> summary(tstmo1.fit2,fixedgls=T)
+> summary(tstmo1.fit2)
 Call:
-summary.dmm(object = tstmo1.fit2, fixedgls = T)
+summary.dmm(dmmobj = tstmo1.fit2)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -2504,7 +2225,7 @@ Coefficients fitted by OLS for fixed effects:
 Gen2         Ymat     18.3  1.184   15.9   20.6
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
             Traitpair  Estimate StdErr CI95lo CI95hi
 VarE(I)     Ymat:Ymat  2.37e+01   6.77  10.47  37.00
@@ -2513,32 +2234,14 @@ VarE(M)     Ymat:Ymat  1.00e-09   4.58  -8.97   8.97
 VarG(Ma)    Ymat:Ymat  3.41e+01   6.83  20.76  47.53
 CovG(Ia,Ma) Ymat:Ymat -2.50e+01   6.23 -37.26 -12.82
 CovG(Ma,Ia) Ymat:Ymat -2.50e+01   6.23 -37.26 -12.82
-
-
-Coefficients fitted by GLS for fixed effects:
-
-            Trait Estimate StdErr CI95lo CI95hi
-(Intercept)  Ymat    220.3   2.41  215.6  225.0
-Gen2         Ymat     16.5   2.21   12.2   20.9
-
-
-Components partitioned by DME from residual var/covariance after GLS-fixed-effects fit:
-
-            Traitpair  Estimate StdErr CI95lo CI95hi
-VarE(I)     Ymat:Ymat  2.34e+01   6.78  10.07  36.63
-VarG(Ia)    Ymat:Ymat  8.52e+01   5.40  74.61  95.78
-VarE(M)     Ymat:Ymat  1.00e-09   4.64  -9.09   9.09
-VarG(Ma)    Ymat:Ymat  3.67e+01   6.93  23.14  50.29
-CovG(Ia,Ma) Ymat:Ymat -2.63e+01   6.29 -38.68 -14.01
-CovG(Ma,Ia) Ymat:Ymat -2.63e+01   6.29 -38.68 -14.01
+VarP(I)     Ymat:Ymat  8.72e+01   7.63  72.28 102.20
 
 > 
-
 \end{verbatim}
  
 The population values for these data are VarE(I) = 35, VarG(Ia) = 40, VarE(M) = 15, VarG(Ma) = 20, and CovG(Ia,Ma) = -5. I am assuming that what Karin Meyer calls a 'c-squared' effect' is actually VarE(M).  Only for two components do the confidence limits include the population value. It is a small sample and there are problems with the model noted above. 
 
-What we can conclude from this somewhat unsatisfactory exposition, is that {\em dmm()} MINQUE and BCML estimates will not always agree with REML, and that we should avoid trying to use a pathological dataset to compare results from different programs.  The example is pathological because the given result for DFREML is with a model that contains an effect (Gen) with correlatesd levels and omits important significant variance components. The 'omitted variable' effect is operating here - we do not know how the omitted maternal additive genetic variance will be redistributed among the other variances when it is omitted. A larger sample would also be desirable for simulated data.
+What we can conclude from this somewhat unsatisfactory exposition, is that {\em dmm()} will not always agree with REML, and that we should avoid trying to use a pathological dataset to compare results from different programs.  The example is pathological because the given result for DFREML is with a model that omits important significant variance components. The 'omitted variable' effect is operating here - we do not know how the omitted maternal additive genetic variance will be redistributed among the other variances when it is omitted. A larger sample would also be desirable for simulated data.
 
 
 \clearpage
@@ -2751,7 +2454,7 @@ If we substitute $\hat{\alpha}$ (from the monadic model) for $\alpha$ in equatio
 \mbox{\boldmath $Y - X \hat{\alpha} = M Y$}
 \end{displaymath}
 
-We can compute $\mbox{\boldmath $M$}$ as $\mbox{\boldmath $(I - H)$}$ where $\mbox{\boldmath $H$}$ is the 'hat' matrix from estimating $\hat{\alpha}$ from model~\ref{eq.second}. In the OLS-fixed-effects case $\mbox{\boldmath $H$}$ is defined as $\mbox{\boldmath $H = X(X^{\prime}X)^{-}X^{\prime}$}$ and can be obtained from the QR decomosition of $\mbox{\boldmath $X$}$. In the GLS-fixed-effects case $\mbox{\boldmath $M$}$ and $\mbox{\boldmath $H$}$ are more complex and are discussed later.
+We can compute $\mbox{\boldmath $M$}$ as $\mbox{\boldmath $(I - H)$}$ where $\mbox{\boldmath $H$}$ is the 'hat' matrix from estimating $\hat{\alpha}$ from model~\ref{eq.second}. In the OLS case $\mbox{\boldmath $H$}$ is defined as $\mbox{\boldmath $H = X(X^{\prime}X)^{-}X^{\prime}$}$ and can be obtained from the QR decomosition of $\mbox{\boldmath $X$}$. In the GLS case $\mbox{\boldmath $M$}$ and $\mbox{\boldmath $H$}$ are more complex and are discussed later.
 
 We can then write equations~\ref{eq.fifth} as
 
@@ -2831,11 +2534,11 @@ and given this we can reconstruct equations~\ref{eq.seventh} and re-estimate $\m
 
 This iteration can be repeated until convergence of estimates is achieved. Convergence is defined  as achieving a state where the current round of estimates of $\mbox{\boldmath $\hat{\alpha_{GLS}}$}$ and $\mbox{\boldmath $\hat{\Gamma}$}$ differ by only a small amount from the previous round. Convergence may fail to occur; this indicates that the model is a poor representation of the data. Convergence is normally rapid (ie in less than 10 rounds). It is necessary to constrain the matrix $\mbox{\boldmath $\hat{\Omega}$}$ to be positive definite, and this is achieved by constraining all component matrices ($\mbox{\boldmath $\hat{\Gamma}$}$ ) to be positive definite.
 
-Anderson(1984)~\cite{ande:84} has shown that if $\mbox{\boldmath $\hat{\alpha}$}$ ( or $\mbox{\boldmath $M$}$ ) are obtained by GLS, and then equations~\ref{eq.seventh} solved by OLS, then the resulting (co)variance components are equivalent to ML estimates. However Anderson's derivation did not include the $\mbox{\boldmath $M$}$ matrix, ie he used equation~\ref{eq.fourth} rather than equation~\ref{eq.sixth}. In {\em dmm()} we use equation~\ref{eq.sixth} and this effectively corrects the ML estimates of $\mbox{\boldmath $\Gamma$}$ for bias. That is it allows for the degrees of freedom used in fitting $\mbox{\boldmath $\hat{\alpha}_{GLS}$}$ at the first level, before fitting $\mbox{\boldmath $\hat{\Gamma}$}$ at the second level. We therefore call the GLS-fixed-effects estimates from {\em dmm()} 'bias-corrected-ML estimates' (BCML).
+Anderson(1984)~\cite{ande:84} has shown that if $\mbox{\boldmath $\hat{\alpha}$}$ ( or $\mbox{\boldmath $M$}$ ) are obtained by GLS, and then equations~\ref{eq.seventh} solved by OLS, then the resulting (co)variance components are equivalent to ML estimates. However Anderson's derivation did not include the $\mbox{\boldmath $M$}$ matrix, ie he used equation~\ref{eq.fourth} rather than equation~\ref{eq.sixth}. In {\em dmm()} we use equation~\ref{eq.sixth} and this effectively corrects the ML estimates of $\mbox{\boldmath $\Gamma$}$ for bias. That is it allows for the degrees of freedom used in fitting $\mbox{\boldmath $\hat{\alpha}_{GLS}$}$ at the first level, before fitting $\mbox{\boldmath $\hat{\Gamma}$}$ at the second level. We therefore call the GLS-b estimates from {\em dmm()} 'bias-corrected-ML estimates'.
 
-It is, in theory, possible to obtain REML estimates from {\em dmm()}. Searle, et al (1992)~\cite{sear:92} show that if we use $\mbox{\boldmath $\hat{\alpha}_{GLS}$}$ and then solve the resulting equations~\ref{eq.seventh} by GLS instead of OLS, the resulting estimates of $\mbox{\boldmath $\Gamma$}$ are equivalent to REML or I-MINQUE. However, using GLS on equations~\ref{eq.seventh} requires the covariance matrix of the dyadic residuals $\mbox{\boldmath $\Delta$}$, and this is an enormous array of the order of the fourth power of the number of individuals, so it is not computationally feasible to attempt REML estimates using the {\em dmm} approach, except for very small datasets. The code is present in {\em dmm} but it will run out of memory if number of individuals is more than about 200.
+It is, in theory, possible to obtain REML estimates from {\em dmm()}. Searle, et al (1992)~\cite{sear:92} show that if we use $\mbox{\boldmath $\hat{\alpha}_{GLS}$}$ and then solve the resulting equations~\ref{eq.seventh} by GLS instead of OLS, the resulting estimates of $\mbox{\boldmath $\Gamma$}$ are equivalent to REML or I-MINQUE. However, using GLS on equations~\ref{eq.seventh} requires the covariance matrix of the dyadic residuals $\mbox{\boldmath $\Delta$}$, and this is an enormous array of the order of the fourth power of the number of individuals, so it is not computationally feasible to attempt REML estimates using the {\em dmm} approach.
 
-One can show that the GLS-fixed-effects estimates are bias corrected very simply. Make a simple dataset of 3 observations
+One can show that the GLS-b estimates are bias corrected very simply. Make a simple dataset of 3 observations
 
 \begin{verbatim}
 > y <- c(1,2,3)
@@ -2846,11 +2549,10 @@ One can show that the GLS-fixed-effects estimates are bias corrected very simply
 and use {\em dmm()} to obtain just a mean and a residual variance
 
 \begin{verbatim}
-> fit <- dmm(y.df,y ~ 1, components=c("VarE(I)"),fixedgls=T)
-  ....
-> summary(fit,fixedgls=T)
+> fit <- dmm(y.df,y ~ 1, components=c("VarE(I)"),gls=T)
+> summary(fit,gls=T)
 Call:
-summary.dmm(object = fit, fixedgls = T)
+summary.dmm(dmmobj = fit, gls = T)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -2858,10 +2560,11 @@ Coefficients fitted by OLS for fixed effects:
 1     y        2  0.577  0.868   3.13
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
         Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)       y:y        1  0.354  0.307   1.69
+VarP(I)       y:y        1  0.354  0.307   1.69
 
 
 Coefficients fitted by GLS for fixed effects:
@@ -2870,13 +2573,13 @@ Coefficients fitted by GLS for fixed effects:
 1     y        2  0.577  0.868   3.13
 
 
-Components partitioned by DME from residual var/covariance after GLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after GLS-b fit:
 
         Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)       y:y        1  0.354  0.307   1.69
+VarP(I)       y:y        1  0.354  0.307   1.69
 
 > 
-
 \end{verbatim}
  
 and we do indeed get a mean of $2$ and a variance of $1$, not $0.66$, which is the uncorrected ML estimate of variance.
@@ -2895,7 +2598,7 @@ In more complex cases the $\mbox{\boldmath $M$}$ matrix simply adjusts the degre
 
  The approach taken by {\em dmm()} also has similarities with the 'symmetric sums method' of Koch(1967)~\cite{koch:67}. Koch was probably the first worker to equate dyadic covariances to their expectations, as in equation~\ref{eq.fourth}. The difference is that Koch summed his expectations (he could hardly have done anything else, given computing facilities at the time), while {\em dmm()} writes all expectations as a set of equations~\ref{eq.seventh} to be solved directly.
  
- There is some more detail of the setting up and solving of dyadic model equations in the document {\em dmmSolveDME.pdf}~\cite{jack:25}
+ There is some more detail of the setting up and solving of dyadic model equations in the document {\em solvedme.pdf}~\cite{jack:15}
 
 \subsubsection{Standard errors of variance component estimates}
 Using a dyadic model reduces variance component estimation to a multiple linear regression problem, the components being estimated as regression coefficients. Therefore standard errors for variance component estimates can be computed using expressions for the standard error of a regresssion coefficient. In terms of model~\ref{eq.eighth} the unknowns $\mbox{\boldmath $\Gamma$}$ are defined (if estimated by OLS) as
@@ -3067,7 +2770,7 @@ DME substep completed:
 Error in varcomp[var2, ii] : subscript out of bounds
 >
 \end{verbatim}
-and execution will terminate. No output will be returned.
+nd execution will terminate. No output will be returned.
 
 	It does not make sense to estimate a cross-effect-covariance without simultaneously estimating the corresponding variances. If two effects have a covariance, they must also have variances. All variances and covariances that are significantly different from zero should be in the dyadic model used to partition residual variance. If a large and significant variance or covariance is omitted, estimates for all the other included variances and covariances are biased. This is known as the 'omitted variable effect'. It is well known is a regression context, but it applies also to partitioning of variance components.
 
@@ -3558,55 +3261,42 @@ In the {\em sheep.df} dataset there is a factor called {\em Year} which records 
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 2 
+OLS-b step:
 no of fixed effect df (k) =  9 
 no of traits (l) =  3 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 2 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  36 
 Rank of X: 9   No of Fixed Effects: 9 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  2 
-No of components estimable =  2 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
->
+DME substep completed:
+OLS-b step completed:
+> 
 \end{verbatim}
  
 Then we rerun with {\em Year} as a cohort instead of as a fixed effect
 
 \begin{verbatim}
-> sheep.fitc <- dmm(sheep.mdf, Ymat ~ 1 + Tb + Sex, cohortform = ~ Year,components=c("VarE(I)","VarE(C)","VarG(Ia)"))
+> sheep.fitc <- dmm(sheep.mdf, Ymat ~ 1 + Tb + Sex, cohortform = ~ Year,
+               components=c("VarE(I)","VarE(C)","VarG(Ia)"))
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 3 
+OLS-b step:
 no of fixed effect df (k) =  3 
 no of traits (l) =  3 
 Setup antemodel matrices:
 ncohortcodes =  8 
-No of factors with specific components: 0 
-No of non-specific components partitioned: 3 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  36 
 Rank of X: 3   No of Fixed Effects: 3 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  3 
-No of components estimable =  3 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+DME substep completed:
+OLS-b step completed:
 > 
 \end{verbatim}
 
@@ -3617,56 +3307,39 @@ Then let us compare the genetic parameter estimates from the two runs. We will l
 Call:
 gsummary.dmm(dmmobj = sheep.fit, traitset = "Diam")
 
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+Proportion of phenotypic var/covariance partitioned by DME to each component (OLS-b):
 
-         Trait Estimate StdErr CI95lo CI95hi
-VarE(I)   Diam    0.253  0.199 -0.138  0.643
-VarG(Ia)  Diam    0.747  0.207  0.341  1.154
-VarP(I)   Diam    1.000  0.000  1.000  1.000
+         Trait Estimate StdErr  CI95lo CI95hi
+VarE(I)   Diam    0.321  0.201 -0.0722  0.715
+VarG(Ia)  Diam    0.679  0.207  0.2732  1.084
+VarP(I)   Diam    1.000  0.000  1.0000  1.000
 
-
-Correlation corresponding to each var/covariance component:
- partitioned by DME (OLS-fixed-effects):
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Diam:Diam        1      0      1      1
-VarG(Ia) Diam:Diam        1      0      1      1
-VarP(I)  Diam:Diam        1      0      1      1
-
-
-Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects):
+ .....
+ 
+Phenotypic var/covariance from components partitioned by DME (OLS-b):
 
   Traitpair Estimate StdErr CI95lo CI95hi
-1 Diam:Diam     1.06  0.137  0.788   1.33
+1 Diam:Diam     1.01  0.132  0.748   1.27
 
 > 
-> gsummary(sheep.fit,traitset="Diam")
+>gsummary(sheep.fitc,traitset="Diam")
 Call:
-gsummary.dmm(dmmobj = sheep.fit, traitset = "Diam")
+gsummary.dmm(dmmobj = sheep.fitc, traitset = "Diam")
 
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+Proportion of phenotypic var/covariance partitioned by DME to each component (OLS-b):
 
-         Trait Estimate StdErr CI95lo CI95hi
-VarE(I)   Diam    0.253  0.199 -0.138  0.643
-VarG(Ia)  Diam    0.747  0.207  0.341  1.154
-VarP(I)   Diam    1.000  0.000  1.000  1.000
+         Trait Estimate StdErr   CI95lo CI95hi
+VarE(I)   Diam   0.0587 0.1240 -0.18428  0.302
+VarG(Ia)  Diam   0.8542 0.1333  0.59289  1.116
+VarE(C)   Diam   0.0871 0.0462 -0.00348  0.178
+VarP(I)   Diam   1.0000 0.0000  1.00000  1.000
 
+ .....
 
-Correlation corresponding to each var/covariance component:
- partitioned by DME (OLS-fixed-effects):
-
-         Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Diam:Diam        1      0      1      1
-VarG(Ia) Diam:Diam        1      0      1      1
-VarP(I)  Diam:Diam        1      0      1      1
-
-
-Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects):
+Phenotypic var/covariance from components partitioned by DME (OLS-b):
 
   Traitpair Estimate StdErr CI95lo CI95hi
-1 Diam:Diam     1.06  0.137  0.788   1.33
+1 Diam:Diam     1.63  0.148   1.34   1.92
 
 > 
 \end{verbatim}
@@ -3717,101 +3390,92 @@ where $n_{1}$ and $n_{2}$ are sums of the relavant columns of the $\bm{W}$ matri
 We continue the example of the cohort section, fitting maternal environmental variance and then splitting it  as follows
 
 \begin{verbatim}
-> sheep.fitm <- dmm(sheep.mdf,Ymat ~ 1 + Tb + Sex,components=c("VarE(I)","VarE(C)", "VarG(Ia)", "VarE(M)", "VarG(Ma)"),cohortform = ~ Year)
+> ....
+>sheep.fitm <- dmm(sheep.mdf,Ymat ~ 1 + Tb + Sex,
+          components=c("VarE(I)","VarE(C)", "VarG(Ia)", "VarE(M)", "VarG(Ma)"),
+          cohortform = ~ Year)
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 5 
+OLS-b step:
 no of fixed effect df (k) =  3 
 no of traits (l) =  3 
 Setup antemodel matrices:
 ncohortcodes =  8 
-No of factors with specific components: 0 
-No of non-specific components partitioned: 5 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  36 
 Rank of X: 3   No of Fixed Effects: 3 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  5 
-No of components estimable =  5 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
-> 
-
+DME substep completed:
+OLS-b step completed:
+>
 > summary(sheep.fitm,traitset=c("Cww"))
 Call:
-summary.dmm(object = sheep.fitm, traitset = c("Cww"))
+summary.dmm(dmmobj = sheep.fitm, traitset = c("Cww"))
 
 Coefficients fitted by OLS for fixed effects:
 
             Trait Estimate StdErr  CI95lo CI95hi
-(Intercept)   Cww    4.638  0.128  4.3863  4.890
-TbT           Cww   -0.105  0.181 -0.4602  0.250
-SexM          Cww    0.320  0.196 -0.0653  0.705
+(Intercept)   Cww    4.593  0.127  4.3452  4.841
+TbT           Cww   -0.104  0.173 -0.4420  0.234
+SexM          Cww    0.426  0.183  0.0675  0.784
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
-         Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)    Cww:Cww   0.0627 0.0686 -0.0718 0.1972
-VarE(C)    Cww:Cww   0.0550 0.0221  0.0117 0.0984
-VarG(Ia)   Cww:Cww   0.1461 0.0658  0.0172 0.2750
-VarE(M)    Cww:Cww   0.2237 0.1334 -0.0378 0.4852
-VarG(Ma)   Cww:Cww   0.0823 0.1311 -0.1746 0.3393
+         Traitpair Estimate StdErr   CI95lo CI95hi
+VarE(I)    Cww:Cww   0.0645 0.0637 -0.06032 0.1894
+VarG(Ia)   Cww:Cww   0.1215 0.0612  0.00165 0.2414
+VarE(M)    Cww:Cww   0.2228 0.1239 -0.02004 0.4656
+VarE(C)    Cww:Cww   0.0447 0.0204  0.00461 0.0848
+VarG(Ma)   Cww:Cww   0.0744 0.1217 -0.16407 0.3129
+VarP(I)    Cww:Cww   0.5279 0.0429  0.44381 0.6121
 
 > 
-
-> sheep.fitm2 <- dmm(sheep.mdf,Ymat ~ 1 + Tb + Sex,components=c("VarE(I)","VarE(C)", "VarG(Ia)","VarE(M&C)","VarE(M&!C)","VarG(Ma)"),cohortform = ~ Year)
+>sheep.fitm2 <- dmm(sheep.mdf,Ymat ~ 1 + Tb + Sex,
+ components=c("VarE(I)","VarE(C)", "VarG(Ia)","VarE(M&C)","VarE(M&!C)","VarG(Ma)"),
+ cohortform = ~ Year)
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 6 
+OLS-b step:
 no of fixed effect df (k) =  3 
 no of traits (l) =  3 
 Setup antemodel matrices:
 ncohortcodes =  8 
-No of factors with specific components: 0 
-No of non-specific components partitioned: 6 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  36 
 Rank of X: 3   No of Fixed Effects: 3 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  6 
-No of components estimable =  6 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
-
-> summary(sheep.fitm2,traitset=c("Cww"))
+DME substep completed:
+OLS-b step completed:
+> 
+>  summary(sheep.fitm2,traitset=c("Cww"))
 Call:
-summary.dmm(object = sheep.fitm2, traitset = c("Cww"))
+summary.dmm(dmmobj = sheep.fitm2, traitset = c("Cww"))
 
 Coefficients fitted by OLS for fixed effects:
 
             Trait Estimate StdErr  CI95lo CI95hi
-(Intercept)   Cww    4.638  0.128  4.3863  4.890
-TbT           Cww   -0.105  0.181 -0.4602  0.250
-SexM          Cww    0.320  0.196 -0.0653  0.705
+(Intercept)   Cww    4.593  0.127  4.3452  4.841
+TbT           Cww   -0.104  0.173 -0.4420  0.234
+SexM          Cww    0.426  0.183  0.0675  0.784
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
-           Traitpair Estimate StdErr    CI95lo CI95hi
-VarE(I)      Cww:Cww   0.0947 0.0794 -0.060854  0.250
-VarE(C)      Cww:Cww   0.0560 0.0226  0.011687  0.100
-VarG(Ia)     Cww:Cww   0.1309 0.0671 -0.000571  0.262
-VarE(M&C)    Cww:Cww   0.1474 0.1430 -0.132873  0.428
-VarE(M&!C)   Cww:Cww   0.2627 0.1355 -0.002936  0.528
-VarG(Ma)     Cww:Cww   0.0768 0.1312 -0.180476  0.334
+           Traitpair Estimate StdErr   CI95lo CI95hi
+VarE(I)      Cww:Cww   0.0939 0.0737 -0.05061 0.2384
+VarG(Ia)     Cww:Cww   0.1056 0.0624 -0.01666 0.2280
+VarE(C)      Cww:Cww   0.0484 0.0209  0.00738 0.0894
+VarE(M&!C)   Cww:Cww   0.2613 0.1258  0.01475 0.5078
+VarE(M&C)    Cww:Cww   0.1461 0.1328 -0.11410 0.4063
+VarG(Ma)     Cww:Cww   0.0692 0.1218 -0.16958 0.3080
+VarP(I)      Cww:Cww   0.7246 0.1349  0.46027 0.9889
 
 > 
 \end{verbatim}
@@ -3828,69 +3492,6 @@ so in this small demonstration case VarE(M\&!C) turns out larger than VarE(M) so
 They also usually lead to smaller standard errors.
 
 One possible use for the robust regression option is to check whether the usual regression estimates obtained by ordinary least squares ({\em qr} or {\em lm} options) have been unduly affected by outliers. If the robust regression estimates of variance components are vastly different from the OLS estimates, then some serious outliers are indicated. In this case the robust regression estimates are probably superior. The best course of action would be to find the reason for the outliers and remove or correct them. The only limitation to using {\em lmrob} option in this way is that robust regression is a univariate procedure, so you can only assess one trait at a time.
-
-I re-ran the {\em warcolak.fit1} analysis using {\em dmeopt="lmrob"}
-
-\begin{verbatim}
-> warcolak.robust.fit1 <- dmm(warcolak.mdf, Trait1 ~ 1 + Sex,components = c("VarE(I)","VarG(Ia)", "VarG(Id)"), relmat = "withdf",dmeopt="lmrob")
-Dyadic mixed model fit for datafile: warcolak.mdf  
-  ....
->
-> summary(warcolak.robust.fit1)
-Call:
-summary.dmm(object = warcolak.robust.fit1)
-
-Coefficients fitted by OLS for fixed effects:
-
-             Trait Estimate StdErr CI95lo CI95hi
-(Intercept) Trait1     2.06 0.0180   2.03  2.100
-SexM        Trait1    -1.02 0.0269  -1.07 -0.968
-
-
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
-
-             Traitpair Estimate  StdErr CI95lo CI95hi
-VarE(I)  Trait1:Trait1    0.214 0.02344 0.1679  0.260
-VarG(Ia) Trait1:Trait1    0.156 0.00582 0.1441  0.167
-VarG(Id) Trait1:Trait1    0.117 0.02423 0.0693  0.164
-
-> 
-\end{verbatim}
-The variance component estimates are smaller than the {\em warcolak.fit1} estimates, the total variance is smaller, and the standard errors are smaller.
-
-It is probably better to compare heritability estimates
-\begin{verbatim}
-> gsummary(warcolak.fit1)
-Call:
-gsummary.dmm(dmmobj = warcolak.fit1)
-
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
-
-          Trait Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait1    0.291 0.0347  0.223  0.359
-VarG(Ia) Trait1    0.404 0.0104  0.384  0.425
-VarG(Id) Trait1    0.305 0.0374  0.232  0.378
-VarP(I)  Trait1    1.000 0.0000  1.000  1.000
-
-> gsummary(warcolak.robust.fit1)
-Call:
-gsummary.dmm(dmmobj = warcolak.robust.fit1)
-
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
-
-          Trait Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait1     0.44 0.0749 0.2931  0.587
-VarG(Ia) Trait1     0.32 0.0216 0.2775  0.362
-VarG(Id) Trait1     0.24 0.0816 0.0803  0.400
-VarP(I)  Trait1     1.00 0.0000 1.0000  1.000
-\end{verbatim}
-
-So the robust estimates do not just differ because the total variance is reduced by deleting outliers,  the proportioning of variance is affected as well.
-
-In general one assumes that robust estimators omit noisy observations, but they may delete genetically extreme values as well. There is no control over what robust regression deletes. It may work best with very noisy data.
-
 
 \subsection{Using principal component regression to solve DME's}
 \label{pcreg}
@@ -3936,27 +3537,21 @@ We will use the {\em quercus.df} dataset for an example. Three variance componen
 > quercus.mdf <- mdf(quercus.df,pedcols=c(1:3), factorcols=4, ycols=c(5:6),
                 sexcode=c(1,2), relmat=c("E","A","D"))
  .....
-> quercus.fitpcr <- dmm(quercus.mdf,Ymat ~ 1,components = c("VarE(I)","VarG(Ia)", "VarG(Id)"),dmeopt="pcr",relmat = "withdf")
+> quercus.fitpcr <- dmm(quercus.mdf,Ymat ~ 1,
+     components = c("VarE(I)","VarG(Ia)", "VarG(Id)"),
+     dmeopt="pcr",relmat = "withdf")
 Dyadic mixed model fit for datafile: quercus.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 3 
+OLS-b step:
 no of fixed effect df (k) =  1 
 no of traits (l) =  2 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 3 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  260 
 no of individuals with data and X codes (n) =  180 
 Rank of X: 1   No of Fixed Effects: 1 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  3 
-No of components estimable =  3 
-Checking dyadic model equations:
 PCR option on dyadic model equations:
 Data: 	X dimension: 32400 3 
 	Y dimension: 32400 4
@@ -3968,8 +3563,8 @@ Cross-validated using 10 random segments.
 
 Response: Trait1:Trait1 
        (Intercept)  1 comps  2 comps  3 comps
-CV           1.158    1.155    1.155    1.155
-adjCV        1.158    1.155    1.154    1.155
+CV           1.158    1.154    1.154    1.155
+adjCV        1.158    1.154    1.154    1.154
 
 Response: Trait1:Trait2 
        (Intercept)  1 comps  2 comps  3 comps
@@ -3993,8 +3588,8 @@ Trait1:Trait1   0.643912   0.648228  6.544e-01
 Trait1:Trait2   0.008194   0.008364  8.699e-03
 Trait2:Trait1   0.008194   0.008364  8.699e-03
 Trait2:Trait2   0.652555   0.652902  6.557e-01
-DME substep with OLS-fixed-effects completed:
-> 
+DME substep completed:
+OLS-b step completed:
 > 
 > quercus.fitpcr$dme.corre
            VarE(I)  VarG(Ia)  VarG(Id)
@@ -4004,7 +3599,7 @@ VarG(Id) 0.9428127 0.8610611 1.0000000
 >
 > summary(quercus.fitpcr)
 Call:
-summary.dmm(object = quercus.fitpcr)
+summary.dmm(dmmobj = quercus.fitpcr)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -4015,27 +3610,31 @@ Coefficients fitted by OLS for fixed effects:
 1 Trait2  -0.0855  0.101 -0.283  0.112
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
              Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)  Trait1:Trait1   0.0348  0.382 -0.7143  0.784
-VarG(Ia) Trait1:Trait1   0.1966  0.136 -0.0703  0.463
-VarG(Id) Trait1:Trait1   0.9386  0.450  0.0566  1.821
+VarE(I)  Trait1:Trait1   0.0348 0.2940 -0.5414  0.611
+VarG(Ia) Trait1:Trait1   0.1966 0.1430 -0.0836  0.477
+VarG(Id) Trait1:Trait1   0.9386 0.3727  0.2082  1.669
+VarP(I)  Trait1:Trait1   1.1700 0.0863  1.0008  1.339
 
-             Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait1:Trait2    0.135  0.321 -0.494  0.763
-VarG(Ia) Trait1:Trait2    0.134  0.156 -0.171  0.439
-VarG(Id) Trait1:Trait2   -0.113  0.471 -1.036  0.810
+             Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)  Trait1:Trait2    0.135  0.369 -0.5887  0.858
+VarG(Ia) Trait1:Trait2    0.134  0.179 -0.2177  0.486
+VarG(Id) Trait1:Trait2   -0.113  0.468 -1.0301  0.804
+VarP(I)  Trait1:Trait2    0.156  0.108 -0.0568  0.368
 
-             Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait2:Trait1    0.135  0.322 -0.497  0.766
-VarG(Ia) Trait2:Trait1    0.134  0.136 -0.133  0.401
-VarG(Id) Trait2:Trait1   -0.113  0.421 -0.938  0.712
+             Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)  Trait2:Trait1    0.135  0.369 -0.5887  0.858
+VarG(Ia) Trait2:Trait1    0.134  0.179 -0.2177  0.486
+VarG(Id) Trait2:Trait1   -0.113  0.468 -1.0301  0.804
+VarP(I)  Trait2:Trait1    0.156  0.108 -0.0568  0.368
 
-             Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait2:Trait2    0.975  0.419  0.154   1.80
-VarG(Ia) Trait2:Trait2    0.813  0.217  0.387   1.24
-VarG(Id) Trait2:Trait2    0.047  0.552 -1.036   1.13
+             Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)  Trait2:Trait2    0.975  0.460  0.0726   1.88
+VarG(Ia) Trait2:Trait2    0.813  0.224  0.3745   1.25
+VarG(Id) Trait2:Trait2    0.047  0.584 -1.0967   1.19
+VarP(I)  Trait2:Trait2    1.835  0.135  1.5701   2.10
 
 > 
 end{verbatim}
@@ -4060,7 +3659,7 @@ Now let us compare the results with those from the same model using {\em dmeopt=
 \begin{verbatim}
 > summary(quercus.fit)
 Call:
-summary.dmm(object = quercus.fit)
+summary.dmm(dmmobj = quercus.fit)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -4071,57 +3670,55 @@ Coefficients fitted by OLS for fixed effects:
 1 Trait2  -0.0855  0.101 -0.283  0.112
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
              Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)  Trait1:Trait1   0.0348  0.294 -0.5414  0.611
-VarG(Ia) Trait1:Trait1   0.1966  0.143 -0.0836  0.477
-VarG(Id) Trait1:Trait1   0.9386  0.373  0.2082  1.669
+VarE(I)  Trait1:Trait1   0.0348 0.2940 -0.5414  0.611
+VarG(Ia) Trait1:Trait1   0.1966 0.1430 -0.0836  0.477
+VarG(Id) Trait1:Trait1   0.9386 0.3727  0.2082  1.669
+VarP(I)  Trait1:Trait1   1.1700 0.0863  1.0008  1.339
 
-             Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait1:Trait2    0.135  0.369 -0.589  0.858
-VarG(Ia) Trait1:Trait2    0.134  0.179 -0.218  0.486
-VarG(Id) Trait1:Trait2   -0.113  0.468 -1.030  0.804
+             Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)  Trait1:Trait2    0.135  0.369 -0.5887  0.858
+VarG(Ia) Trait1:Trait2    0.134  0.179 -0.2177  0.486
+VarG(Id) Trait1:Trait2   -0.113  0.468 -1.0301  0.804
+VarP(I)  Trait1:Trait2    0.156  0.108 -0.0568  0.368
 
-             Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait2:Trait1    0.135  0.369 -0.589  0.858
-VarG(Ia) Trait2:Trait1    0.134  0.179 -0.218  0.486
-VarG(Id) Trait2:Trait1   -0.113  0.468 -1.030  0.804
+             Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)  Trait2:Trait1    0.135  0.369 -0.5887  0.858
+VarG(Ia) Trait2:Trait1    0.134  0.179 -0.2177  0.486
+VarG(Id) Trait2:Trait1   -0.113  0.468 -1.0301  0.804
+VarP(I)  Trait2:Trait1    0.156  0.108 -0.0568  0.368
 
              Traitpair Estimate StdErr  CI95lo CI95hi
 VarE(I)  Trait2:Trait2    0.975  0.460  0.0726   1.88
 VarG(Ia) Trait2:Trait2    0.813  0.224  0.3745   1.25
 VarG(Id) Trait2:Trait2    0.047  0.584 -1.0967   1.19
+VarP(I)  Trait2:Trait2    1.835  0.135  1.5701   2.10
 
 > 
 \end{verbatim}
 
-So the variance component estimates are identical ("pcr" with ncomp=3 versus "qr), but the standard errors are identical. This is not surprising  because "pcr" uses a jackknife technique to estimate the var/covariance matrix of estimates, while "qr" uses the exact procedure for regression coefficients estimated by least squares.
+So the variance component estimates are identical ("pcr" with ncomp=3 versus "qr), and the standard errors are also identical. This is surprising  because "pcr" uses a jackknife technique to estimate the var/covariance matrix of estimates, while "qr" uses the exact procedure for regression coefficients estimated by least squares.
 
 Now a rerun with ncomp=2, that is we will only use the first two principal components to fit the regressions, but will transform the result back to the 3 variance components
 
 \begin{verbatim}
->  quercus.fitpcr2 <- dmm(quercus.mdf,Ymat ~ 1,components = c("VarE(I)","VarG(Ia)", "VarG(Id)"),dmeopt="pcr",relmat = "withdf",ncomp.pcr=2)
+> quercus.fitpcr2 <- dmm(quercus.mdf,Ymat ~ 1,
+      components = c("VarE(I)","VarG(Ia)", "VarG(Id)"),
+      dmeopt="pcr",relmat = "withdf",ncomp.pcr=2)
 Dyadic mixed model fit for datafile: quercus.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 3 
+OLS-b step:
 no of fixed effect df (k) =  1 
 no of traits (l) =  2 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 3 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  260 
 no of individuals with data and X codes (n) =  180 
 Rank of X: 1   No of Fixed Effects: 1 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  3 
-No of components estimable =  3 
-Checking dyadic model equations:
 PCR option on dyadic model equations:
 Data: 	X dimension: 32400 3 
 	Y dimension: 32400 4
@@ -4133,8 +3730,8 @@ Cross-validated using 10 random segments.
 
 Response: Trait1:Trait1 
        (Intercept)  1 comps  2 comps
-CV           1.158    1.155    1.155
-adjCV        1.158    1.155    1.155
+CV           1.158    1.154    1.155
+adjCV        1.158    1.154    1.155
 
 Response: Trait1:Trait2 
        (Intercept)  1 comps  2 comps
@@ -4158,12 +3755,12 @@ Trait1:Trait1   0.643912   0.648228
 Trait1:Trait2   0.008194   0.008364
 Trait2:Trait1   0.008194   0.008364
 Trait2:Trait2   0.652555   0.652902
-DME substep with OLS-fixed-effects completed:
-> 
-
+DME substep completed:
+OLS-b step completed:
+>
 > summary(quercus.fitpcr2)
 Call:
-summary.dmm(object = quercus.fitpcr2)
+summary.dmm(dmmobj = quercus.fitpcr2)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -4174,27 +3771,31 @@ Coefficients fitted by OLS for fixed effects:
 1 Trait2  -0.0855  0.101 -0.283  0.112
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
              Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait1:Trait1    0.430 0.1253  0.184  0.675
-VarG(Ia) Trait1:Trait1    0.338 0.1074  0.128  0.549
-VarG(Id) Trait1:Trait1    0.416 0.0726  0.274  0.558
+VarE(I)  Trait1:Trait1    0.430 0.1332 0.1685  0.691
+VarG(Ia) Trait1:Trait1    0.338 0.1356 0.0724  0.604
+VarG(Id) Trait1:Trait1    0.416 0.0674 0.2838  0.548
+VarP(I)  Trait1:Trait1    1.184 0.0916 1.0041  1.363
 
              Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)  Trait1:Trait2   0.0193 0.0993 -0.1754  0.214
-VarG(Ia) Trait1:Trait2   0.0927 0.1417 -0.1850  0.370
-VarG(Id) Trait1:Trait2   0.0396 0.0441 -0.0468  0.126
+VarE(I)  Trait1:Trait2   0.0193  0.102 -0.1800  0.218
+VarG(Ia) Trait1:Trait2   0.0927  0.148 -0.1980  0.383
+VarG(Id) Trait1:Trait2   0.0396  0.049 -0.0564  0.136
+VarP(I)  Trait1:Trait2   0.1516  0.107 -0.0589  0.362
 
              Traitpair Estimate StdErr  CI95lo CI95hi
-VarE(I)  Trait2:Trait1   0.0193 0.0914 -0.1599  0.198
-VarG(Ia) Trait2:Trait1   0.0927 0.1168 -0.1363  0.322
-VarG(Id) Trait2:Trait1   0.0396 0.0440 -0.0465  0.126
+VarE(I)  Trait2:Trait1   0.0193 0.1368 -0.2489  0.287
+VarG(Ia) Trait2:Trait1   0.0927 0.1282 -0.1585  0.344
+VarG(Id) Trait2:Trait1   0.0396 0.0725 -0.1025  0.182
+VarP(I)  Trait2:Trait1   0.1516 0.1063 -0.0568  0.360
 
              Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait2:Trait2    0.557  0.184  0.196  0.917
-VarG(Ia) Trait2:Trait2    0.663  0.146  0.377  0.950
-VarG(Id) Trait2:Trait2    0.600  0.115  0.375  0.826
+VarE(I)  Trait2:Trait2    0.557  0.123  0.317  0.797
+VarG(Ia) Trait2:Trait2    0.663  0.167  0.336  0.991
+VarG(Id) Trait2:Trait2    0.600  0.067  0.469  0.731
+VarP(I)  Trait2:Trait2    1.821  0.158  1.510  2.131
 
 > 
 \end{verbatim}
@@ -4225,7 +3826,7 @@ Cumulative Var  0.333  0.667  1.000
 > 
 \end{verbatim}
 
- The constraint coefficients we want in this case are given by the "Comp 3" column of the loadings matrix, because in omitting "Comp 3" we are effectivly setting it to zero. Note that it is necessary to do the fit with all 3 principal components  to get at the loadings. If you use $ncomp=2$ the required column "Comp 3" of loadings will be missing. So we have
+ The constraint coefficients we want in this case are given by the "Comp 3" column of the loadings matrix. Note that it is necessary to do the fit with all 3 principal components  to get at the loadings. If you use $ncomp=2$ the required column "Comp 3" of loadings will be missing. So we have
 
 \begin{displaymath}
 -0.589 \times VarE(I) -0.211 \times VarG(Ia) +0.780 \times VarG(Id) = 0
@@ -4242,7 +3843,7 @@ The above constraint equation is actually the equation of a plane in the 3D spac
 
 If we were to omit more than one principal component (not feasible in the current example), there would be more than one constraint, given by the appropriate columns of the loadings matrix. Estimates would then be constrained to lie onlines of intersection of two or more hyperplanes.
 
-The constraint(s) on the variance component estimates are the reason that principal component regression may lead to biased estimates.
+The constraint(s) on the variance component estimates are the reason that principal component regression leads to biased estimates.
 
 We might conclude by noting that there are three ways of dealing with colliniarities in the dyadic model equations
 
@@ -4257,7 +3858,7 @@ For completeness, we should look at the results obtained with the second option 
 \begin{verbatim}
 > summary(quercus.fit2)
 Call:
-summary.dmm(object = quercus.fit2)
+summary.dmm(dmmobj = quercus.fit2)
 
 Coefficients fitted by OLS for fixed effects:
 
@@ -4268,51 +3869,46 @@ Coefficients fitted by OLS for fixed effects:
 1 Trait2  -0.0855  0.101 -0.283  0.112
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
              Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)  Trait1:Trait1    0.703 0.1266  0.455  0.951
 VarG(Ia) Trait1:Trait1    0.468 0.0939  0.284  0.652
+VarP(I)  Trait1:Trait1    1.171 0.0863  1.002  1.340
 
-             Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait1:Trait2   0.0541  0.159 -0.257  0.365
-VarG(Ia) Trait1:Trait2   0.1013  0.118 -0.130  0.332
+             Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)  Trait1:Trait2   0.0541  0.159 -0.2573  0.365
+VarG(Ia) Trait1:Trait2   0.1013  0.118 -0.1297  0.332
+VarP(I)  Trait1:Trait2   0.1554  0.108 -0.0569  0.368
 
-             Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)  Trait2:Trait1   0.0541  0.159 -0.257  0.365
-VarG(Ia) Trait2:Trait1   0.1013  0.118 -0.130  0.332
+             Traitpair Estimate StdErr  CI95lo CI95hi
+VarE(I)  Trait2:Trait1   0.0541  0.159 -0.2573  0.365
+VarG(Ia) Trait2:Trait1   0.1013  0.118 -0.1297  0.332
+VarP(I)  Trait2:Trait1   0.1554  0.108 -0.0569  0.368
 
              Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)  Trait2:Trait2    1.008  0.198  0.620   1.40
 VarG(Ia) Trait2:Trait2    0.827  0.147  0.539   1.11
+VarP(I)  Trait2:Trait2    1.835  0.135  1.570   2.10
 
 > 
 \end{verbatim}
 
 We get different estimates for the remaining two components and standard errors which are smaller for Trait1 but larger for Trait2, compared with the "pcr"  with ncomp=2 estimates.
-It is hard to choose between these two results. It comes down to whether one believes that "VarG(Id)" is zero or whether one would prefer to believe that some function of the components is zero.
+It is hard to choose between these two results.
 
 As we said at the outset, this facility is experimental.
 
 There is an excellent presentation of principal component regression and the {\em pls} package in Mevik and Wehrens(2007)~\cite{mevi:07}.
 
 \subsection{Constraining covariance matrices to be positive definite}
-If the option {\em posdef=T} is used each matrix of cross-trait (co)variances for each "Varxxx" component will be individually positive definite, and each cross-effect covariance (if "Covxxx" components are defined) will be constrained such that the corresponding correlation is in the bounds -1 to 1. If option {\em fixedgls=T} is used {\em posdef=T} is enforced.
+If the option {\em posdef=T} is used each matrix of cross-trait (co)variances for each "Varxxx" component will be individually positive definite, and each cross-effect covariance (if "Covxxx" components are defined) will be constrained such that the corresponding correlation is in the bounds -1 to 1. If option {\em gls=T} is used {\em posdef=T} is enforced.
 
  The algorithm used takes the matrix of cross-trait covariances for each variance component at a time, first does an approximate procedure which ensures that its eigenvalues are positive, then calls the {\em nearPD()} function from package {\em Matrix}.This 2-step procedure ensures that {\em nearPD} does not fail when matrices from small test examples are wildly negative definite. When all variance components have been made positive definite, the algorithm looks at each covariance component in turn, and ensures that for each element of each covariance component matrix the corresponding correlation is not outside the bounds -1 to 1. If it is outside bounds, the covariance component is altered. The two variances involved in the correlation are left unchanged.
 
  Whenever a constraint is applied, in any estimation procedure, the estimated parameters are biased and their standard errors are only approximate. If one wants the positive definite constraint one simply has to hope that the bias is not large. 
 
  In a multi-trait analysis with the positive definite constraint applied, if one trait has variance component estimates which are negative before the constraint is applied, the constraint algorithm will adjust the estimates for all traits. Then if the "rogue" trait is omitted and the analysis rerun, the estimates for all remaining traits will not be adjusted, and will therefore differ from the previous analysis. We simply need to be aware that in a multivariate analysis, the presence or absence of one trait may affect the results for all other traits.
-
-\subsection{Using feasable generalised least squares to solve DMR's}
-There is new code in {\em dmm()}, from version 3.1-1 onwards, which can be accessed with the option {\em dmeopt="fgls"} which uses feasable generalized least squares to solve the dyadic model equations. This option leads to REML estimates of variance components. However it is only suitable for very small data sets. It gives a warning if used with multivaraite data , because its multivariate results are untested. 
-
-The feasable gls ("fgls") fitting method takes account of the covariance structure of the dyadic residuals. This structure is documented in {\em dyadicerrorcov.pdf}~\cite{jack:24}. It involves some very large matrices of order $N^{2} \times N^{2}$ , where $N$ is the number of individuals with data, so is only computable for very small examples.
-
-Multivariate "fgls" raises questions about whether to adjust for the within-trait covarainces of residuals, or the cross-trait covariances of residual, or both. These questions have not been settled, so the output of a multivariate "fgls" is labelled experimental.
-
-There is a small univariate example using the {\em harv101.df} data set in section~\ref{sec:harv}
 
 \subsection{Dealing with unequal numbers of observations for various traits}
 The number of observations availabble for each pair of traits in a dataset can be obtained with the {\em make.countarray()} function. See its {\em help()} page for details.
@@ -4354,12 +3950,11 @@ An example will make this clear
 > data(sheep.df)
 > sheep.mdf <- mdf(sheep.df,pedcols=c(1:3),factorcols=c(4:6),ycols=c(7:9),
      sexcode=c("M","F"),relmat=c("E","A"),keep=T)
-
-> sheep.linefit <-  dmm(sheep.mdf,Cww ~ 1 + Sex + Year,components=c("VarE(I)","VarG(Ia)","VarGlm(I)"))
+> sheep.linefit <-  dmm(sheep.mdf,Cww ~ 1 + Sex + Year, components=c("VarE(I)","VarG(Ia)","VarGlm(I)")
 Dyadic mixed model fit for datafile: sheep.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+OLS-b step:
 no of fixed effect df (k) =  9 
 no of traits (l) =  1 
 Setup antemodel matrices:
@@ -4372,15 +3967,14 @@ no of maternal line codes =  16
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  37 
 Rank of X: 9   No of Fixed Effects: 9 
-OLS-fixed-effects step completed:
 DME substep:
 No of components defined =  3 
 No of components estimable =  3 
 Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+DME substep completed:
+OLS-b step completed:
 > 
-
 > summary(sheep.linefit)
 Call:
 summary.dmm(object = sheep.linefit)
@@ -4399,7 +3993,7 @@ Year1987      Cww   0.4588  0.333 -0.19334  1.111
 Year1988      Cww  -0.2237  0.564 -1.32829  0.881
 
 
-Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+Components partitioned by DME from residual var/covariance after OLS-b fit:
 
           Traitpair Estimate StdErr  CI95lo CI95hi
 VarE(I)     Cww:Cww   0.0237 0.0558 -0.0857 0.1331
@@ -4411,7 +4005,7 @@ Call:
 gsummary.dmm(dmmobj = sheep.linefit)
 
 Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+ to each component (OLS-b):
 
           Trait Estimate StdErr CI95lo CI95hi
 VarE(I)     Cww   0.1016  0.213 -0.316  0.520
@@ -4420,11 +4014,6 @@ VarGlm(I)   Cww   0.0792  0.157 -0.229  0.388
 VarP(I)     Cww   1.0000  0.000  1.000  1.000
 
 .......
-
-Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects):
-
-  Traitpair Estimate StdErr CI95lo CI95hi
-1   Cww:Cww    0.233 0.0305  0.173  0.293
 
 > 
 \end{verbatim}
@@ -4439,9 +4028,9 @@ The {\em dmm} package is written entirely in R. It does not directly use any of 
 
 It has been known for many years that solving the dyadic model equations leads to estimates of variance components (Pukelsheim(1976)~\cite{puke:76}).  No-one seems to have attempted to actually use it as an estimation method. Twenty years ago, it would not have been computationally feasible. Part of my goal in producing the {\em dmm} package is to show that it is a feasible approach with today's computers. In that it must be said the I have been only partly successful as currently implimented in R - it is feasible with datasets up to about 10000 individuals.
 
-Most of the available variance component estimation software is compute intensive, but will run in modest amounts of memory. {\em dmm()} is different in that it is computationally quite efficient, but requires massive amounts of memory. An example will make this clear. The {\em warcolak} dataset has 5400 individuals and two traits. On my PC which has an Intel \textregistered \hspace{1pt} Core \textsuperscript{TM} i7 processor, {\em dmm()} runs on the {\em warcolak} data in about 2 mins and requires 13Gb of memory for the OLS-fixed-effects step. The GLS-fixed-effects step requires an additional 10 minutes and 40Gb of memory. These times are for R compiled with the Openblas libraries.
+Most of the available variance component estimation software is compute intensive, but will run in modest amounts of memory. {\em dmm()} is different in that it is computationally quite efficient, but requires massive amounts of memory. An example will make this clear. The {\em warcolak} dataset has 5000 individuals and two traits. On my PC which has an Intel \textregistered \hspace{1pt} Core \textsuperscript{TM} i7 processor, {\em dmm()} runs on the {\em warcolak} data in about 15 mins and requires 22Gb of memory for the OLS-b step. The GLS-b step requires an additional 144 minutes and 40Gb of memory. 
 
-The efficiency of the QR algorithm is quite astounding. A dataset of 5400 individuals generates dyadic model equations consisting of 29 million simultaneous equations. QR can solve these in less than 2 minutes in a PC, without the slightest hint of loss of significant digits. Most of the compute time in {\em dmm()} is spent setting up the equations, not in solving them. There would seem to be no argument for turning the DME's into normal equations - this may reduce the number of equations, but it is usually recommended against on numerical grounds. The other DME solving options ( "robust" or "pcr") are less efficient.
+The efficiency of the QR algorithm is quite astounding. A dataset of 5000 individuals generates dyadic model equations consisting of 25 million simultaneous equations. QR can solve these in less than 5 minutes in a PC, without the slightest hint of loss of significant digits. Most of the compute time in {\em dmm()} is spent setting up the equations, not in solving them. There would seem to be no argument for turning the DME's into normal equations - this may reduce the number of equations, but it is usually recommended against on numerical grounds. The other DME solving options ( "robust" or "pcr") are less efficient.
 
 The critical memory limitation is in R, not in available physical RAM. R has an inbuilt limit of $2^{31} - 1 = 2147483648 - 1$ or approximately $2 \times 10^{9}$, for the size of any array. This limit applies even in a 64-bit installation of R. In other words 64-bit R has not yet been configured to fully exploit 64-bit addressing. I understand that this limitation is being worked on, but is unlikely to change in the near future. The only option to circumvent it is to rewrite in another language.
 
@@ -4453,7 +4042,7 @@ The memory requirements of any example are readily calculated. The arrays which 
 \end{description}
  where $n$ is the number of individuals, $c$ is the number of components fitted, and $l$ is the numnber of traits analysed.
 
-For example, in the case of the {\em warcolak} dataset, $n = 5400$, $c = 4$ and $l = 2$, so the size of both ${\bm W}$ and ${\bm \Psi}$ is $10^8$, which is within the limit by one order of magnitude.
+For example, in the case of the {\em warcolak} dataset, $n = 5000$, $c = 4$ and $l = 2$, so the size of both ${\bm W}$ and ${\bm \Psi}$ is $10^8$, which is within the limit by one order of magnitude.
 
 There may be a way to reduce the memory requirements of array ${\bm W}$, because it is sparse, but array ${\bm \Psi}$ is fully populated.
 
@@ -4461,7 +4050,7 @@ There are, of coarse, other arrays in the R code, and the total amount of physic
 
 When using the {\em dmeopt="pcr"} method for solving the DME's, the memory requirements are more demanding. The {\em pls} package uses three dimensional arrays of size $n^{2} \times l^{2} \times ncomp$ because it solves the DME's for all values of the number of components retained from $1$ up to $ncomp$. This is a severe limitation and some effort will be made to circumvent it in future versions of {\em dmm}.
 
-If the {\em fixedgls=T} option is used there is an additional memory requirement which is more restrictive. The product $n^{2} \times l^{2} \times c$ must not exceed $2^{31} - 1$. This is very restrictive indeed. For example with the dataset {\em merino.df} we have $n = 2599$, $l = 11$, and $c = 2 upto 8$. Here we have $2599^{2} \times 11^{2} = 8 \times 10^{8}$ so there is only room for $c=2$ unless the number of traits is reduced. There are several issues, including the above,  suggesting a rethink of the {\em fixedgls=T} part of the algorithm.
+If the {\em gls=T} option is used there is an additional memory requirement which is more restrictive. The product $n^{2} \times l^{2} \times c$ must not exceed $2^{31} - 1$. This is very restrictive indeed. For example with the dataset {\em merino.df} we have $n = 2599$, $l = 11$, and $c = 2 upto 8$. Here we have $2599^{2} \times 11^{2} = 8 \times 10^{8}$ so there is only room for $c=2$ unless the number of traits is reduced. There are several issues, including the above,  suggesting a rethink of the {\em gls=T} part of the algorithm.
 
 \subsection{Using R with Openblas libraries}
 The compute time of dmm() can be improved dramatically by using a version of R compiled with the {\em Openblas} libraries for blas and lapack, rather than the default R libraries. Around 15x improvement in execution time can be expected because the Openblas libraries will make use of all available cpu's in a modern PC. The R function sessionInfo() can be used to find which versions of the blas and lapack libraries are being used by the current R session.
@@ -4650,46 +4239,37 @@ We have to make an overall decision, because {\em dmm()} fits the same model to 
 We should first do the usual analysis assuming additivity at the individual level.
 
 \begin{verbatim}
->  merino.fitia <- dmm(merino.mdf,Ymat ~ 1 + C(Sex, sum) + C(Yearbi, sum) +
+> merino.fitia <- dmm(merino.mdf,Ymat ~ 1 + C(Sex, sum) + C(Yearbi, sum) +
     C(YearDbi, sum) + C(Agem,sum) + C(Birls, sum) + C(Weanls, sum),
     components = c("VarE(I)","VarG(Ia)"))
 Dyadic mixed model fit for datafile: merino.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 2 
+OLS-b step:
 no of fixed effect df (k) =  43 
 no of traits (l) =  11 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 2 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  4014 
 no of individuals with data and X codes (n) =  2642 
 Rank of X: 43   No of Fixed Effects: 43 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  2 
-No of components estimable =  2 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+DME substep completed:
+OLS-b step completed:
 > merino.fitia$dme.corre
            VarE(I)  VarG(Ia)
 VarE(I)  1.0000000 0.4169643
 VarG(Ia) 0.4169643 1.0000000
-> 
 \end{verbatim}
- Just as a matter if interest, this run took 1 min real time and used 28Gb of memory in the author's PC. The correlation of $0.4169$ between VarE(I) and VarG(Ia) is not a serious collinearity. We therefore inspect the results with some confidence.
+ Just as a matter if interest, this run took 5 mins real time and used 28Gb of memory in the author's PC. The correlation of $0.4169$ between VarE(I) and VarG(Ia) is not a serious collinearity. We therefore inspect the results with some confidence.
 
 \begin{verbatim}
 > gsummary(merino.fitia)
 Call:
 gsummary.dmm(dmmobj = merino.fitia)
 
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+Proportion of phenotypic var/covariance partitioned by DME to each component (OLS-b):
 
          Trait Estimate StdErr CI95lo CI95hi
 VarE(I)  Birwt    0.681 0.0109  0.660  0.702
@@ -4742,14 +4322,11 @@ VarG(Ia) Flcwt    0.125 0.00955  0.107  0.144
 VarP(I)  Flcwt    1.000 0.00000  1.000  1.000
 
           Trait Estimate  StdErr CI95lo CI95hi
-VarE(I)  Woolwt    0.819 0.00981  0.800  0.838
-VarG(Ia) Woolwt    0.181 0.00981  0.162  0.200
+VarE(I)  Woolwt    0.819 0.00981  0.800  0.839
+VarG(Ia) Woolwt    0.181 0.00981  0.161  0.200
 VarP(I)  Woolwt    1.000 0.00000  1.000  1.000
 
-
-Correlation corresponding to each var/covariance component:
- partitioned by DME (OLS-fixed-effects):
-
+Correlation corresponding to each var/covariance component partitioned by DME (OLS-b):
  .....
             Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)  Woolwt:Birwt    0.174 0.0272  0.121  0.228
@@ -4806,25 +4383,6 @@ VarE(I)  Woolwt:Woolwt        1      0      1      1
 VarG(Ia) Woolwt:Woolwt        1      0      1      1
 VarP(I)  Woolwt:Woolwt        1      0      1      1
  .....
-
-Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects):
-
-        Traitpair  Estimate  StdErr   CI95lo    CI95hi
-1     Birwt:Birwt   0.25214 0.00478   0.2428   0.26151
-2    Birwt:Weanwt   0.48728 0.02660   0.4351   0.53942
-  ......
-111  Woolwt:Birwt   0.04130 0.00391   0.0336   0.04896
-112 Woolwt:Weanwt   0.27624 0.02175   0.2336   0.31886
-113  Woolwt:Crimp  -0.20183 0.01560  -0.2324  -0.17126
-114 Woolwt:Densty   0.54453 0.07539   0.3968   0.69229
-115 Woolwt:Diamtr   0.16279 0.01567   0.1321   0.19351
-116  Woolwt:Yield   0.95607 0.04124   0.8752   1.03691
-117 Woolwt:Bodywt   0.69503 0.03512   0.6262   0.76386
-118 Woolwt:Wrinkl   0.06342 0.00949   0.0448   0.08202
-119 Woolwt:Length   0.18846 0.00725   0.1742   0.20268
-120  Woolwt:Flcwt   0.20090 0.00432   0.1924   0.20937
-121 Woolwt:Woolwt   0.16717 0.00319   0.1609   0.17343
-
 \end{verbatim}
  
 Just looking at the proportion of variance for "VarG(Ia)" ( ie additive heritability) we find that most wool traits have a heritability of around 0.4 in agreement with published results ( eg Brown and Turner(1968)~\cite{brow:68}). The exceptions are Woolwt which is only 0.18 (and Flcwt which is almost the same thing except it includes grease and dirt) and Bodywt. This is unexpected so it bears further investigation.
@@ -4841,56 +4399,48 @@ The results for fitting this simple model would seem to be a sound base, and use
 	We now extend the model to include maternal additive genetic and maternal environmental variances, and their genetic and environmental covariances with individual variation. The aim is to see if maternal effects on wool traits are large enough to warrant consideration in selection studies.
 
 \begin{verbatim}
->  merino.fitiama <- dmm(merino.mdf,Ymat ~ 1 + C(Sex, sum) + C(Yearbi, sum) +
+> merino.fitiama <- dmm(merino.mdf,Ymat ~ 1 + C(Sex, sum) + C(Yearbi, sum) +
     C(YearDbi, sum) + C(Agem,sum) + C(Birls, sum) + C(Weanls, sum),
     components = c("VarE(I)","VarG(Ia)", "VarE(M)", "VarG(Ma)", "CovG(Ia,Ma)",
     "CovG(Ma,Ia)","CovE(I,M)", "CovE(M,I)"))
 Dyadic mixed model fit for datafile: merino.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 8 
+OLS-b step:
 no of fixed effect df (k) =  43 
 no of traits (l) =  11 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 8 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  4014 
 no of individuals with data and X codes (n) =  2642 
 Rank of X: 43   No of Fixed Effects: 43 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  8 
-No of components estimable =  8 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
-> 
-> round(merino.fitiama$dme.corre,digits=3)
-            VarE(I) VarG(Ia) VarE(M) VarG(Ma) CovG(Ia,Ma) CovG(Ma,Ia) CovE(I,M)
-VarE(I)       1.000    0.417   0.486    0.332       0.211       0.211     0.000
-VarG(Ia)      0.417    1.000   0.373    0.478       0.593       0.593     0.181
-VarE(M)       0.486    0.373   1.000    0.682       0.434       0.434     0.000
-VarG(Ma)      0.332    0.478   0.682    1.000       0.695       0.695     0.144
-CovG(Ia,Ma)   0.211    0.593   0.434    0.695       1.000       0.479     0.370
-CovG(Ma,Ia)   0.211    0.593   0.434    0.695       0.479       1.000     0.092
-CovE(I,M)     0.000    0.181   0.000    0.144       0.370       0.092     1.000
-CovE(M,I)     0.000    0.181   0.000    0.144       0.092       0.370     0.000
-            CovE(M,I)
-VarE(I)         0.000
-VarG(Ia)        0.181
-VarE(M)         0.000
-VarG(Ma)        0.144
-CovG(Ia,Ma)     0.092
-CovG(Ma,Ia)     0.370
-CovE(I,M)       0.000
-CovE(M,I)       1.000
+DME substep completed:
+OLS-b step completed:
+>merino.fitiama$dme.corre
+                 VarE(I)  VarG(Ia)       VarE(M)  VarG(Ma)     CovE(I,M)
+VarE(I)     1.000000e+00 0.4169643  4.860238e-01 0.3318052  6.577546e-06
+VarG(Ia)    4.169643e-01 1.0000000  3.727328e-01 0.4781302  1.811512e-01
+VarE(M)     4.860238e-01 0.3727328  1.000000e+00 0.6816931 -4.326229e-05
+VarG(Ma)    3.318052e-01 0.4781302  6.816931e-01 1.0000000  1.443848e-01
+CovE(I,M)   6.577546e-06 0.1811512 -4.326229e-05 0.1443848  1.000000e+00
+CovE(M,I)   6.577546e-06 0.1811512 -4.326229e-05 0.1443848 -8.916420e-06
+CovG(Ia,Ma) 2.109631e-01 0.5930327  4.337594e-01 0.6950698  3.702673e-01
+CovG(Ma,Ia) 2.109631e-01 0.5930327  4.337594e-01 0.6950698  9.175759e-02
+                CovE(M,I) CovG(Ia,Ma) CovG(Ma,Ia)
+VarE(I)      6.577546e-06  0.21096311  0.21096311
+VarG(Ia)     1.811512e-01  0.59303269  0.59303269
+VarE(M)     -4.326229e-05  0.43375940  0.43375940
+VarG(Ma)     1.443848e-01  0.69506983  0.69506983
+CovE(I,M)   -8.916420e-06  0.37026729  0.09175759
+CovE(M,I)    1.000000e+00  0.09175759  0.37026729
+CovG(Ia,Ma)  9.175759e-02  1.00000000  0.47942974
+CovG(Ma,Ia)  3.702673e-01  0.47942974  1.00000000
 > 
 \end{verbatim}
 
-The above run took 2 mins real time and used 29Gb of memory, so adding 6 more components has only doubled the processing time.
+The above run took 9 mins real time and used 29Gb of memory, so adding 6 more components has only doubled the processing time.
 
 The correlations among columns of the dyadic model equation matrix (${\bm W}$) are surprisingly good, the largest being 0.69 between VarG(Ma) and CovG(Ia,Ma). We can proceed with some confidence to look at parameter estimates. Just 3 traits for a start ( the gsummary output for all traits is now so long it exceeds my scrollback length).
 
@@ -4900,18 +4450,17 @@ Call:
 gsummary.dmm(dmmobj = merino.fitiama, traitset = c("Birwt", "Diamtr", 
     "Woolwt"))
 
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+Proportion of phenotypic var/covariance partitioned by DME to each component (OLS-b):
 
             Trait Estimate StdErr  CI95lo   CI95hi
 VarE(I)     Birwt   0.4137 0.0174  0.3795  0.44788
 VarG(Ia)    Birwt   0.1961 0.0129  0.1708  0.22146
 VarE(M)     Birwt   0.1404 0.0117  0.1175  0.16329
 VarG(Ma)    Birwt   0.2243 0.0141  0.1966  0.25197
-CovG(Ia,Ma) Birwt  -0.0271 0.0119 -0.0505 -0.00377
-CovG(Ma,Ia) Birwt  -0.0271 0.0119 -0.0505 -0.00377
 CovE(I,M)   Birwt   0.0399 0.0187  0.0033  0.07645
 CovE(M,I)   Birwt   0.0399 0.0187  0.0033  0.07645
+CovG(Ia,Ma) Birwt  -0.0271 0.0119 -0.0505 -0.00377
+CovG(Ma,Ia) Birwt  -0.0271 0.0119 -0.0505 -0.00377
 VarP(I)     Birwt   1.0000 0.0000  1.0000  1.00000
 
              Trait Estimate StdErr   CI95lo   CI95hi
@@ -4919,10 +4468,10 @@ VarE(I)     Diamtr   0.4670 0.0217  0.42451  0.50956
 VarG(Ia)    Diamtr   0.6156 0.0280  0.56076  0.67042
 VarE(M)     Diamtr   0.0501 0.0138  0.02302  0.07721
 VarG(Ma)    Diamtr   0.0185 0.0140 -0.00895  0.04598
-CovG(Ia,Ma) Diamtr  -0.0368 0.0145 -0.06523 -0.00835
-CovG(Ma,Ia) Diamtr  -0.0368 0.0145 -0.06523 -0.00835
 CovE(I,M)   Diamtr  -0.0388 0.0249 -0.08765  0.00998
 CovE(M,I)   Diamtr  -0.0388 0.0249 -0.08765  0.00998
+CovG(Ia,Ma) Diamtr  -0.0368 0.0145 -0.06523 -0.00835
+CovG(Ma,Ia) Diamtr  -0.0368 0.0145 -0.06523 -0.00835
 VarP(I)     Diamtr   1.0000 0.0000  1.00000  1.00000
 
              Trait Estimate StdErr  CI95lo  CI95hi
@@ -4930,25 +4479,24 @@ VarE(I)     Woolwt   0.6994 0.0235  0.6533  0.7455
 VarG(Ia)    Woolwt   0.1899 0.0142  0.1620  0.2178
 VarE(M)     Woolwt   0.0357 0.0126  0.0109  0.0604
 VarG(Ma)    Woolwt   0.0797 0.0133  0.0536  0.1057
-CovG(Ia,Ma) Woolwt  -0.0528 0.0133 -0.0789 -0.0266
-CovG(Ma,Ia) Woolwt  -0.0528 0.0133 -0.0789 -0.0266
 CovE(I,M)   Woolwt   0.0505 0.0205  0.0103  0.0907
 CovE(M,I)   Woolwt   0.0505 0.0205  0.0103  0.0907
+CovG(Ia,Ma) Woolwt  -0.0528 0.0133 -0.0789 -0.0266
+CovG(Ma,Ia) Woolwt  -0.0528 0.0133 -0.0789 -0.0266
 VarP(I)     Woolwt   1.0000 0.0000  1.0000  1.0000
 
 
-Correlation corresponding to each var/covariance component:
- partitioned by DME (OLS-fixed-effects):
+Correlation corresponding to each var/covariance component partitioned by DME (OLS-b):
 
               Traitpair Estimate StdErr   CI95lo  CI95hi
 VarE(I)     Birwt:Birwt    1.000 0.0000  1.00000  1.0000
 VarG(Ia)    Birwt:Birwt    1.000 0.0000  1.00000  1.0000
 VarE(M)     Birwt:Birwt    1.000 0.0000  1.00000  1.0000
 VarG(Ma)    Birwt:Birwt    1.000 0.0000  1.00000  1.0000
-CovG(Ia,Ma) Birwt:Birwt   -0.129 0.0527 -0.23261 -0.0261
-CovG(Ma,Ia) Birwt:Birwt   -0.129 0.0527 -0.23261 -0.0261
 CovE(I,M)   Birwt:Birwt    0.165 0.0804  0.00791  0.3230
 CovE(M,I)   Birwt:Birwt    0.165 0.0804  0.00791  0.3230
+CovG(Ia,Ma) Birwt:Birwt   -0.129 0.0527 -0.23261 -0.0261
+CovG(Ma,Ia) Birwt:Birwt   -0.129 0.0527 -0.23261 -0.0261
 VarP(I)     Birwt:Birwt    1.000 0.0000  1.00000  1.0000
 
                Traitpair Estimate StdErr  CI95lo CI95hi
@@ -4956,10 +4504,10 @@ VarE(I)     Birwt:Diamtr   0.0118 0.0488 -0.0838  0.107
 VarG(Ia)    Birwt:Diamtr  -0.2417 0.0336 -0.3075 -0.176
 VarE(M)     Birwt:Diamtr   0.3388 0.1653  0.0147  0.663
 VarG(Ma)    Birwt:Diamtr   0.8375 0.3687  0.1149  1.560
-CovG(Ia,Ma) Birwt:Diamtr  -0.2671 0.2537 -0.7644  0.230
-CovG(Ma,Ia) Birwt:Diamtr  -0.1086 0.0355 -0.1781 -0.039
 CovE(I,M)   Birwt:Diamtr   0.5157 0.1676  0.1872  0.844
 CovE(M,I)   Birwt:Diamtr   0.0790 0.0842 -0.0861  0.244
+CovG(Ia,Ma) Birwt:Diamtr  -0.2671 0.2537 -0.7644  0.230
+CovG(Ma,Ia) Birwt:Diamtr  -0.1086 0.0355 -0.1781 -0.039
 VarP(I)     Birwt:Diamtr   0.0417 0.0341 -0.0251  0.108
 
                Traitpair Estimate StdErr   CI95lo  CI95hi
@@ -4967,10 +4515,10 @@ VarE(I)     Birwt:Woolwt    0.153 0.0366  0.08112  0.2245
 VarG(Ia)    Birwt:Woolwt    0.313 0.0553  0.20441  0.4212
 VarE(M)     Birwt:Woolwt    0.329 0.1665  0.00307  0.6557
 VarG(Ma)    Birwt:Woolwt    0.546 0.0901  0.36901  0.7223
-CovG(Ia,Ma) Birwt:Woolwt   -0.248 0.0993 -0.44216 -0.0530
-CovG(Ma,Ia) Birwt:Woolwt   -0.184 0.0599 -0.30120 -0.0664
 CovE(I,M)   Birwt:Woolwt    0.470 0.1889  0.10012  0.8408
 CovE(M,I)   Birwt:Woolwt    0.078 0.0656 -0.05060  0.2067
+CovG(Ia,Ma) Birwt:Woolwt   -0.248 0.0993 -0.44216 -0.0530
+CovG(Ma,Ia) Birwt:Woolwt   -0.184 0.0599 -0.30120 -0.0664
 VarP(I)     Birwt:Woolwt    0.252 0.0313  0.19021  0.3128
 
                Traitpair Estimate StdErr  CI95lo CI95hi
@@ -4978,10 +4526,10 @@ VarE(I)     Diamtr:Birwt   0.0118 0.0488 -0.0838  0.107
 VarG(Ia)    Diamtr:Birwt  -0.2417 0.0336 -0.3075 -0.176
 VarE(M)     Diamtr:Birwt   0.3388 0.1653  0.0147  0.663
 VarG(Ma)    Diamtr:Birwt   0.8375 0.3687  0.1149  1.560
-CovG(Ia,Ma) Diamtr:Birwt  -0.1086 0.0355 -0.1781 -0.039
-CovG(Ma,Ia) Diamtr:Birwt  -0.2671 0.2537 -0.7644  0.230
 CovE(I,M)   Diamtr:Birwt   0.0790 0.0842 -0.0861  0.244
 CovE(M,I)   Diamtr:Birwt   0.5157 0.1676  0.1872  0.844
+CovG(Ia,Ma) Diamtr:Birwt  -0.1086 0.0355 -0.1781 -0.039
+CovG(Ma,Ia) Diamtr:Birwt  -0.2671 0.2537 -0.7644  0.230
 VarP(I)     Diamtr:Birwt   0.0417 0.0341 -0.0251  0.108
 
                 Traitpair Estimate StdErr CI95lo  CI95hi
@@ -4989,10 +4537,10 @@ VarE(I)     Diamtr:Diamtr    1.000  0.000  1.000  1.0000
 VarG(Ia)    Diamtr:Diamtr    1.000  0.000  1.000  1.0000
 VarE(M)     Diamtr:Diamtr    1.000  0.000  1.000  1.0000
 VarG(Ma)    Diamtr:Diamtr    1.000  0.000  1.000  1.0000
-CovG(Ia,Ma) Diamtr:Diamtr   -0.345  0.113 -0.566 -0.1233
-CovG(Ma,Ia) Diamtr:Diamtr   -0.345  0.113 -0.566 -0.1233
 CovE(I,M)   Diamtr:Diamtr   -0.254  0.165 -0.577  0.0694
 CovE(M,I)   Diamtr:Diamtr   -0.254  0.165 -0.577  0.0694
+CovG(Ia,Ma) Diamtr:Diamtr   -0.345  0.113 -0.566 -0.1233
+CovG(Ma,Ia) Diamtr:Diamtr   -0.345  0.113 -0.566 -0.1233
 VarP(I)     Diamtr:Diamtr    1.000  0.000  1.000  1.0000
 
                 Traitpair Estimate StdErr CI95lo  CI95hi
@@ -5000,10 +4548,10 @@ VarE(I)     Diamtr:Woolwt    0.225 0.0377  0.151  0.2986
 VarG(Ia)    Diamtr:Woolwt    0.187 0.0347  0.119  0.2555
 VarE(M)     Diamtr:Woolwt    0.450 0.2992 -0.137  1.0363
 VarG(Ma)    Diamtr:Woolwt    0.913 0.4136  0.102  1.7239
-CovG(Ia,Ma) Diamtr:Woolwt   -0.039 0.0612 -0.159  0.0809
-CovG(Ma,Ia) Diamtr:Woolwt   -0.600 0.2966 -1.182 -0.0192
 CovE(I,M)   Diamtr:Woolwt   -0.258 0.1854 -0.621  0.1055
 CovE(M,I)   Diamtr:Woolwt    0.139 0.1229 -0.102  0.3795
+CovG(Ia,Ma) Diamtr:Woolwt   -0.039 0.0612 -0.159  0.0809
+CovG(Ma,Ia) Diamtr:Woolwt   -0.600 0.2966 -1.182 -0.0192
 VarP(I)     Diamtr:Woolwt    0.195 0.0346  0.127  0.2629
 
                Traitpair Estimate StdErr   CI95lo  CI95hi
@@ -5011,10 +4559,10 @@ VarE(I)     Woolwt:Birwt    0.153 0.0366  0.08112  0.2245
 VarG(Ia)    Woolwt:Birwt    0.313 0.0553  0.20441  0.4212
 VarE(M)     Woolwt:Birwt    0.329 0.1665  0.00307  0.6557
 VarG(Ma)    Woolwt:Birwt    0.546 0.0901  0.36901  0.7223
-CovG(Ia,Ma) Woolwt:Birwt   -0.184 0.0599 -0.30120 -0.0664
-CovG(Ma,Ia) Woolwt:Birwt   -0.248 0.0993 -0.44216 -0.0530
 CovE(I,M)   Woolwt:Birwt    0.078 0.0656 -0.05060  0.2067
 CovE(M,I)   Woolwt:Birwt    0.470 0.1889  0.10012  0.8408
+CovG(Ia,Ma) Woolwt:Birwt   -0.184 0.0599 -0.30120 -0.0664
+CovG(Ma,Ia) Woolwt:Birwt   -0.248 0.0993 -0.44216 -0.0530
 VarP(I)     Woolwt:Birwt    0.252 0.0313  0.19021  0.3128
 
                 Traitpair Estimate StdErr CI95lo  CI95hi
@@ -5022,10 +4570,10 @@ VarE(I)     Woolwt:Diamtr    0.225 0.0377  0.151  0.2986
 VarG(Ia)    Woolwt:Diamtr    0.187 0.0347  0.119  0.2555
 VarE(M)     Woolwt:Diamtr    0.450 0.2992 -0.137  1.0363
 VarG(Ma)    Woolwt:Diamtr    0.913 0.4136  0.102  1.7239
-CovG(Ia,Ma) Woolwt:Diamtr   -0.600 0.2966 -1.182 -0.0192
-CovG(Ma,Ia) Woolwt:Diamtr   -0.039 0.0612 -0.159  0.0809
 CovE(I,M)   Woolwt:Diamtr    0.139 0.1229 -0.102  0.3795
 CovE(M,I)   Woolwt:Diamtr   -0.258 0.1854 -0.621  0.1055
+CovG(Ia,Ma) Woolwt:Diamtr   -0.600 0.2966 -1.182 -0.0192
+CovG(Ma,Ia) Woolwt:Diamtr   -0.039 0.0612 -0.159  0.0809
 VarP(I)     Woolwt:Diamtr    0.195 0.0346  0.127  0.2629
 
                 Traitpair Estimate StdErr  CI95lo CI95hi
@@ -5033,14 +4581,14 @@ VarE(I)     Woolwt:Woolwt    1.000 0.0000  1.0000  1.000
 VarG(Ia)    Woolwt:Woolwt    1.000 0.0000  1.0000  1.000
 VarE(M)     Woolwt:Woolwt    1.000 0.0000  1.0000  1.000
 VarG(Ma)    Woolwt:Woolwt    1.000 0.0000  1.0000  1.000
-CovG(Ia,Ma) Woolwt:Woolwt   -0.429 0.0866 -0.5987 -0.259
-CovG(Ma,Ia) Woolwt:Woolwt   -0.429 0.0866 -0.5987 -0.259
 CovE(I,M)   Woolwt:Woolwt    0.320 0.1422  0.0408  0.598
 CovE(M,I)   Woolwt:Woolwt    0.320 0.1422  0.0408  0.598
+CovG(Ia,Ma) Woolwt:Woolwt   -0.429 0.0866 -0.5987 -0.259
+CovG(Ma,Ia) Woolwt:Woolwt   -0.429 0.0866 -0.5987 -0.259
 VarP(I)     Woolwt:Woolwt    1.000 0.0000  1.0000  1.000
 
 
-Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects):
+Phenotypic var/covariance from components partitioned by DME (OLS-b):
 
       Traitpair Estimate  StdErr  CI95lo CI95hi
 1   Birwt:Birwt   0.3089 0.00950  0.2903 0.3275
@@ -5051,6 +4599,7 @@ Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects)
 6 Diamtr:Woolwt   0.1701 0.03116  0.1091 0.2312
 7  Woolwt:Birwt   0.0603 0.00777  0.0451 0.0755
 8 Woolwt:Diamtr   0.1701 0.03116  0.1091 0.2312
+
 9 Woolwt:Woolwt   0.1861 0.00635  0.1736 0.1985
 
 > 
@@ -5071,33 +4620,24 @@ We now try extending the model in a different direction. We wish to see if there
 Dyadic mixed model fit for datafile: merino.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 3 
+OLS-b step:
 no of fixed effect df (k) =  43 
 no of traits (l) =  11 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 3 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  4014 
 no of individuals with data and X codes (n) =  2642 
 Rank of X: 43   No of Fixed Effects: 43 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  3 
-No of components estimable =  3 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
-> 
-
+DME substep completed:
+OLS-b step completed:
+>
 > gsummary(merino.fitiasl)
 Call:
 gsummary.dmm(dmmobj = merino.fitiasl)
 
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+Proportion of phenotypic var/covariance partitioned by DME to each component (OLS-b):
 
           Trait Estimate  StdErr CI95lo CI95hi
 VarE(I)   Birwt    0.208 0.02229  0.165  0.252
@@ -5165,9 +4705,8 @@ VarG(Ia)  Woolwt    0.147 0.00964  0.128  0.165
 VarGs(Ia) Woolwt    0.196 0.02254  0.152  0.241
 VarP(I)   Woolwt    1.000 0.00000  1.000  1.000
 
-
 Correlation corresponding to each var/covariance component:
- partitioned by DME (OLS-fixed-effects):
+ partitioned by DME (OLS-b):
 
  ....
              Traitpair Estimate StdErr CI95lo CI95hi
@@ -5280,14 +4819,13 @@ Dyadic mixed model fit for datafile: merinokeep.mdf
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
 No of individual variance components partitioned(v): 3 
-OLS-fixed-effects step:
+OLS-b step:
 no of fixed effect df (k) =  43 
 no of traits (l) =  1 
 Setup antemodel matrices:
 no of individuals in pedigree (m) =  4014 
 no of individuals with data and X codes (n) =  2735 
 Rank of X: 43   No of Fixed Effects: 43 
-OLS-fixed-effects step completed:
 DME substep:
 PCR option on dyadic model equations:
  .....
@@ -5295,30 +4833,24 @@ TRAINING: % variance explained
        1 comps   2 comps    3 comps
 X     77.81599  96.22261  100.00000
 evec   0.03008   0.03997    0.04277
-DME substep with OLS-fixed-effects completed:
+DME substep completed:
+OLS-b step completed:
 >
 > attributes(merino.fitiaslpcr)
 $names
  [1] "aov"                    "mdf"                    "fixform"               
  [4] "b"                      "seb"                    "vara"                  
  [7] "totn"                   "degf"                   "dme.mean"              
-[10] "dme.var"                "dme.correl"             "pcr.loadings"          
+[10] "dme.var"                "dme.correl"             "pcr.loadings"
 [13] "dmeopt"                 "siga"                   "sesiga"                
 [16] "vard"                   "degfd"                  "component"             
 [19] "correlation"            "correlation.variance"   "correlation.se"        
 [22] "fraction"               "fraction.variance"      "fraction.se"           
 [25] "variance.components"    "variance.components.se" "phenotypic.variance"   
-[28] "phenotypic.variance.se" "observed.variance"     
-
-$call
-dmm.default(mdf = merinokeep.mdf, fixform = Woolwt ~ 1 + C(Sex, 
-    sum) + C(Yearbi, sum) + C(YearDbi, sum) + C(Agem, sum) + 
-    C(Birls, sum) + C(Weanls, sum), components = c("VarE(I)", 
-    "VarG(Ia)", "VarGs(Ia)"), dmeopt = "pcr")
+[28] "phenotypic.variance.se" "observed.variance"      "call"                  
 
 $class
 [1] "dmm"
-
 
 > merino.fitiaslpcr$pcr.loadings
 
@@ -5352,57 +4884,34 @@ If we proceed with two principal components we get the following
 Dyadic mixed model fit for datafile: merinokeep.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 3 
+OLS-b step:
 no of fixed effect df (k) =  43 
 no of traits (l) =  1 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 3 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  4014 
 no of individuals with data and X codes (n) =  2735 
 Rank of X: 43   No of Fixed Effects: 43 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  3 
-No of components estimable =  3 
-Checking dyadic model equations:
 PCR option on dyadic model equations:
-Data: 	X dimension: 7480225 3 
-	Y dimension: 7480225 1
-Fit method: svdpc
-Number of components considered: 2
-
-VALIDATION: RMSEP
-Cross-validated using 10 random segments.
-       (Intercept)  1 comps  2 comps
-CV          0.1611   0.1611   0.1611
-adjCV       0.1611   0.1611   0.1611
-
-TRAINING: % variance explained
-       1 comps   2 comps
-X     77.81599  96.22261
-evec   0.03008   0.03997
-DME substep with OLS-fixed-effects completed:
+ .....
+DME substep completed:
+OLS-b step completed:
 >
 > gsummary(merino.fitiaslpcr2)
 Call:
 gsummary.dmm(dmmobj = merino.fitiaslpcr2)
 
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+Proportion of phenotypic var/covariance partitioned by DME to each component (OLS-b):
 
            Trait Estimate  StdErr CI95lo CI95hi
-VarE(I)   Woolwt    0.365 0.00796  0.349  0.381
-VarG(Ia)  Woolwt    0.147 0.01750  0.112  0.181
-VarGs(Ia) Woolwt    0.488 0.00970  0.469  0.507
+VarE(I)   Woolwt    0.365 0.00733  0.351  0.379
+VarG(Ia)  Woolwt    0.147 0.01429  0.119  0.175
+VarGs(Ia) Woolwt    0.488 0.00730  0.474  0.503
 VarP(I)   Woolwt    1.000 0.00000  1.000  1.000
 
 
-Correlation corresponding to each var/covariance component:
- partitioned by DME (OLS-fixed-effects):
+Correlation corresponding to each var/covariance component partitioned by DME (OLS-b):
 
               Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Woolwt:Woolwt        1      0      1      1
@@ -5411,10 +4920,10 @@ VarGs(Ia) Woolwt:Woolwt        1      0      1      1
 VarP(I)   Woolwt:Woolwt        1      0      1      1
 
 
-Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects):
+Phenotypic var/covariance from components partitioned by DME (OLS-b):
 
       Traitpair Estimate  StdErr CI95lo CI95hi
-1 Woolwt:Woolwt    0.146 0.00712  0.132   0.16
+1 Woolwt:Woolwt    0.146 0.00472  0.136  0.155
 
 > 
 \end{verbatim}
@@ -5434,47 +4943,36 @@ It is possible for maternal additive effects to be sexlinked.  To investigate th
 Dyadic mixed model fit for datafile: merino.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 6 
+OLS-b step:
 no of fixed effect df (k) =  43 
 no of traits (l) =  11 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 6 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  4014 
 no of individuals with data and X codes (n) =  2642 
 Rank of X: 43   No of Fixed Effects: 43 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  6 
-No of components estimable =  6 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
-> 
-
-> round(merino.fitiamasl$dme.corre,digits=3)
-          VarE(I) VarG(Ia) VarGs(Ia) VarE(M) VarG(Ma) VarGs(Ma)
-VarE(I)     1.000    0.417     0.754   0.486    0.332     0.392
-VarG(Ia)    0.417    1.000     0.558   0.373    0.478     0.452
-VarGs(Ia)   0.754    0.558     1.000   0.658    0.674     0.797
-VarE(M)     0.486    0.373     0.658   1.000    0.682     0.807
-VarG(Ma)    0.332    0.478     0.674   0.682    1.000     0.846
-VarGs(Ma)   0.392    0.452     0.797   0.807    0.846     1.000
-> 
-
+DME substep completed:
+OLS-b step completed:
+> merino.fitiamasl$dme.corre
+            VarE(I)  VarG(Ia) VarGs(Ia)   VarE(M)  VarG(Ma) VarGs(Ma)
+VarE(I)   1.0000000 0.4169643 0.7540543 0.4860238 0.3318052 0.3923530
+VarG(Ia)  0.4169643 1.0000000 0.5575606 0.3727328 0.4781302 0.4516340
+VarGs(Ia) 0.7540543 0.5575606 1.0000000 0.6578486 0.6740459 0.7968618
+VarE(M)   0.4860238 0.3727328 0.6578486 1.0000000 0.6816931 0.8072148
+VarG(Ma)  0.3318052 0.4781302 0.6740459 0.6816931 1.0000000 0.8462307
+VarGs(Ma) 0.3923530 0.4516340 0.7968618 0.8072148 0.8462307 1.0000000
+>
 \end{verbatim}
 
 \begin{verbatim}
-> gsummary(dmmobj = merino.fitiamasl, traitset = c("Birwt","Diamtr", "Woolwt"))
+> gsummary(merino.fitiamasl,traitset=c("Birwt","Diamtr","Woolwt"))
 Call:
 gsummary.dmm(dmmobj = merino.fitiamasl, traitset = c("Birwt", 
     "Diamtr", "Woolwt"))
 
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+Proportion of phenotypic var/covariance partitioned by DME to each component (OLS-b):
 
           Trait Estimate  StdErr CI95lo CI95hi
 VarE(I)   Birwt   0.3802 0.02192 0.3373  0.423
@@ -5504,8 +5002,7 @@ VarGs(Ma) Woolwt  0.09832 0.01847  0.0621 0.1345
 VarP(I)   Woolwt  1.00000 0.00000  1.0000 1.0000
 
 
-Correlation corresponding to each var/covariance component:
- partitioned by DME (OLS-fixed-effects):
+Correlation corresponding to each var/covariance component partitioned by DME (OLS-b):
 
             Traitpair Estimate StdErr CI95lo CI95hi
 VarE(I)   Birwt:Birwt        1      0      1      1
@@ -5548,8 +5045,8 @@ VarE(I)   Diamtr:Diamtr        1      0   1.00   1.00
 VarG(Ia)  Diamtr:Diamtr        1      0   1.00   1.00
 VarGs(Ia) Diamtr:Diamtr        1      0   1.00   1.00
 VarE(M)   Diamtr:Diamtr        1      0   1.00   1.00
-VarG(Ma)  Diamtr:Diamtr        1      0   1.00   1.00
-VarGs(Ma) Diamtr:Diamtr        1      1  -0.96   2.96
+VarG(Ma)  Diamtr:Diamtr        1      1  -0.96   2.96
+VarGs(Ma) Diamtr:Diamtr        1      0   1.00   1.00
 VarP(I)   Diamtr:Diamtr        1      0   1.00   1.00
 
               Traitpair Estimate StdErr   CI95lo CI95hi
@@ -5580,16 +5077,16 @@ VarGs(Ma) Woolwt:Diamtr    0.616 0.5470  -0.4565  1.688
 VarP(I)   Woolwt:Diamtr    0.285 0.0133   0.2589  0.311
 
               Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Woolwt:Woolwt        1      0      1      1
-VarG(Ia)  Woolwt:Woolwt        1      0      1      1
-VarGs(Ia) Woolwt:Woolwt        1      0      1      1
-VarE(M)   Woolwt:Woolwt        1      0      1      1
-VarG(Ma)  Woolwt:Woolwt        1      0      1      1
-VarGs(Ma) Woolwt:Woolwt        1      0      1      1
-VarP(I)   Woolwt:Woolwt        1      0      1      1
+VarE(I)   Woolwt:Woolwt        1      0   1.00   1.00
+VarG(Ia)  Woolwt:Woolwt        1      0   1.00   1.00
+VarGs(Ia) Woolwt:Woolwt        1      0   1.00   1.00
+VarE(M)   Woolwt:Woolwt        1      0   1.00   1.00
+VarG(Ma)  Woolwt:Woolwt        1      1  -0.96   2.96
+VarGs(Ma) Woolwt:Woolwt        1      0   1.00   1.00
+VarP(I)   Woolwt:Woolwt        1      0   1.00   1.00
 
 
-Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects):
+Phenotypic var/covariance from components partitioned by DME (OLS-b):
 
       Traitpair Estimate  StdErr CI95lo CI95hi
 1   Birwt:Birwt   0.4049 0.00478 0.3955 0.4142
@@ -5605,7 +5102,7 @@ Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects)
 > 
 \end{verbatim}
  
-On initial inspection this model seems to be a reasonable fit. The standard errors of estimates of proportions  are generally as small as those in previous models. There is evidence of "VarGs(Ma)" being a significant proportion of the variance for Birwt and Woolwt. For these traits the other maternal components are reduced, indicating that "VarGs(Ma)" has taken variance away from the autosomal genetic and environmental maternal components. In the case of Birwt, the individual sexlinked component is also reduced, but not for Woolwt.
+On initial inspection this model seems to be a reasonable fit. The standard errors of estimates of proportions  are generally as small as those in previous models. There is evidence of "VarGs(Ma)" being a significant proportion of the variance for Birwt, Weanwt, Flcwt, and Woolwt. For these traits the other maternal components are reduced, indicating that "VarGs(Ma)" has taken variance away from the autosomal genetic and environmental maternal components. In the case of Birwt, the individual sexlinked component is also reduced, but not for other traits.
  
 There are more collinearities in this model than in previous models. The column correlations have two exceeding 0.8 and two more exceeding 0.7. We need to rerun with {\em dmeopt="pcr"} and see what effect removing the collinearities has on the estimates. Again we have to revert to one trait
 
@@ -5622,23 +5119,15 @@ There are more collinearities in this model than in previous models. The column 
 Dyadic mixed model fit for datafile: merinokeep.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 6 
+OLS-b step:
 no of fixed effect df (k) =  43 
 no of traits (l) =  1 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 6 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  4014 
 no of individuals with data and X codes (n) =  2735 
 Rank of X: 43   No of Fixed Effects: 43 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  6 
-No of components estimable =  6 
-Checking dyadic model equations:
 PCR option on dyadic model equations:
 Data: 	X dimension: 7480225 6 
 	Y dimension: 7480225 1
@@ -5655,7 +5144,8 @@ TRAINING: % variance explained
        1 comps   2 comps   3 comps   4 comps   5 comps    6 comps
 X     71.64997  85.71700  93.01582  96.65201  99.60010  100.00000
 evec   0.01946   0.02729   0.03319   0.04001   0.04196    0.04297
-DME substep with OLS-fixed-effects completed:
+DME substep completed:
+OLS-b step completed:
 >
 > merino.fitiamaslpcr$pcr.loadings
 
@@ -5684,46 +5174,33 @@ This shows that we can omit principal components 5 and 6 and still analyze 96.65
      "VarE(M)","VarG(Ma)","VarGs(Ma)"), dmeopt="pcr",ncomp=4)
 Dyadic mixed model fit for datafile: merinokeep.mdf  
  .....
-DME substep with OLS-fixed-effects completed:
+OLS-b step completed:
 >
 > gsummary(merino.fitiamaslpcr2)
 Call:
 gsummary.dmm(dmmobj = merino.fitiamaslpcr2)
 
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+Proportion of phenotypic var/covariance partitioned by DME to each component (OLS-b):
 
            Trait Estimate  StdErr CI95lo CI95hi
-VarE(I)   Woolwt 3.54e-01 0.01390 0.3270  0.381
-VarG(Ia)  Woolwt 1.63e-01 0.01204 0.1390  0.186
-VarGs(Ia) Woolwt 3.72e-01 0.01130 0.3495  0.394
+VarE(I)   Woolwt 3.54e-01 0.00960 0.3354  0.373
+VarG(Ia)  Woolwt 1.63e-01 0.01198 0.1391  0.186
+VarGs(Ia) Woolwt 3.72e-01 0.01045 0.3512  0.392
 VarE(M)   Woolwt 5.80e-09     Inf   -Inf    Inf
 VarG(Ma)  Woolwt 5.80e-09     Inf   -Inf    Inf
-VarGs(Ma) Woolwt 1.12e-01 0.00642 0.0989  0.124
+VarGs(Ma) Woolwt 1.12e-01 0.00884 0.0942  0.129
 VarP(I)   Woolwt 1.00e+00 0.00000 1.0000  1.000
 
-
-Correlation corresponding to each var/covariance component:
- partitioned by DME (OLS-fixed-effects):
-
-              Traitpair Estimate StdErr CI95lo CI95hi
-VarE(I)   Woolwt:Woolwt        1      0   1.00   1.00
-VarG(Ia)  Woolwt:Woolwt        1      0   1.00   1.00
-VarGs(Ia) Woolwt:Woolwt        1      0   1.00   1.00
-VarE(M)   Woolwt:Woolwt        1      1  -0.96   2.96
-VarG(Ma)  Woolwt:Woolwt        1      1  -0.96   2.96
-VarGs(Ma) Woolwt:Woolwt        1      0   1.00   1.00
-VarP(I)   Woolwt:Woolwt        1      0   1.00   1.00
-
-
-Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects):
+ .....
+Phenotypic var/covariance from components partitioned by DME (OLS-b):
 
       Traitpair Estimate  StdErr CI95lo CI95hi
-1 Woolwt:Woolwt    0.172 0.00477  0.163  0.182
->
+1 Woolwt:Woolwt    0.172 0.00435  0.164  0.181
+
+> 
 \end{verbatim}
 
-So we have some nasty standard errors and near-zero estimates for "VarE(M)" and "VarG(Ma)" suggesting that they should not be fitted. However the estimates for the other components are similar to those obtained with {\em dmeopt="qr"} and their standard errors are small. We conclude that the components "VarGs(Ia)" and "VarGs(Ma)" are real and of sufficient magnitude to warrant inclusion in the model. If the constrained estimate obtained with "pcr" do not differ greatly from the unconstrained estimates obtained with "qr" it is an indication that the collinearities are not serious. If we were to drop "VarE(M)" and "VarG(Ma)" some of the strongest column correlations would be removed. We will pursue this course for the final run with {\em fixedgls=T} in the following section.
+So we have some nasty standard errors and near-zero estimates for "VarE(M)" and "VarG(Ma)" suggesting that they should not be fitted. However the estimates for the other components are similar to those obtained with {\em dmeopt="qr"} and their standard errors are small. We conclude that the components "VarGs(Ia)" and "VarGs(Ma)" are real and of sufficient magnitude to warrant inclusion in the model. If the constrained estimate obtained with "pcr" do not differ greatly from the unconstrained estimates obtained with "qr" it is an indication that the collinearities are not serious. If we were to drop "VarE(M)" and "VarG(Ma)" some of the strongest column correlations would be removed. We will pursue this course for the final run with {\em gls=T} in the following section.
 
 \subsection{Final analysis and GLS-b estimates}
 
@@ -5732,31 +5209,24 @@ It is convenient to use OLS-b estimates when investigating models, then finish o
 \begin{verbatim}
 > merino.fitgls <- dmm(merino.mdf, Ymat ~ 1 + C(Sex, sum) + C(Yearbi, sum) +
     C(YearDbi, sum) + C(Agem, sum) + C(Birls,sum) + C(Weanls, sum),
-    components = c("VarE(I)", "VarG(Ia)","VarGs(Ia)","VarGs(Ma)"),fixedgls=T)
+    components = c("VarE(I)", "VarG(Ia)","VarGs(Ia)","VarGs(Ma)"),gls=T)
 Dyadic mixed model fit for datafile: merino.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
+No of individual variance components partitioned(v): 4 
+OLS-b step:
 no of fixed effect df (k) =  43 
 no of traits (l) =  11 
 Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 4 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
 no of individuals in pedigree (m) =  4014 
 no of individuals with data and X codes (n) =  2642 
 Rank of X: 43   No of Fixed Effects: 43 
-OLS-fixed-effects step completed:
 DME substep:
-No of components defined =  4 
-No of components estimable =  4 
-Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+DME substep completed:
+OLS-b step completed:
 
-GLS-fixed-effects step:
+GLS-b step:
 Warning: Multivariate GLS is not same as multiple univariate GLS's
 Error in matrix(0, am$n * am$n * am$l * am$l, am$v) : 
   too many elements specified
@@ -5767,48 +5237,28 @@ Error in matrix(0, am$n * am$n * am$l * am$l, am$v) :
 \begin{verbatim}
 > merino.fitgls <- dmm(merinokeep.mdf, Woolwt ~ 1 + C(Sex, sum) + C(Yearbi, sum) +
     C(YearDbi, sum) + C(Agem, sum) + C(Birls,sum) + C(Weanls, sum),
-    components = c("VarE(I)", "VarG(Ia)","VarGs(Ia)","VarGs(Ma)"),fixedgls=T)
+    components = c("VarE(I)", "VarG(Ia)","VarGs(Ia)","VarGs(Ma)"),gls=T)
 Dyadic mixed model fit for datafile: merinokeep.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-fixed-effects step:
-no of fixed effect df (k) =  43 
-no of traits (l) =  1 
-Setup antemodel matrices:
-No of factors with specific components: 0 
-No of non-specific components partitioned: 4 
-No of factors with specific components: 0 
-No of specific variance components partitioned (per component): 0 
-No of specific variance and covariance components partitioned (per component): 0 
-no of individuals in pedigree (m) =  4014 
-no of individuals with data and X codes (n) =  2735 
-Rank of X: 43   No of Fixed Effects: 43 
-OLS-fixed-effects step completed:
-DME substep:
-No of components defined =  4 
-No of components estimable =  4 
-Checking dyadic model equations:
-QR option on dyadic model equations:
-DME substep with OLS-fixed-effects completed:
+No of individual variance components partitioned(v): 4 
+OLS-b step:
+ .....
+OLS-b step completed:
 
-GLS-fixed-effects step:
-Round =  1  Stopcrit =  0.01292653 
-Round =  2  Stopcrit =  0.002585923 
-Iteration(gls-fixed-effects) completed - count =  2 
+GLS-b step:
+Round =  1  Stopcrit =  0.01250322 
+Round =  2  Stopcrit =  0.002486147 
+Iteration completed - count =  2 
 Convergence achieved
-GLS-fixed-effects step completed successfully:
-DME substep:
-Components to genetic parameters and SE's:
-GLS-fixed-effects - genetic parameters with nonspecific components:
-DME substep completed:
-> 
-> 
-> gsummary(merino.fitgls,fixedgls=T)
-Call:
-gsummary.dmm(dmmobj = merino.fitgls, fixedgls = T)
+GLS-b step completed successfully:
 
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (OLS-fixed-effects):
+> 
+> gsummary(merino.fitgls,gls=T)
+Call:
+gsummary.dmm(dmmobj = merino.fitgls, gls = T)
+
+Proportion of phenotypic var/covariance partitioned by DME to each component (OLS-b):
 
            Trait Estimate StdErr    CI95lo CI95hi
 VarE(I)   Woolwt   0.7485 0.0283  0.692933 0.8040
@@ -5817,36 +5267,28 @@ VarGs(Ia) Woolwt   0.0675 0.0399 -0.010722 0.1458
 VarGs(Ma) Woolwt   0.0279 0.0145 -0.000569 0.0564
 VarP(I)   Woolwt   1.0000 0.0000  1.000000 1.0000
 
-  ......
+ .....
+ 
+Proportion of phenotypic var/covariance partitioned by DME to each component (GLS-b):
 
-Phenotypic var/covariance from components partitioned by DME (OLS-fixed-effects):
+           Trait Estimate  StdErr    CI95lo CI95hi
+VarE(I)   Woolwt   0.7429 0.02831  0.687363 0.7983
+VarG(Ia)  Woolwt   0.1546 0.00999  0.135021 0.1742
+VarGs(Ia) Woolwt   0.0778 0.03987 -0.000332 0.1560
+VarGs(Ma) Woolwt   0.0247 0.01450 -0.003692 0.0532
+VarP(I)   Woolwt   1.0000 0.00000  1.000000 1.0000
 
-      Traitpair Estimate  StdErr CI95lo CI95hi
-1 Woolwt:Woolwt    0.165 0.00311  0.159  0.171
-
-
-Proportion of phenotypic var/covariance partitioned by DME:
- to each component (GLS-fixed-effects):
-
-           Trait Estimate  StdErr   CI95lo CI95hi
-VarE(I)   Woolwt   0.7407 0.02829  0.68525 0.7961
-VarG(Ia)  Woolwt   0.1555 0.00998  0.13594 0.1751
-VarGs(Ia) Woolwt   0.0779 0.03983 -0.00011 0.1560
-VarGs(Ma) Woolwt   0.0259 0.01449 -0.00254 0.0543
-VarP(I)   Woolwt   1.0000 0.00000  1.00000 1.0000
-
-
-  .....
-
-Phenotypic var/covariance from components partitioned by DME (GLS-fixed-effects):
+ .....
+ 
+Phenotypic var/covariance from components partitioned by DME (GLS-b):
 
       Traitpair Estimate  StdErr CI95lo CI95hi
-1 Woolwt:Woolwt    0.166 0.00312   0.16  0.172
+1 Woolwt:Woolwt    0.166 0.00311   0.16  0.172
 
 > 
 \end{verbatim}
 
-The OLS-fixed-effects and GLS-fixed-effects estimates are almost identical for this trait. GLS-fixed-effects offers a slight improvement in the standard errors. In my experience this is what happens whenever the model is reasonable for the dataset and the dataset is sufficiently large. What causes OLS-fixed-effects and GLS-fixed-effects to differ is correlations among the residuals, and that only happens when the model is inappropriate.
+The OLS-b and GLS-b estimates are almost identical for this trait. GLS-b offers a slight improvement in the standard errors. In my experience this is what happens whenever the model is reasonable for the dataset and the dataset is sufficiently large. What causes OLS-b and GLS-b to differ is correlations among the residuals, and that only happens when the model is inappropriate.
 
 We conclude that the above 4 component model is appropriate and proceed with some further analysis of genetic (co)variation among wool traits.
 
@@ -6198,7 +5640,7 @@ Now we are ready to interpret these  analyses. First some general observations. 
 
 A word of caution. This does not mean that we can not change individual traits. There has been ample demonstration of that in single-trait selection experiments (Turner, Brooker, and Dolling(1970)~\cite{turn:70}). Nor does it mean that the 4 to 6 principal components are the only possible directions of change, there can be change in directions indicated by any mixture of the significant components. What it means is that we can not change certain combinations of traits. Multi-trait selection is known to be more difficult than single-trait selection. Adverse genetic correlations may be due to the sheer physical impossibility of some trait combinations or they may be due to more subtle biological limitations, or they may be simply a genetic phenomenon such as pleiotropy or linkage. 
 
-Another word of caution. The relationship between traits may be nonlinear. For exampls
+Another word of caution. The rrelationship between traits may be nonlinear. For exampls
 \begin{displaymath}
 Woolwt = Flcwt \times Yield
 \end{displaymath}
@@ -6250,7 +5692,7 @@ We have shown that genetic variation in Woolwt comes from three sources, individ
 
 The genetic correlations among the 11 traits studied  severely constrain the directions in which genetic improvement could be achieved, to 4 to 6 dimensions in the 11 dimensional trait space. One dimension, which was identified as a sort of small,low growth to large, high growth axis, was affected by all 3 types of gene effects, individual autosomal additive, individual sexlinked additive, and maternal sexlinked additive. Another dimension, associated with changing Densty and Diamtr in opposite directions, was only affected by individual autosomal additive gene effects.  The ways in which correlations constrain genetic improvement are given by the nonsignificant dimensions of variation.
 
-There is some concern that we should have looked at whether the genetic parameters estimated here are sex-specific. That is, are the genetic parameters different for rams and ewes and are the cross-sex genetic corelations different from unity? Work extending {\em dmm()} to allow sex-specific analyses has been completed and is described in a separate document {\em dmmClassSpecific.pdf}~\cite{jack:17}.
+There is some concern that we should have looked at whether the genetic parameters estimated here are sex-specific. That is, are the genetic parameters different for rams and ewes and are the cross-sex genetic corelations different from unity? There is work ongoing to extend {\em dmm()} to allow sex-specific analyses.
 
 There have been some problems, but we have done enough to show that {\em dmm()} can be useful for quantitative genetic analysis of a sizeable multi-trait research dataset with a multi-generation pedigree and some significant fixed effects.
 
@@ -6262,9 +5704,8 @@ Further development of {\em dmm()} and associated functions is likely. Some area
 \item Using an error term other than 'Residual' from the monadic model to form the dyadic model equations and consequent variance component estimates. This would allow repeated measures models
 \item Extending the {\em gresponse()} function to deal with individual sexlinked and maternal sexlinked genetic variation. An initial (somewhat experimental) attempt at this has been made in release (dmm\_1.6-2)
 \item Exploration of other regression techniques for solving the dyadic model equations. On my list are bootstrap methods and total least squares. The latter would allow for errors in the pedigree information as well as in the traits observed
-\item Allowing variance components to be split among levels of a fixed effect. For example with Sex as a fixed effect it is possible to form male-male, female-female, female-male, and male-female dyads and do their dyadic model equations separately thus leading to sex-specific variance components and genetic parameters. An initial attampt at this has been made in release (dmm\_2.1-1). This work is now completed. {\em dmm} can do class-specific varaince component estimates.
-\item Do something about the very restrictive array size requirements with options {\em fixedgls=T} and {\em dmeopt="pcr"}
-\item Do something about the excessive memory requirtements of option {\em dmeopt="fgls"} which leads to REML estimates of variance components.  The {\em Gremlin} R package~\cite{wola:20} is most suitable for obtaining REML estimates of variance components.
+\item Allowing variance components to be split among levels of a fixed effect. For example with Sex as a fixed effect it is possible to form male-male, female-female, female-male, and male-female dyads and do their dyadic model equations separately thus leading to sex-specific variance components and genetic parameters. An initial attampt at this has been made in release (dmm\_2.1-1).
+\item Do something about the very restrictive array size requirements with options {\em gls=T} and {\em dmeopt="pcr"}
 \item There has been no reference to the excellent R package {\em pedigreemm} which implements an entirely different approach to analysis of mixed model pedigree data. Some comparison of methods and results would be desirable.
 \item Look at sparse matrix techniques, possibly with the {\em Matrix} package
 \end{itemize}
@@ -6281,12 +5722,12 @@ Anderson, R.D. (1984) Use of mixed models for prediction and for estimation
 
 \bibitem{anon:14}
 Anon (2014) UCLA: Statistical Computing Group. 
-    From https://www.ats.ucla.edu/stat/faq/deltamethod.htm (accessed 8 Dec 2014)
+    From http://www.ats.ucla.edu/stat/faq/deltamethod.htm (accessed 8 Dec 2014)
 
 \bibitem{bijm:06}
 Bijma, P. (2006) Estimating maternal genetic effects in livestock.
     J. Anim. Sci. 84:800-806
-    (https://doi.org/10.2527/2006.844800x)
+    (http://www.journalofanimalscience.org/content/84/4/800)
 
 \bibitem{brow:68}
 Brown, G.D. and Turner, H.N. (1968).  Response to selection in Australian
@@ -6324,27 +5765,19 @@ Griffing, B. (1966) Influence of Sex on Selection.
 Harvey, W.R. (1960) Least Squares Analysid of Data with Unequal Subclass
     Numbers. ARS-20-8 July 1960. Agricultural Research Service, USDA.
 
-\bibitem{jack:25}
-Jackson, N. (2025) Methods for Solving the Dyadic Model Equations. 
-    From http://cran.r-project.org/package=dmm
-    Or https://github.com/nevillejackson/dmm
+\bibitem{jack:15}
+Jackson, N. (2015) Solving the Dyadic Model Equations. 
+    From https://github.com/nevillejackson/dmm
 
 \bibitem{jack:17}
 Jackson, N. (2017) Estimating class-specific genetic parameters with {\em dmm()}    From https://github.com/nevillejackson/dmm
-    From http://cran.r-project.org/package=dmm
-    Or https://github.com/nevillejackson/dmm
-
-\bibitem{jack:24}
-Jackson, N. (2024) Error covariance structure for the dyadic model used in {\em dmm()}
-    From http://cran.r-project.org/package=dmm
-    Or https://github.com/cran/dmm
 
 \bibitem{joui:11}
 Jouini, W. Le Guennec , D. and Moy, C  (2011) Log-Normal approximation of
     Chi-square distributions for signal processing. 
     URSIGASS.2011.6050531 Conference: General Assembly and Scientific Symposium,
     2011 XXXth URSI .
-    From https://www.researchgate.net/publication/224263352\_Log-normal\_
+    From http://www.researchgate.net/publication/224263352\_Log-normal\_
     approximation\_of\_chi-square\_distributions\_for\_signal\_processing
 
 \bibitem{kemp:57}
@@ -6373,7 +5806,6 @@ Moore, G.P.M. and Jackson, N. (1984).  An hypothesis implicating a founder
     cell population in the regulation of wool follicle formation and
     distribution in sheep skin.  J. Embryol. Exp. Morph. 82 (Suppl.), 259.
 \bibitem{moor:89}
-
 Moore, G.P.M., Jackson, N. and Lax, J. (1989).  Evidence of a unique
     developmental mechanism specifying follicle density and fibre size in
     sheep selected for single skin and fleece characters.  Genetical
@@ -6426,11 +5858,6 @@ Willham, R.L. (1963) The covariance between relatives for characters composed
 Wolak, M.E. (2012) nadiv: an R package to create relatedness matrices for
     estimating non-additive genetic variances in animal models. 
     Methods in Ecology and Evolution 3:792-796
-
-\bibitem{wola:20}
-Wolak, M. E. (2020) gremlin:  Mixed-Effects REML Incorporating Generalized Inverses
-    URL = https://cran.r-project.org/package=gremlin
-    URL = {https://doi.org/10.5281/zenodo.3908463}
 
 \bibitem{wrig:22}
 Wright, S. (1922) Coefficients of inbreeding and relationship. 

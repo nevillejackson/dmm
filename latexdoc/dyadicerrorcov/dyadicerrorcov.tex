@@ -3,16 +3,32 @@
 % Notes on error covariance structure for the dyadic model
 %
  
-\documentclass[titlepage]{article}  % Latex2e
+\documentclass[titlepage,a4paper,12pt]{article}  % Latex2e
 \usepackage{graphicx,lscape,subfigure}
 \usepackage{bm}
 \usepackage{textcomp}
-\usepackage{amsmath}
+
+\usepackage{amssymb,amsmath}
+\usepackage[utf8]{inputenc}
+
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{mathptmx}
+%\usepackage[margin=2.5cm]{geometry}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{listings}
+\lstset{upquote=true,basicstyle={\small\ttfamily}}
+
+\usepackage{color}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
+\tcbuselibrary{listings}
+\usepackage{fancyvrb}
  
 
 \title{ Error covariance structure for the dyadic model used in {\em dmm()}}
 \author{Neville Jackson }
-\date{19 Aug 2021}
+\date{10 Dec 2024}
 
  
 \begin{document} 
@@ -70,10 +86,10 @@ In the case of a dataset with mean only, and all individuals in the pedigree wit
 
 In regression analysis it is generally considered that if there are collinearities among the independent variates amounting to correlations greater than around 0.5 then the estimates of regression coefficients are suspect. Translating this to our dyadic model, the variance component estimates are not likely to achieve a realistic separation if the columns of $\bm{W}$ have correlations exceeding 0.5. The option of using principal component regression ({\em dmeopt="pcr"} has been developed as an experimental approach to dealing with serious collinearities among the components.
 
-If we want to plot these $\bm{M}$ matrix column correlations ( eg as scatteplots) we need argument {\em dmekeep=T} in calling {\em dmm()}. The dafault for {\em dmm()} is not to save the DME's in its return object. This can be overridden with argument {\em dmekeep=T}. This results in 2 attributes {\em dme.psi} and {\em dme.wmat} being added to the returned object. Caution, this can result in a very large returned object. The attribute {\em dme.wmat} is the $\bm{W}$ matrix, and its columns can be plotted with the standard {\em plot()} routine.
+If we want to plot these $\bm{W}$ matrix column correlations ( eg as scatteplots) we need argument {\em dmekeep=T} in calling {\em dmm()}. The dafault for {\em dmm()} is not to save the DME's in its return object. This can be overridden with argument {\em dmekeep=T}. This results in 2 attributes {\em dme.psi} and {\em dme.wmat} being added to the returned object. Caution, this can result in a very large returned object. The attribute {\em dme.wmat} is the $\bm{W}$ matrix, and its columns can be plotted with the standard {\em plot()} routine.
 
 \subsection{The assumptions of independence of dyadic residuals}
-To check the dyadic residuals, we can use the S3 {\em plot()} method included in the {\em dmm} package. This will output histograms, qqnorm plots, and scatterplots of residuals against fitted and observed values. Plots tend to be more informative for datasets with smaller numbers of individuals.
+To check the dyadic residuals $\bm{\Delta}$, we can use the S3 {\em plot()} method included in the {\em dmm} package. This will output histograms, qqnorm plots, and scatterplots of residuals against fitted and observed values. Plots tend to be more informative for datasets with smaller numbers of individuals.
 
 Dyadic residuals are usually not far from normally distributed, but may be leptokurtic and slightly skewed to the right.
 
@@ -81,7 +97,7 @@ If dyadic residuals are correlated with fitted values of the components, then th
 
 One can expect dyadic residuals to be correlated with observed dyadic covariances. It is normal for the fitted components in a dyadic model to explain only a small fraction of the total variation, (ie the dyadic residuals $\bm\Delta$ are large ) and this of course leads to the observed covariances being highly correlated with residuals.
 
-The question of patterns of correlation among the dyadic residuals themselves is a seriously difficult area. The covariances (or correlations) among the dyadic residuals for one trait form an $n^{2} \times n^{2}$ matrix - ie $n^{4}$ elements. Too many to compute and cant be stored in R, except for very small datasets. This issue is discussed in the document {\em dmmOverview.pdf}~\cite{jack:15} in relation to why {\em dmm()} is not able to do REML estimates. REML estimates require that the covariance (or correlation) matrix of the dyadic residuals be constructed and used to compute a GLS rather than an OLS solution to the DME's. That is only computationally feasible for very small datasets.
+The question of patterns of correlation among the dyadic residuals themselves is a seriously difficult area. The covariances (or correlations) among the dyadic residuals for one trait form an $n^{2} \times n^{2}$ matrix - ie $n^{4}$ elements. Too many to compute and cant be stored in R, except for very small datasets. This issue is discussed in the document {\em dmmOverview.pdf}~\cite{jack:15} in relation to why {\em dmm()} is only able to do REML estimates. REML estimates require that the covariance (or correlation) matrix of the dyadic residuals be constructed and used to compute a GLS rather than an OLS solution to the DME's. That is only computationally feasible for very small datasets.
 
 The covariance structure of dyadic residuals is actually known. It is derived in Searle et al (1992)~\cite{sear:92} on pages 407-413. It involves fourth moments of the observations.
 
@@ -283,7 +299,7 @@ We can substitute for $\bm{\Psi}^{`}\bm{\Psi}$ and subtract $(\bm{W}\bm{\Gamma})
 \end{eqnarray*}
 
 
-So the dyadic residual sum of squares clearly depends on what is in the sum of squares of products of $y_{1}$ and $y_{2}$ that is not explained by the model and its regression fit.  The trace of $\bm{\mathcal{V}}$ (equation~\ref{eqn:covres}) contains all of the SS due to regression plus an additional $4((\sigma^{2}_{A} + \sigma^{2}_{E})^{2}$. So the regression fit of the dyadic model is not removing all of the systematic effects. An amount $4(\sigma^{2}_{A} + \sigma^{2}_{E})^{2}$ is ending up in the residual sum of squares, presumably in addition to random rtesiduals such as those due to measurement errors in the $\bm{\Psi}$ values. This is puzzling. Perhaps the expectation matrix $\bm{W}$ should contain more terms. 
+So the dyadic residual sum of squares clearly depends on what is in the sum of squares of products of $y_{1}$ and $y_{2}$ that is not explained by the model and its regression fit.  The trace of $\bm{\mathcal{V}}$ (equation~\ref{eqn:covres}) contains all of the SS due to regression plus an additional $4((\sigma^{2}_{A} + \sigma^{2}_{E})^{2}$. So the regression fit of the dyadic model is not removing all of the systematic effects. An amount $4(\sigma^{2}_{A} + \sigma^{2}_{E})^{2}$ is ending up in the residual sum of squares, presumably in addition to random residuals such as those due to measurement errors in the $\bm{\Psi}$ values. This is puzzling. Perhaps the expectation matrix $\bm{W}$ should contain more terms. 
 
 One can see why the $R^{2}$ values for a dyadic model fit are typically less than $10$ percent.
 

@@ -18,7 +18,7 @@
 \maketitle      
 
 \section{Introduction} 
- We want to test multivariate REML estimation using dmeopt="fgls" in dmm(). The code for multivariate {\em fgls} in {\em dmm()} uses the conventional approach to multivariate analysis of stacking all traits in succesive blocks in the data vector so that the analysis treats the data vector as if it were all one trait. This requires appropriate blocking od the associated matrices. In the case of "fgls" on the dyadic model, this is not simple; the dyadic model errors have a covariance structure which is specified by a commutation matrix combined with the  covriance matrix of fixed model residuals.
+ We want to test multivariate REML estimation using dmeopt="fgls" in dmm(). The code for multivariate {\em fgls} in {\em dmm()} uses the conventional approach to multivariate analysis of stacking all traits in succesive blocks in the data vector so that the analysis treats the data vector as if it were all one trait. This requires appropriate blocking of the associated matrices. In the case of "fgls" on the dyadic model, this is not simple; the dyadic model errors have a covariance structure which is specified by a commutation matrix combined with the  covriance matrix of fixed model residuals.
 
 \section{Methods}
 Make up a small dataset, 4 traits with various levels of correlation between the traits. 
@@ -46,6 +46,50 @@ The data has no genetic variance component, only VarE(I).
 
 \subsection{Two uncorrelated traits}
 Traits y and x have zero correlation. 
+\subsubsection{Solve DME's by OLS}
+\begin{verbatim}
+> junk <- dmm(wxyz.df,I(cbind(x,y)) ~ 1, components=c("VarE(I)"))
+Dyadic mixed model fit for datafile: wxyz.df  
+  ....
+> summary(junk)
+Call:
+summary.dmm(object = junk)
+
+Coefficients fitted by OLS for fixed effects:
+
+  Trait Estimate StdErr CI95lo CI95hi
+1     x      2.5  0.289   1.93   3.07
+
+  Trait Estimate StdErr CI95lo CI95hi
+1     y        2  0.408    1.2    2.8
+
+
+Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+
+        Traitpair Estimate StdErr CI95lo CI95hi
+VarE(I)       x:x    0.333  0.122 0.0948  0.572
+
+        Traitpair Estimate StdErr CI95lo CI95hi
+VarE(I)       x:y -1.6e-17  0.211 -0.413  0.413
+
+        Traitpair Estimate StdErr CI95lo CI95hi
+VarE(I)       y:x -1.6e-17  0.211 -0.413  0.413
+
+        Traitpair Estimate StdErr CI95lo CI95hi
+VarE(I)       y:y    0.667  0.243   0.19   1.14
+
+> 
+\end{verbatim}
+So OLS correctly finds
+\begin{verbatim}
+> var(wxyz.df$x)
+[1] 0.3333333
+> var(wxyz.df$y)
+[1] 0.6666667
+\end{verbatim}
+because these aer the variance estimates assuming zero correlation of x with y.
+
+\subsubsection{Solve DME's by feasable GLS - multivariate case}
 \begin{verbatim}
 junk <- dmm(wxyz.df,I(cbind(x,y))  ~ 1, components=c("VarE(I)"),dmeopt="fgls")
 ..............
@@ -75,6 +119,33 @@ attach(wxyz.df)
 So if we "stack" x and y we get the figure estimated by REML.
 But why did REML assign all the "stacked" variance to x rather than to y?
 I dont know.
+This does not seem correct !!
+ 
+\subsubsection{Solve DME's by feasable GLS - univariate case}
+If we model single traits with  "fgls" fit we get
+\begin{verbatim}
+> junk <- dmm(wxyz.df,x ~ 1, components=c("VarE(I)"),dmeopt="fgls")
+Dyadic mixed model fit for datafile: wxyz.df  
+  ....
+> summary(junk)
+Call:
+summary.dmm(object = junk)
+
+Coefficients fitted by OLS for fixed effects:
+
+  Trait Estimate StdErr CI95lo CI95hi
+1     x      2.5  0.289   1.93   3.07
+
+
+Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+
+        Traitpair Estimate StdErr CI95lo CI95hi
+VarE(I)       x:x    0.333  0.272   -0.2  0.867
+
+> 
+\end{verbatim}
+which is correct and the same as obtained with OLS. 
+OLS will always give the same estimates whether multi-trait or single-trait,  whereas FGLS will give different estimates for multitrait vs univariate. That is because FGLS uses the entire multi-trait matrix of covariance of residuals so it adjusts for correlated errors within a trait and for correlated errors across traits. Maybe that is the problem... maybe FGLS should only adjust for within trait error covariances?  
 
 \subsection{Swap the order of traits}
 One test of blocking is to put traits in reverse order
@@ -94,7 +165,7 @@ VarE(I)       x:y 3.22e-05 5.35e-05 -7.26e-05 0.000137
 VarE(I)       x:x      0.5  0.353 -0.192   1.19
 \end{verbatim}
  Yes, the estimates come out in reverse order, and are the same.
-So the blocking passes this test.
+So the blocking passes this test. The stacked variance of both traits is being assigned to the trait with the largest variance.
 
 \subsection{Correlated traits}
 We can look at $r=1$ by putting the same trait in twice
@@ -162,9 +233,8 @@ VarE(I)       w:w    0.187  0.133 -0.0735  0.449
  So we have some variance (.187) and it seems to have arbitrarily assigned it to w, but it is not as large as the "stacked" variance (.608). That seems OK, I would expect positively correlated pooling to achieve less than twice the information. 
 
 \section{Conclusion}
-We have not found anything that looks dramatically wrong. I am not happy with the somewhat arbitrary allocation of variance to one trait, and I am not happy with the magnitude of the multivariate variances. 
+Some of these results look dramatically wrong. I am not happy with the somewhat arbitrary allocation of variance to one trait, and I am not happy with the magnitude of the multivariate variances. 
 
-Can anyone come up with a better test?
 
 
 

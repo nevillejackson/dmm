@@ -1,0 +1,107 @@
+> junk1 <- dmm(wxyz.df,I(cbind(x,y))  ~ 1, components=c("VarE(I)"),dmeopt="fgls")
+Dyadic mixed model fit for datafile: wxyz.df  
+Data file is a normal dataframe:
+Random effect partitioned into components: Residual:
+OLS-fixed-effects step:
+no of fixed effect df (k) =  1 
+no of traits (l) =  2 
+Setup antemodel matrices:
+No of factors with specific components: 0 
+No of non-specific components partitioned: 1 
+No of factors with specific components: 0 
+No of specific variance components partitioned (per component): 0 
+No of specific variance and covariance components partitioned (per component): 0 
+no of individuals in pedigree (m) =  4 
+no of individuals with data and X codes (n) =  4 
+Rank of X: 1   No of Fixed Effects: 1 
+OLS-fixed-effects step completed:
+DME substep:
+No of components defined =  1 
+No of components estimable =  1 
+Checking dyadic model equations:
+Note: Feasable GLS with multivariate data is experimental and untested 
+fgls iteration starting siga from ols:
+              x:x x:y           y:x       y:y
+VarE(I) 0.3333333   0 -3.204938e-17 0.6666667
+Residual var for DME (vard):
+              x:x          x:y          y:x           y:y
+x:x  4.444444e-02 4.625929e-18 2.775558e-18 -4.444444e-02
+x:y  4.625929e-18 1.333333e-01 5.088522e-18  2.405483e-17
+y:x  2.775558e-18 5.088522e-18 1.333333e-01  1.780983e-17
+y:y -4.444444e-02 2.405483e-17 1.780983e-17  1.777778e-01
+Total var for DME (vart):
+           x:x       x:y       y:x       y:y
+x:x 0.06666667 0.0000000 0.0000000 0.0000000
+x:y 0.00000000 0.1333333 0.0000000 0.0000000
+y:x 0.00000000 0.0000000 0.1333333 0.0000000
+y:y 0.00000000 0.0000000 0.0000000 0.2666667
+siga in fgls.update:
+              x:x          x:y           y:x      y:y
+[1,] 3.156768e-17 1.584809e-17 -6.009583e-16 1.333333
+Round =  1  Stopcrit =  0.2 
+siga in fgls.update:
+              x:x           x:y           y:x      y:y
+[1,] 1.294325e-17 -7.697236e-16 -1.080695e-15 1.894737
+Round =  2  Stopcrit =  0.1522807 
+siga in fgls.update:
+               x:x          x:y         y:x      y:y
+[1,] -4.706829e-17 2.199802e-15 -2.7723e-17 1.984927
+Round =  3  Stopcrit =  0.0484941 
+siga in fgls.update:
+               x:x           x:y         y:x      y:y
+[1,] -6.736167e-17 -2.873017e-14 1.14229e-14 1.997253
+Round =  4  Stopcrit =  0.01216417 
+siga in fgls.update:
+               x:x           x:y           y:x      y:y
+[1,] -4.023212e-17 -6.764235e-14 -1.406893e-13 1.999463
+Round =  5  Stopcrit =  0.002874752 
+siga in fgls.update:
+               x:x          x:y          y:x      y:y
+[1,] -8.107412e-17 4.102489e-13 4.239424e-13 1.999893
+Round =  6  Stopcrit =  0.000660993 
+siga in fgls.update:
+              x:x           x:y          y:x      y:y
+[1,] 9.049301e-17 -2.853758e-13 2.785014e-12 1.999979
+Round =  7  Stopcrit =  0.0001492979 
+siga in fgls.update:
+               x:x           x:y           y:x      y:y
+[1,] -6.073898e-17 -1.000098e-11 -2.346234e-11 1.999996
+Round =  8  Stopcrit =  3.32744e-05 
+Iteration(fgls) completed - count =  8 
+Convergence achieved (fgls)
+vsiga:
+             [,1]         [,2]         [,3]         [,4]
+[1,] 1.820437e-11 0.000000e+00 0.000000e+00 0.000000e+00
+[2,] 0.000000e+00 1.820437e-11 0.000000e+00 0.000000e+00
+[3,] 0.000000e+00 0.000000e+00 1.820437e-11 0.000000e+00
+[4,] 0.000000e+00 0.000000e+00 0.000000e+00 1.820437e-11
+DME substep with OLS-fixed-effects completed:
+> summary(junk1)
+Call:
+summary.dmm(object = junk1)
+
+Coefficients fitted by OLS for fixed effects:
+
+  Trait Estimate StdErr CI95lo CI95hi
+1     x      2.5  0.289   1.93   3.07
+
+  Trait Estimate StdErr CI95lo CI95hi
+1     y        2  0.408    1.2    2.8
+
+
+Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
+
+        Traitpair Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       x:x 8.53e-07 4.27e-06 -7.51e-06 9.22e-06
+
+        Traitpair  Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       x:y -1.32e-11 4.27e-06 -8.36e-06 8.36e-06
+
+        Traitpair  Estimate   StdErr    CI95lo   CI95hi
+VarE(I)       y:x -1.32e-11 4.27e-06 -8.36e-06 8.36e-06
+
+        Traitpair Estimate   StdErr CI95lo CI95hi
+VarE(I)       y:y        2 4.27e-06      2      2
+
+> 
+

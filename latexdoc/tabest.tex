@@ -1,0 +1,15 @@
+\begin{table}[h]
+\centering
+\caption{Types of (co)variance component estimates obtained by dmm,  according to how fixed effect equations and dyadic model equations are solved}
+\label{tab.est}
+\vspace{0.1in}
+\begin{tabular}{|l|l|l|}
+\hline
+Dyadic (random effect) equations  & \multicolumn{2}{c|}{Fixed Effect Equations solved by}  \\  \cline{2-3}
+ solved by   & OLS  & GLS \\ \hline
+ OLS (qr or lm) & MINQUE & BCML \\
+ FGLS           & REML   & REML \\
+ Robust regression & R-MINQUE & R-BCML \\
+ PLS            & restricted MINQUE & restricted BCML \\ \hline
+\end{tabular}
+\end{table}

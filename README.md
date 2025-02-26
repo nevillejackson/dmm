@@ -1,8 +1,11 @@
 # dmm #
-R package that does variance component estimation and genetic parameters for  linear mixed effect models ( ie animal models). Variance components can be for individual and/or maternal genetic variation, and can be for additive, dominance, epistatic or sexlinked inheritance. Components can be class specific.
+R package that does variance component estimation and genetic parameters for  linear mixed effect models ( ie animal models). Variance components can be for individual and/or maternal genetic variation, and can be for additive, dominance, epistatic or sexlinked inheritance. Components can be class specific. 
+The dmm methodology documented in dmmOverview.pdf; dmm is an implementation of dispersion mean model described by Searle et al. (1992) "Variance Components", Wiley, NY.
+'dmm' can do 'MINQUE', 'bias-corrected-ML', and 'REML'  variance component estimates.
+
 
 ## how does _dmm_ differ from other pedigree analysis packages? ##
-Most other packages use iterative likelihood maximization techniques for variance component estimation. _dmm_ uses a dyadic model which in effect reduces variance component estimation to a regression problem. This has the advantages of being non-iterative and of allowing any of the standard regression techniques to be used. The package currently offers least squares, partial least squares and robust regression. The results obtained with _dmm_ are equivalent to MINQUE and bias-corrected-ML estimates, if least squares regression is used.
+Most other packages use iterative likelihood maximization techniques for variance component estimation. _dmm_ uses a dyadic model which in effect reduces variance component estimation to a regression problem. This has the advantages of being non-iterative and of allowing any of the standard regression techniques to be used. The package currently offers least squares, partial least squares , robust regression and feasable generalised squares. The results obtained with _dmm_ are equivalent to MINQUE and bias-corrected-ML estimates, if least squares regression is used. If feasable generalised least squares is used, the estimates arte REML. 
 
 ## To obtain _dmm_ ##
 * From CRAN

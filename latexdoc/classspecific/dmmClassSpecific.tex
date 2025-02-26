@@ -3,16 +3,34 @@
 % Notes on Estimating class-specific genetic parameters
 %
  
-\documentclass[titlepage]{article}  % Latex2e
+\documentclass[titlepage,a4paper,12pt]{article}  % Latex2e
 \usepackage{graphicx,lscape,subfigure}
 \usepackage{bm}
 \usepackage{textcomp}
+
+\usepackage{amssymb,amsmath}
+\usepackage[utf8]{inputenc}
+
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{mathptmx}
+%\usepackage[margin=2.5cm]{geometry}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{listings}
+\lstset{upquote=true,basicstyle={\small\ttfamily}}
+
+\usepackage{color}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
+\tcbuselibrary{listings}
+\usepackage{fancyvrb}
+
  
 
 \title{ Estimating class-specific genetic parameters with {\em dmm()}}
 \author{Neville Jackson }
-\date{31 May 2024 \\
-      For dmm\_2.1-10}   % Deleting this command produces today's date.
+\date{10 Feb 2025 \\
+      For dmm\_3.1-1}   % Deleting this command produces today's date.
 
  
 \begin{document} 
@@ -53,9 +71,9 @@ The same is not possible for the individual environmental variance component "Va
    components=c("VarE(I)"),
    specific.components=list(Sex=c("VarG(Ia)")))
 Dyadic mixed model fit for datafile: sheep.mdf  
-Data file is a normal dataframe:
+Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-b step:
+OLS-fixed-effects step:
 no of fixed effect df (k) =  9 
 no of traits (l) =  3 
 Setup antemodel matrices:
@@ -67,21 +85,20 @@ No of specific variance and covariance components partitioned (per component): 4
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  37 
 Rank of X: 9   No of Fixed Effects: 9 
+OLS-fixed-effects step completed:
 DME substep:
 No of components defined =  5 
 No of components estimable =  5 
 Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep completed:
-OLS-b step completed:
+DME substep with OLS-fixed-effects completed:
 > 
 \end{verbatim}
 So we see a bit more output tabbing than with a normal (non-specific) dmm run. It is simply letting us know that it has been given one factor called Sex which has specific component(s), that there is one non-specific component, and one specific component, that the specific classes are "Sex:M" and "Sex:F", and that it will make 4 classes of component called "Sex:F:F", "Sex:F:M", "Sex:M:F", and  "Sex:M:M". The first and last of these 4 classes will contain variance component  estimates for each Sex, and the second and third of these 4 classes will contain cross-sex covariance component estimates.
 
 If that seems complex, it will become clear as we view the results. We first look at the component estimates exactly as fitted, using the {\em summary()} function.
 \begin{verbatim}
-> summary(sheep.fitss,traitset=c("Cww","Diam")
-+ )
+> summary(sheep.fitss, traitset = c("Cww", "Diam"))
 Call:
 summary.dmm(object = sheep.fitss, traitset = c("Cww", "Diam"))
 
@@ -110,7 +127,7 @@ Year1988     Diam  -1.6913  1.191 -4.026  0.644
 SexM         Diam   0.2246  0.377 -0.515  0.964
 
 
-Components partitioned by DME from residual var/covariance after OLS-b fit:
+Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
 
                  Traitpair Estimate StdErr   CI95lo CI95hi
 VarE(I)            Cww:Cww    0.107 0.0596 -0.01012  0.224
@@ -146,10 +163,10 @@ Sex:M:M:VarG(Ia) Diam:Diam   1.4274  0.350  0.741  2.114
 \begin{verbatim}
 > csummary(sheep.fitss,traitset=c("Cww","Diam"))
 Call:
-csummary.specific(object = object, traitset = traitset, componentset = componentset, 
-    bytrait = bytrait, gls = gls, digits = digits)
+csummary_specific(object = object, traitset = traitset, componentset = componentset, 
+    bytrait = bytrait, fixedgls = fixedgls, digits = digits)
 
-Components partitioned by DME from residual var/covariance after OLS-b fit:
+Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
 
 
 Specific class:  Sex:F:F 
@@ -242,7 +259,6 @@ VarE(I)  Diam:Diam   0.0585  0.268 -0.467  0.584
 VarG(Ia) Diam:Diam   1.4274  0.350  0.741  2.114
 VarP(I)  Diam:Diam   1.4859  0.252  0.992  1.980
 
-
 > 
 \end{verbatim} 
  So now we have 4 separate variance component summary tables. The first and last ( called Sex:F:F and Sex:M:M) are the variance components for each Sex level, and "VarE(I)" is listed there because it is assumed that the overall estimate of "VarE(I)" applies to each Sex level. Because "VarE(I)" is estimable, we are able to calculate "VarP(I)" for these two Sex levels. 
@@ -254,10 +270,10 @@ The variance components are now grouped in a way suitable for estimation of gene
 \begin{verbatim}
 > gsummary(sheep.fitss,traitset=c("Cww","Diam"))
 Call:
-gsummary.specific(dmmobj = dmmobj, traitset = traitset, componentset = componentset, 
-    bytrait = bytrait, gls = gls, digits = digits)
+gsummary_specific(dmmobj = dmmobj, traitset = traitset, componentset = componentset, 
+    bytrait = bytrait, fixedgls = fixedgls, digits = digits)
 
-Components partitioned by DME from residual var/covariance after OLS-b fit:
+Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
 
 
 Specific class:  Sex:F:F 
@@ -426,7 +442,6 @@ Phenotypic var/covariance from summing components:
 3  Diam:Cww    0.532  0.120  0.296  0.767
 4 Diam:Diam    1.486  0.252  0.992  1.980
 
-
 > 
 \end{verbatim}
 Again we get 4 separate sets of {\em gsummary()} tables.
@@ -434,7 +449,7 @@ The first and last ( called Sex:F:F and Sex:M:M) provide the sex-specific herita
 
 The second and third tables (called Sex:F:M and Sex:M:F) provide estimates of the cross-sex genetic correlations and everything else is 'NA'. Note that there are cross-sex-within-trait genetic correlations and cross-sex-cross-trait genetic correlations.
 
-That is as far as we can go. We cannot use these sex-specific parameters to do predictions of genetic change under selection, at the moment, because in {\em dmm} version 2.1-2 the {\em gresponse} function cannot handle class-specific parameters. This will be available in future releases.
+That is as far as we can go. We cannot use these sex-specific parameters to do predictions of genetic change under selection, at the moment, because in {\em dmm} the {\em gresponse} function cannot handle class-specific parameters. This will be available in future releases.
 
 \subsection{Parameters specific to more than one factor}
 
@@ -445,9 +460,9 @@ Assume that we now wish to extend the analysis of the sheep.df data , fitting 3 
    components="VarE(I)",
    specific.components=list(Sex=c("VarG(Ia)"),Tb=c("VarG(Ma)")))
 Dyadic mixed model fit for datafile: sheep.mdf  
-Data file is a normal dataframe:
+Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-b step:
+OLS-fixed-effects step:
 no of fixed effect df (k) =  2 
 no of traits (l) =  3 
 Setup antemodel matrices:
@@ -459,13 +474,13 @@ No of specific variance and covariance components partitioned (per component): 8
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  36 
 Rank of X: 2   No of Fixed Effects: 2 
+OLS-fixed-effects step completed:
 DME substep:
 No of components defined =  9 
 No of components estimable =  9 
 Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep completed:
-OLS-b step completed:
+DME substep with OLS-fixed-effects completed:
 > 
 \end{verbatim}
 We see that there is now one nonspecific component, and 2 factors with specific components. The sex-specific components will have 4 classes, as above, and the tb-specific components will also have 4 classes. When we put the two specific factors together there will be $4 * 4 = 16$ classes with separate variance component estimates. The 16 classes are listed just before the end of the output tabbing above. One might caution that subdividing the component space this intensively is only meaningful with adequate sized dataset.
@@ -478,7 +493,8 @@ We will just look briefly at the variance component estimates
 \begin{verbatim}
 > sheep.fitssts
 Call:
-NULL
+dmm.default(mdf = sheep.mdf, fixform = Ymat ~ 1 + Tb, components = "VarE(I)", 
+    specific.components = list(Sex = c("VarG(Ia)"), Tb = c("VarG(Ma)")))
 Fixed formula:
 Ymat ~ 1 + Tb
 Cohort formula:
@@ -487,11 +503,11 @@ Var/Covariance components:
 NULL
 Traits:
 [1] "Cww"  "Diam" "Bwt" 
-Fitted OLS fixed effects:
+Fitted OLS-fixed-effects:
                     Cww     Diam       Bwt
 (Intercept)  4.70526316 21.04211 45.894737
 TbT         -0.04055728 -0.55387 -1.071207
-Var/covariance components partitioned by DME after OLS fit:
+Var/covariance components partitioned by DME after OLS-fixed-effects fit:
                      Cww:Cww     Cww:Diam    Cww:Bwt     Diam:Cww   Diam:Diam
 VarE(I)           0.38563428  0.047279595 -0.2792448  0.047279595 0.005796586
 Sex:F:F:VarG(Ia)  0.06679493  0.174344832 -0.0437172  0.174344832 0.574334424
@@ -512,12 +528,11 @@ Tb:S:S:VarG(Ma)   4.45873429  3.5863191  4.45873429 45.4810063
 Tb:S:T:VarG(Ma)   4.15595980 -2.5202994 -1.33583524 11.1843079
 Tb:T:S:VarG(Ma)  -1.33583524  0.9256589  4.15595980 11.1843079
 Tb:T:T:VarG(Ma)   2.00220129  1.3444133  2.00220129 15.3841703
-Observed (residual) var/covariance after OLS fit:
+Observed (residual) var/covariance after OLS-fixed-effects fit:
            Cww      Diam       Bwt
 Cww  0.2943617 0.4079038  1.506019
 Diam 0.4079038 0.9742342  2.713203
 Bwt  1.5060189 2.7132034 27.772355
-> 
 \end{verbatim}
 We see there are 8 class-specific components, appropriately labelled, plus "VarE(I)". This is the brief output obtained with {\em print()} or by just naming the 'fit' object. For the full output with standard errors use {\em summary()} and/or {\em csummary()}.
 
@@ -525,10 +540,10 @@ We will just show the gsummary for one trait
 \begin{verbatim}
 > gsummary(sheep.fitssts,traitset="Cww")
 Call:
-gsummary.specific(dmmobj = dmmobj, traitset = traitset, componentset = componentset, 
-    bytrait = bytrait, gls = gls, digits = digits)
+gsummary_specific(dmmobj = dmmobj, traitset = traitset, componentset = componentset, 
+    bytrait = bytrait, fixedgls = fixedgls, digits = digits)
 
-Components partitioned by DME from residual var/covariance after OLS-b fit:
+Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
 
 
 Specific class:  Sex:F:F:Tb:S:S 
@@ -571,7 +586,6 @@ Phenotypic var/covariance from summing components:
   Traitpair Estimate StdErr CI95lo CI95hi
 1   Cww:Cww       NA     NA     NA     NA
 
-
 ...........
 and so on for all 16 classes covering all combinations of Sex and Tb
 \end{verbatim}
@@ -586,9 +600,9 @@ Assume that we now wish to change the analysis of the sheep.df data, so that com
    components=c("VarE(I)"),
    specific.components=list(Sex=c("VarG(Ia)","VarG(Ma)")))
 Dyadic mixed model fit for datafile: sheep.mdf  
-Data file is a normal dataframe:
+Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-b step:
+OLS-fixed-effects step:
 no of fixed effect df (k) =  9 
 no of traits (l) =  3 
 Setup antemodel matrices:
@@ -600,13 +614,13 @@ No of specific variance and covariance components partitioned (per component): 8
 no of individuals in pedigree (m) =  44 
 no of individuals with data and X codes (n) =  37 
 Rank of X: 9   No of Fixed Effects: 9 
+OLS-fixed-effects step completed:
 DME substep:
 No of components defined =  9 
 No of components estimable =  9 
 Checking dyadic model equations:
 QR option on dyadic model equations:
-DME substep completed:
-OLS-b step completed:
+DME substep with OLS-fixed-effects completed:
 > 
 \end{verbatim}
 So we see that the {\em specific.components} argument  is now a list containing a single vector element called Sex, and this vector is of length two. So it makes two components Sex-specific. We shall not list the output from the various summary functions. It should by now be obvious to the user how to do that.
@@ -626,7 +640,7 @@ This will be addressed in a future release of {\em dmm()}.
  If one of the cross-effect covariances (eg CovG(Ia,Ma)) are fitted and are not class specific, then the corresponding variances ( ie VarG(Ia) and VarG(Ma)) must be fitted and must also not be class specific.
 
  At the moment {\em dmm} does not have the ability to find the appropriate variances for calculation of correlations from cross-effect covariances, unless these variances are also defined within the same set ( ie either the nonspecific components set, or the specific components set)
-\item In {\em dmm\_2.1-2} release, any component can be made class-specific, as long as the specific factor has mutually exclusive classes. The components "VarE(I)",  "CovE(I,M)", "CovE(M,I)","CovE(I,M\&!C)", "CovE(M\&!C,I)" do not have estimable cross-class covariances, so these are excluded from the estimation process, and marked as NA.  {\em dmm()} only sets up  the within-class equations, for these components. The class specific within-class variances should be estimable, for these environmental components.
+\item In {\em dmm\_2.1-2} release and later, any component can be made class-specific, as long as the specific factor has mutually exclusive classes. The components "VarE(I)",  "CovE(I,M)", "CovE(M,I)","CovE(I,M\&!C)", "CovE(M\&!C,I)" do not have estimable cross-class covariances, so these are excluded from the estimation process, and marked as NA.  {\em dmm()} only sets up  the within-class equations, for these components. The class specific within-class variances should be estimable, for these environmental components.
 
    The reason that the cross-class components are not estimable for these individual environmental components, is that the class levels are mutually exclusive, so there is no cross-class replication. When it comes to class-specific factors such as Age, where the class levels may not be mutually exclusive, then the cross-class covariances should be estimable. 
 \item the function {\em gresponse()} can not at the moment handle class-specific genetic parameters. This will be addressed in a future release.
@@ -664,16 +678,17 @@ The short-component-name is the generic name as defined in {\em make.ctable()}. 
 \section{A dataset with 'known' results}
 The {\em warcolak} dataset, developed by Dr Matthew Wolak, and included with his package {\em nadiv} is a valuable testbed for both sex-linked and sex-specific variance components.
  
-There is an analysis of this dataset without fitting sex-specific variance components in the {\em dmmOverview.pdf} document. Here we report the extension of those analyses to include sex-specific components.
+There is an analysis of this dataset without fitting sex-specific variance components in the {\em dmmOverview.pdf}~\cite{jack:15} document. Here we report the extension of those analyses to include sex-specific components.
 
 We do an analysis of both traits simultaneously
 \begin{verbatim}
 > library(dmm)
 > data(warcolak)
 > warcolak.df <- warcolal.convert(warcolak)
-> warcolak.mdf <- warcolak.df,pedcols=c(1:3),factorcols=4,
+> warcolak.mdf <- mdf(warcolak.df,pedcols=c(1:3),factorcols=4,
     ycols=c(5:6),sexcode=c("M","F"),relmat=c("E","A","D","S"),keep=T)
   .....
+
 > warcolak.fitsp <- dmm(warcolak.mdf,Ymat ~ 1 + Sex,
     components=c("VarE(I)"),
     specific.components=list(Sex=c("VarG(Ia)","VarG(Id)","VarGs(Ia)")),
@@ -681,18 +696,26 @@ We do an analysis of both traits simultaneously
 Dyadic mixed model fit for datafile: warcolak.mdf  
 Data file is a list containing a dataframe and a list of relationship matrices:
 Random effect partitioned into components: Residual:
-OLS-b step:
+OLS-fixed-effects step:
 no of fixed effect df (k) =  2 
 no of traits (l) =  2 
 Setup antemodel matrices:
+No of factors with specific components: 1 
 No of non-specific components partitioned: 1 
 No of factors with specific components: 1 
-No of specific variance components partitioned: 2 
-No of specific variance and covariance components partitioned: 12 
+No of specific variance components partitioned (per component): 2 
+No of specific variance and covariance components partitioned (per component): 12 
 no of individuals in pedigree (m) =  5400 
 no of individuals with data and X codes (n) =  5400 
 Rank of X: 2   No of Fixed Effects: 2 
+OLS-fixed-effects step completed:
 DME substep:
+No of components defined =  13 
+No of components estimable =  13 
+Checking dyadic model equations:
+QR option on dyadic model equations:
+DME substep with OLS-fixed-effects completed:
+> 
 >
 > warcolak.fitsp
 Call:
@@ -707,15 +730,15 @@ Var/Covariance components:
 NULL
 Traits:
 [1] "Trait1" "Trait2"
-Fitted OLS fixed effects:
+Fitted OLS-fixed-effects:
                Trait1    Trait2
 (Intercept)  2.064586  1.987414
 SexM        -1.020755 -1.003316
-Var/covariance components partitioned by DME after OLS fit:
+Var/covariance components partitioned by DME after OLS-fixed-effects fit:
                   Trait1:Trait1 Trait1:Trait2 Trait2:Trait1 Trait2:Trait2
 VarE(I)             0.323035677  0.0863747023  0.0863747023   0.279919826
 Sex:F:F:VarG(Ia)    0.251920865 -0.0433274504 -0.0433274504   0.335856856
-Sex:F:M:VarG(Ia)    0.322903346  0.0533128036  0.0572557684   0.276175076
+Sex:F:M:VarG(Ia)    0.322903346  0.0533128035  0.0572557684   0.276175076
 Sex:M:F:VarG(Ia)    0.322903346  0.0572557684  0.0533128035   0.276175076
 Sex:M:M:VarG(Ia)    0.413886206  0.0646480722  0.0646480722   0.280318258
 Sex:F:F:VarG(Id)    0.298195437 -0.1124049761 -0.1124049761   0.326987507
@@ -726,7 +749,7 @@ Sex:F:F:VarGs(Ia)   0.100468892  0.0539144400  0.0539144400   0.046900097
 Sex:F:M:VarGs(Ia)  -0.006281569 -0.0177546729 -0.0004747249   0.012130641
 Sex:M:F:VarGs(Ia)  -0.006281569 -0.0004747249 -0.0177546729   0.012130641
 Sex:M:M:VarGs(Ia)   0.005980401 -0.0043317363 -0.0043317363   0.003137572
-Observed (residual) var/covariance after OLS fit:
+Observed (residual) var/covariance after OLS-fixed-effects fit:
              Trait1       Trait2
 Trait1  0.966773859 -0.003685244
 Trait2 -0.003685244  0.966581259
@@ -736,10 +759,10 @@ The brief varaince component output looks reasonable. It is a little easier to s
 \begin{verbatim}
 > csummary(warcolak.fitsp)
 Call:
-csummary.specific(object = object, traitset = traitset, componentset = componentset, 
-    bytrait = bytrait, gls = gls, digits = digits)
+csummary_specific(object = object, traitset = traitset, componentset = componentset, 
+    bytrait = bytrait, fixedgls = fixedgls, digits = digits)
 
-Components partitioned by DME from residual var/covariance after OLS-b fit:
+Components partitioned by DME from residual var/covariance after OLS-fixed-effects fit:
 
 
 Specific class:  Sex:F:F 
@@ -874,7 +897,7 @@ The warcolak dataset is not ideal for testing sex-specific component estimation,
 
 
 \section{Calculating genetic change}
-The function {\em gresponse()} has not yet ( as of dmm\_2.1-1) been updated to deal with class-specific parameter estimates. It is expected that this will be fixed in a future release.
+The function {\em gresponse()} has not yet ( as of dmm\_3.1-1) been updated to deal with class-specific parameter estimates. It is expected that this will be fixed in a future release.
 
 
 \section{The structure of an object of {\em class dmm} when some components are class-specific}
@@ -921,7 +944,7 @@ Some of the items have 'disappeared' and they will be found inside the new item 
  So within 'warcolak.fitsp\$specific' there are 4 items labelled with the class names for the "Sex" effect, and within each of those class name items are the 
 estimates for that class. So the 'disappeared' items have been moved down 2 levels, because they are all the estimates that become class-specific. What remains at the top level are the parameters which are not class-specific. 
 
-If the option {\em gls=T} is used, there is an item 'gls' and the whole structure is repeated within that item.
+If the option {\em fixedgls=T} is used, there is an item 'gls' and the whole structure is repeated within that item.
 
 The user does not have to use the supplied functions ({\em summary, csummary, gsummary)} to access a {\em dmm object}. The usual R functions for lists can be used.
 
