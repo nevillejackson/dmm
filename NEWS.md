@@ -1,3 +1,8 @@
+# dmm_3.1-1 Release Notes
+ Major update with changes to calling parameters. 
+ The ability to solve dyadic model equations by feasable-GLS has been added, and this leads to REML estimates of variance components. Multivariate REML is still experimental. Univariate REML works but is a memory hog.
+ There has been a revision of the dmmOverview.pdf document, and 3 new documents dmmClassSpecific.pdf, dmmSolveDME.pdf, and dyadicerrorcov.pdf have been included.
+
 # dmm_2.1-10 Release notes
  There has been a gap in versions when dmm was unable to use nadiv() due to problems with modifications to the {Matrix} package. That has now been corrected, and from release 2.1-10 onwards dmm() must use release 2.18.0 of the {nadiv} package.
  Apologies for any inconvenience, and assistance from Matthew Wolak ( author of nadiv) is greatly appreciated.
